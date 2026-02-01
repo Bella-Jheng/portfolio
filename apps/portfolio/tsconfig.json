@@ -24,13 +24,17 @@
     "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
   },
   "include": [
-    "src/**/*.ts",
-    "src/**/*.tsx",
-    "src/**/*.js",
-    "src/**/*.jsx",
+    "svgr.d.ts",
     "../../apps/portfolio/.next/types/**/*.ts",
     "../../dist/apps/portfolio/.next/types/**/*.ts",
-    "next-env.d.ts"
+    "next-env.d.ts",
+    "src/**/*.js",
+    "src/**/*.jsx",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    ".next/types/**/*.ts",
+    "../../libs/create-selectors.ts",
+    "../../libs/index.ts"
   ],
   "exclude": [
     "out-tsc",

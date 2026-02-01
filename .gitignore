@@ -44,3 +44,7 @@ Thumbs.db
 
 # nx related
 # .nx
+
+# Next.js
+.next
+out

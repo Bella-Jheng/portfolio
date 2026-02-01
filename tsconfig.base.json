@@ -16,6 +16,11 @@
     "skipLibCheck": true,
     "strict": true,
     "target": "es2022",
-    "customConditions": ["@trg/source"]
+    "customConditions": ["@trg/source"],
+    "paths": {
+      "@trg/utils": ["libs/index.ts"],
+      "@trg/source": ["src/index.ts"],
+      "@trg/source/server": ["src/server.ts"]
+    }
   }
 }
