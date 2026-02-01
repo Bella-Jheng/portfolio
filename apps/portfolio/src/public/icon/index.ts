@@ -1,0 +1,14 @@
+export { default as ArrowRight } from './arrow-right.svg';
+export { default as Close } from './close.svg';
+export { default as ExternalLink } from './external-link.svg';
+export { default as Heart } from './heart.svg';
+export { default as HeartFilled } from './heart-filled.svg';
+export { default as Play } from './play.svg';
+export { default as Share } from './share.svg';
+export { default as VideoIndicator } from './video-indicator.svg';
+export { default as VolumeMute } from './volume-mute.svg';
+export { default as VolumeUp } from './volume-up.svg';
+export { default as Facebook } from './facebook.svg';
+export { default as Line } from './line.svg';
+export { default as ChevronLeft } from './chevron-left.svg';
+export { default as ChevronRight } from './chevron-right.svg';
