@@ -1,0 +1,60 @@
+:root {
+  --page-gutter: max(1rem, (100vw - 1280px) / 2 + 1rem);
+}
+
+@media (min-width: 768px) {
+  :root {
+    --page-gutter: max(2.5rem, (100vw - 1280px) / 2 + 2.5rem);
+  }
+}
+
+.immersive-slider-container {
+  padding-left: var(--page-gutter);
+  padding-right: 0;
+}
+
+.project-slider {
+  .swiper-pagination-bullet-active {
+    background: #2d1b1b !important;
+  }
+
+  .swiper-pagination {
+    bottom: 0 !important;
+    left: var(--page-gutter) !important;
+    width: fit-content !important;
+    transform: none !important;
+  }
+}
+
+// Scroll Reveal Animation V2 (Staggered)
+.reveal-section {
+  .section-title {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .swiper-slide {
+    opacity: 0;
+    transform: translateX(40px);
+    transition: all 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  &.is-revealed {
+    .section-title {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .swiper-slide {
+      opacity: 1;
+      transform: translateX(0);
+
+      @for $i from 1 through 10 {
+        &:nth-child(#{$i}) {
+          transition-delay: #{0.1s + ($i * 0.1s)};
+        }
+      }
+    }
+  }
+}
