@@ -1,5 +1,7 @@
 import { http, HttpResponse } from 'msw';
 import { getProjectListApiResponse } from './project-list-api-mock';
+import { getProjectDetailApiResponse } from './project-detail-api-mock';
+import { getResumeDataMock } from './resume-api-mock';
 
 export const handlers = [
   http.get('/api/user', () => {
@@ -11,5 +13,16 @@ export const handlers = [
   }),
   http.get('/api/projects', () => {
     return HttpResponse.json(getProjectListApiResponse());
+  }),
+  http.get('/api/projects/:id', ({ params }) => {
+    const { id } = params;
+    const project = getProjectDetailApiResponse(id as string);
+    if (!project) {
+      return new HttpResponse(null, { status: 404 });
+    }
+    return HttpResponse.json(project);
+  }),
+  http.get('/api/resume', () => {
+    return HttpResponse.json(getResumeDataMock());
   }),
 ];
