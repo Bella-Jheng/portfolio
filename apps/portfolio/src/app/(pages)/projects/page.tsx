@@ -1,35 +1,60 @@
 'use client';
-import React, { Suspense, useEffect } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ProjectCard } from '../../components/Common/ProjectCard';
+import { ProjectCardSkeleton } from '../../components/Common/ProjectCardSkeleton';
 import { ProjectTabs } from '../../components/Atom/Tabs';
 import { RevealOnScroll } from '../../components/Common/RevealOnScroll';
 
 import { useProjects } from '../../api';
-import { useLoadingStore } from '../../store/loading.store';
+import { ProjectCategory } from '../../api/project-list-api.type';
+import {
+  Portfolio1,
+  Portfolio2,
+  Portfolio3,
+  Portfolio4,
+  Portfolio5,
+} from '@/public/img';
+console.log(
+  Portfolio1.src,
+  Portfolio2.src,
+  Portfolio3.src,
+  Portfolio4.src,
+  Portfolio5.src,
+);
+const CATEGORIES: readonly ['全部', ...ProjectCategory[]] = [
+  '全部',
+  '前端專案',
+  'PM 專案',
+  '後端專案',
+  '其他',
+] as const;
 
-const CATEGORIES = ['全部', '特力集團（特力屋、HOLA）', '104人力銀行'];
+type CategoryName = (typeof CATEGORIES)[number];
 
-const CATEGORY_MAP: Record<string, string> = {
+const CATEGORY_MAP: Record<string, CategoryName> = {
   all: '全部',
-  testrite: '特力集團（特力屋、HOLA）',
-  '104': '104人力銀行',
+  frontend: '前端專案',
+  pm: 'PM 專案',
+  backend: '後端專案',
+  other: '其他',
 };
 
-const ID_MAP: Record<string, string> = Object.fromEntries(
+const ID_MAP: Record<CategoryName, string> = Object.fromEntries(
   Object.entries(CATEGORY_MAP).map(([id, name]) => [name, id]),
-);
+) as Record<CategoryName, string>;
 
 function ProjectsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const categoryId = searchParams.get('category') || 'all';
 
-  const { data: projects = [], isLoading } = useProjects();
+  const { data: projects = [] } = useProjects();
 
-  const [activeCategory, setActiveCategory] = React.useState(
+  const [activeCategory, setActiveCategory] = useState(
     CATEGORY_MAP[categoryId] || '全部',
   );
+  const [isTabLoading, setIsTabLoading] = useState(false);
 
   useEffect(() => {
     const name = CATEGORY_MAP[categoryId];
@@ -38,21 +63,15 @@ function ProjectsContent() {
     }
   }, [categoryId, activeCategory]);
 
-  const showLoading = useLoadingStore.use.showLoading();
-  const closeLoading = useLoadingStore.use.closeLoading();
-
-  useEffect(() => {
-    if (isLoading) {
-      showLoading();
-    } else {
-      closeLoading();
-    }
-  }, [isLoading, showLoading, closeLoading]);
-
   const handleCategoryChange = (name: string) => {
     const id = ID_MAP[name];
-    if (id) {
+    if (id && id !== categoryId) {
+      setIsTabLoading(true);
       router.push(`/projects?category=${id}`, { scroll: false });
+      // Short delay to show skeleton and ensure smooth transition
+      setTimeout(() => {
+        setIsTabLoading(false);
+      }, 600);
     }
   };
 
@@ -85,24 +104,22 @@ function ProjectsContent() {
           />
         </RevealOnScroll>
 
-        {isLoading ? (
-          <div className="flex justify-center items-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-txt-brown"></div>
-          </div>
-        ) : (
-          /* Project Grid - 4 cards across on desktop */
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {filteredProjects.map((project, index) => (
-              <RevealOnScroll
-                key={index}
-                delay={200 + index * 100}
-                className="h-full"
-              >
-                <ProjectCard {...project} />
-              </RevealOnScroll>
-            ))}
-          </div>
-        )}
+        {/* Project Grid - 4 cards across on desktop */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          {isTabLoading
+            ? Array.from({ length: 8 }).map((_, index) => (
+                <ProjectCardSkeleton key={`skeleton-${index}`} />
+              ))
+            : filteredProjects.map((project, index) => (
+                <RevealOnScroll
+                  key={index}
+                  delay={200 + index * 100}
+                  className="h-full"
+                >
+                  <ProjectCard {...project} />
+                </RevealOnScroll>
+              ))}
+        </div>
       </div>
     </div>
   );

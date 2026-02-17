@@ -5,10 +5,14 @@ import { Footer } from '../components/Layout/Footer';
 export const metadata = {
   title: "I'm Yiting - Portfolio",
   description: 'Front-End Software Engineer Portfolio',
+  icons: {
+    icon: '/img/red-flower.png',
+  },
 };
 
 import { MSWProvider } from '../MSWProvider';
 import ReactQueryProvider from '../ReactQueryProvider';
+import { GlobalLoading } from '../components/Common/GlobalLoading';
 
 export default function RootLayout({
   children,
@@ -20,6 +24,7 @@ export default function RootLayout({
       <body>
         <MSWProvider>
           <ReactQueryProvider>
+            <GlobalLoading />
             <Header />
             <main className="">{children}</main>
             <Footer />

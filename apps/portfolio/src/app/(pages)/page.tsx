@@ -5,8 +5,8 @@ import { ArrowRight } from '@/public/icon';
 import { BlueFlower } from '@/public/img';
 import { ProjectSlider } from '../components/Common/ProjectSlider';
 import { FlowerBackground } from '../components/Common/FlowerBackground';
-import { LoadingScreen } from '../components/Common/LoadingScreen';
 import { useProjects } from '../api/project-list-api';
+import Link from 'next/link';
 import { useLoadingStore } from '../store/loading.store';
 
 export default function Index() {
@@ -15,23 +15,41 @@ export default function Index() {
   const [hasSurged, setHasSurged] = useState(false);
   const sliderRef = useRef<HTMLDivElement>(null);
 
-  const [isLoading, setIsLoading] = useState(true);
-  const [showLoadingScreen, setShowLoadingScreen] = useState(true);
+  const { data: projects = [], isLoading: isApiLoading } = useProjects();
 
-  const { data: projects = [], isLoading: isDataLoading } = useProjects();
-
+  const hasShownInitialLoading = useLoadingStore.use.hasShownInitialLoading();
+  const setInitialLoadingShown = useLoadingStore.use.setInitialLoadingShown();
   const showLoading = useLoadingStore.use.showLoading();
   const closeLoading = useLoadingStore.use.closeLoading();
 
+  const [flowersLoaded, setFlowersLoaded] = useState(false);
+
+  // Show 3-second loading on first visit only
   useEffect(() => {
-    showLoading();
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-      closeLoading();
-      setTimeout(() => setShowLoadingScreen(false), 1000);
-    }, 2000);
-    return () => clearTimeout(timer);
-  }, [showLoading, closeLoading]);
+    if (!hasShownInitialLoading) {
+      showLoading();
+      const timer = setTimeout(() => {
+        closeLoading();
+        setInitialLoadingShown();
+      }, 2000);
+      return () => {
+        clearTimeout(timer);
+        closeLoading();
+      };
+    }
+  }, [
+    hasShownInitialLoading,
+    showLoading,
+    closeLoading,
+    setInitialLoadingShown,
+  ]);
+
+  // Trigger flower entrance after initial loading is done
+  useEffect(() => {
+    if (hasShownInitialLoading && !flowersLoaded) {
+      setFlowersLoaded(true);
+    }
+  }, [hasShownInitialLoading, flowersLoaded]);
 
   // Track raw scrollY and trigger active surge
   useEffect(() => {
@@ -95,21 +113,11 @@ export default function Index() {
       className="overflow-hidden flex flex-col relative min-h-screen overflow-x-hidden"
       style={{ backgroundColor: getBackgroundColor() }}
     >
-      {showLoadingScreen && (
-        <LoadingScreen
-          className={`transition-opacity duration-1000 ease-out ${
-            isLoading || isDataLoading
-              ? 'opacity-100'
-              : 'opacity-0 pointer-events-none'
-          }`}
-        />
-      )}
-
       <div
         id="flowerContainer"
         className="absolute inset-0 z-0 pointer-events-none"
       >
-        <FlowerBackground scrollY={scrollY} isLoaded={!isLoading} />
+        <FlowerBackground scrollY={scrollY} isLoaded={flowersLoaded} />
       </div>
       {/* Main Section */}
       <div
@@ -156,16 +164,18 @@ export default function Index() {
           </div>
 
           <div className="mt-4">
-            <button className="group flex items-center gap-2 border-2 border-[#2D1B1B] px-6 py-2 md:px-7 md:py-2.5 rounded-full font-semibold text-[#2D1B1B] text-sm md:text-base shadow-[4px_4px_0px_rgba(45,27,27,0.2)] md:shadow-[5px_5px_0px_rgba(45,27,27,0.2)] hover:shadow-none transition-all active:translate-x-[2px] active:translate-y-[2px]">
-              More About Me
-              <ArrowRight className="w-4 h-4 md:w-5 md:h-5 transition-transform group-hover:translate-x-1" />
-            </button>
+            <Link href="/resume">
+              <button className="group flex items-center gap-2 border-2 border-txt-darkBrown px-6 py-2 md:px-7 md:py-2.5 rounded-full font-semibold text-txt-darkBrown text-sm md:text-base shadow-[4px_4px_0px_rgba(45,27,27,0.2)] md:shadow-[5px_5px_0px_rgba(45,27,27,0.2)] hover:shadow-none transition-all active:translate-x-[2px] active:translate-y-[2px]">
+                More About Me
+                <ArrowRight className="w-4 h-4 md:w-5 md:h-5 transition-transform group-hover:translate-x-1" />
+              </button>
+            </Link>
           </div>
         </div>
 
         {/* Scroll Indicator */}
         <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-60 hover:opacity-100 transition-opacity duration-300">
-          <span className="text-[10px] md:text-xs font-bold tracking-[0.3em] text-[#2D1B1B] uppercase">
+          <span className="text-[10px] md:text-xs font-bold tracking-[0.3em] text-txt-darkBrown uppercase">
             scroll
           </span>
           <div className="animate-bounce-slow">
@@ -178,7 +188,7 @@ export default function Index() {
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="text-[#2D1B1B] w-5 h-5 md:w-6 md:h-6"
+              className="text-txt-darkBrown w-5 h-5 md:w-6 md:h-6"
             >
               <path d="M7 13l5 5 5-5M7 6l5 5 5-5" />
             </svg>

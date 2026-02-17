@@ -21,11 +21,11 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
       className="group block bg-[#FBFBF2] border border-[#DEDDB8] overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2"
     >
       {/* Image Container */}
-      <div className="relative aspect-[4/3] overflow-hidden bg-gray-50">
+      <div className="relative aspect-video overflow-hidden bg-gray-100">
         <img
           src={imageUrl}
           alt={title}
-          className="object-cover transition-transform duration-700 group-hover:scale-110"
+          className="w-full h-full object-contain object-center transition-transform duration-700 group-hover:scale-110"
         />
         {/* Hover Overlay */}
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-500" />
