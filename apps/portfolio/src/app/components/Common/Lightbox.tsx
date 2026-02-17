@@ -34,6 +34,13 @@ interface LightboxProps {
   initialIndex?: number;
 }
 
+const getYouTubeId = (url: string) => {
+  const regExp =
+    /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  const match = url.match(regExp);
+  return match && match[2].length === 11 ? match[2] : null;
+};
+
 const VideoSlide: React.FC<{ url: string; isActive: boolean }> = ({
   url,
   isActive,
@@ -41,6 +48,7 @@ const VideoSlide: React.FC<{ url: string; isActive: boolean }> = ({
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
+  const youtubeId = getYouTubeId(url);
 
   useEffect(() => {
     if (!isActive && videoRef.current) {
@@ -68,6 +76,23 @@ const VideoSlide: React.FC<{ url: string; isActive: boolean }> = ({
       setIsMuted(!isMuted);
     }
   };
+
+  if (youtubeId) {
+    return (
+      <div className="relative w-full h-full flex items-center justify-center">
+        {isActive && (
+          <iframe
+            src={`https://www.youtube.com/embed/${youtubeId}?autoplay=0&mute=${
+              isMuted ? 1 : 0
+            }`}
+            className="w-full h-full max-w-5xl aspect-video"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full h-full flex items-center justify-center group/video">
@@ -171,7 +196,6 @@ export const Lightbox: React.FC<LightboxProps> = ({
             }}
             zoom={true}
             spaceBetween={30}
-            loop
             style={
               {
                 '--swiper-navigation-size': '30px',
@@ -217,20 +241,19 @@ export const Lightbox: React.FC<LightboxProps> = ({
               centerInsufficientSlides={true}
               freeMode={true}
               watchSlidesProgress={true}
-              loop={true}
               modules={[FreeMode, Navigation, Thumbs]}
               className="w-full h-[60px]"
             >
               {media.map((item, index) => (
                 <SwiperSlide
                   key={index}
-                  className="!w-[60px] !h-[60px] cursor-pointer opacity-40 transition-opacity duration-300 [&.swiper-slide-thumb-active]:opacity-100 border-2 border-transparent [&.swiper-slide-thumb-active]:border-white rounded-[0.5rem] overflow-hidden"
+                  className="!w-[60px] !h-[60px] aspect-square cursor-pointer opacity-40 transition-opacity duration-300 [&.swiper-slide-thumb-active]:opacity-100 border-2 border-transparent [&.swiper-slide-thumb-active]:border-white rounded-[0.5rem] overflow-hidden"
                 >
                   <div className="relative w-full h-full bg-gray-800">
                     <img
                       src={item.thumbnailUrl || item.url}
                       alt={`Lightbox thumbnail ${index}`}
-                      className="object-cover"
+                      className="w-full h-full object-cover object-center"
                     />
                     {item.type === 'video' && (
                       <div className="absolute inset-0 flex items-center justify-center bg-black/20">
