@@ -61,7 +61,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
       <div className="relative bg-white rounded-2xl w-full max-w-sm p-8 shadow-2xl animate-in fade-in zoom-in duration-300">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
-          <h2 className="text-xl font-bold text-[#2D1B1B]">分享到</h2>
+          <h2 className="text-xl font-bold text-txt-darkBrown">分享到</h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -79,7 +79,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
             className="group flex flex-col items-center gap-3"
           >
             <div className="w-16 h-16 rounded-full border border-gray-100 flex items-center justify-center shadow-sm group-hover:bg-gray-50 group-hover:scale-105 transition-all duration-300">
-              <Facebook className="w-6 h-6 text-[#2D1B1B]" />
+              <Facebook className="w-6 h-6 text-txt-darkBrown" />
             </div>
             <span className="text-sm font-medium text-gray-600">Facebook</span>
           </button>
@@ -90,7 +90,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
             className="group flex flex-col items-center gap-3"
           >
             <div className="w-16 h-16 rounded-full border border-gray-100 flex items-center justify-center shadow-sm group-hover:bg-gray-50 group-hover:scale-105 transition-all duration-300">
-              <Line className="w-6 h-6 text-[#2D1B1B]" />
+              <Line className="w-6 h-6 text-txt-darkBrown" />
             </div>
             <span className="text-sm font-medium text-gray-600">Line</span>
           </button>
@@ -107,7 +107,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
             />
             <button
               onClick={handleCopyLink}
-              className="text-[#2D1B1B] hover:text-gray-600 p-1 flex items-center justify-center relative"
+              className="text-txt-darkBrown hover:text-gray-600 p-1 flex items-center justify-center relative"
               title="Copy link"
             >
               <svg
@@ -127,7 +127,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
 
               {/* Tooltip */}
               {copied && (
-                <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-[#2D1B1B] text-white text-[10px] py-1 px-2 rounded-md animate-in fade-in slide-in-from-bottom-1">
+                <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-txt-darkBrown text-white text-[10px] py-1 px-2 rounded-md animate-in fade-in slide-in-from-bottom-1">
                   Copied!
                 </div>
               )}

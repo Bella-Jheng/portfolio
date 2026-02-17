@@ -64,14 +64,14 @@ export const ProjectGallery: React.FC<ProjectGalleryProps> = ({ media }) => {
                   <img
                     src={item.url}
                     alt={`Project media ${index}`}
-                    className="object-cover"
+                    className="w-full h-full object-contain object-center bg-gray-200"
                   />
                 ) : (
                   <div className="relative w-full h-full group">
                     <img
                       src={item.thumbnailUrl || item.url}
                       alt={`Project media ${index} thumbnail`}
-                      className="object-cover"
+                      className="w-full h-full object-contain object-center bg-gray-200"
                     />
                     {/* Video Mask / Play Button */}
                     <div className="absolute inset-0 flex items-center justify-center bg-black/40 group-hover:bg-black/50 transition-all duration-300">
@@ -107,7 +107,7 @@ export const ProjectGallery: React.FC<ProjectGalleryProps> = ({ media }) => {
           {media.map((item, index) => (
             <SwiperSlide
               key={index}
-              className="!w-[40px] !h-[40px] cursor-pointer opacity-40 transition-opacity duration-300 [&.swiper-slide-thumb-active]:opacity-100 border-2 border-transparent [&.swiper-slide-thumb-active]:border-[#2D1B1B] rounded-sm overflow-hidden"
+              className="!w-[40px] !h-[40px] cursor-pointer opacity-40 transition-opacity duration-300 [&.swiper-slide-thumb-active]:opacity-100 border-2 border-transparent [&.swiper-slide-thumb-active]:border-txt-darkBrown rounded-sm overflow-hidden"
             >
               <div className="relative w-full h-full bg-gray-200">
                 <img

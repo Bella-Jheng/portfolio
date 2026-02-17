@@ -61,7 +61,7 @@ export const Header: React.FC = () => {
         className={`flex justify-between items-center h-[50px] md:h-auto md:py-6 py-10 px-4 md:px-10 max-w-full mx-auto w-full transition-all`}
       >
         {/* Mobile Header Box (Rounded corners and border) */}
-        <div className="flex-1 md:flex-none flex justify-between items-center sm:block border-[2px] border-[#2D1B1B] rounded-xl p-2 md:p-0 sm:border-none md:bg-transparent">
+        <div className="flex-1 md:flex-none flex justify-between items-center sm:block border-[2px] border-txt-darkBrown rounded-xl p-2 md:p-0 sm:border-none md:bg-transparent">
           <div className="flex flex-col">
             <h1 className="text-lg md:text-xl font-bold text-txt-brown leading-none">
               I'm Yiting.
@@ -77,9 +77,9 @@ export const Header: React.FC = () => {
             className="sm:hidden flex flex-col justify-between w-6 h-4 focus:outline-none"
             aria-label="Toggle Menu"
           >
-            <span className="block h-1 w-full bg-[#2D1B1B] rounded-full"></span>
-            <span className="block h-1 w-full bg-[#2D1B1B] rounded-full"></span>
-            <span className="block h-1 w-full bg-[#2D1B1B] rounded-full"></span>
+            <span className="block h-1 w-full bg-txt-darkBrown rounded-full"></span>
+            <span className="block h-1 w-full bg-txt-darkBrown rounded-full"></span>
+            <span className="block h-1 w-full bg-txt-darkBrown rounded-full"></span>
           </button>
         </div>
 
