@@ -25,7 +25,7 @@ export const ProjectSlider: React.FC<ProjectSliderProps> = ({
   title,
   projects,
 }) => {
-  const swiperRef = useRef<SwiperType>();
+  const swiperRef = useRef<SwiperType>(null);
 
   return (
     <div className="w-full py-12 group relative overflow-hidden slider-root">

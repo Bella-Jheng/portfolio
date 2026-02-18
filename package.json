@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "dev": "nx serve portfolio"
+    "dev": "nx serve portfolio",
+    "build": "nx build portfolio"
   },
   "private": true,
   "dependencies": {

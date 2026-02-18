@@ -20,11 +20,11 @@ export type ComputedStateCreator = <
   T extends object,
   A extends object,
   Mps extends [StoreMutatorIdentifier, unknown][] = [],
-  Mcs extends [StoreMutatorIdentifier, unknown][] = []
+  Mcs extends [StoreMutatorIdentifier, unknown][] = [],
 >(
   f: StateCreator<T, [...Mps, ['@trg/zustand-computed', A]], Mcs>,
   compute: (state: T) => A,
-  opts?: ComputedStateOpts<T>
+  opts?: ComputedStateOpts<T>,
 ) => StateCreator<T, Mps, [['@trg/zustand-computed', A], ...Mcs], T & A>;
 
 type Cast<T, U> = T extends U ? T : U;
@@ -45,7 +45,7 @@ declare module 'zustand/vanilla' {
 type ComputedStateImpl = <T extends object, A extends object>(
   f: StateCreator<T, [], []>,
   compute: (state: T) => A,
-  opts?: ComputedStateOpts<T>
+  opts?: ComputedStateOpts<T>,
 ) => StateCreator<T, [], [], T & A>;
 
 const computedImpl: ComputedStateImpl = (f, compute, opts) => {
@@ -75,12 +75,12 @@ const computedImpl: ComputedStateImpl = (f, compute, opts) => {
             // @ts-ignore
             return state[prop];
           },
-        }
+        },
       );
 
       // calculate the new computed state
       const fullComputedState: A = compute(
-        useProxy ? stateProxy : { ...state }
+        useProxy ? stateProxy : { ...state },
       );
       const newState = { ...state, ...fullComputedState };
 
@@ -97,12 +97,11 @@ const computedImpl: ComputedStateImpl = (f, compute, opts) => {
       return newState;
     };
 
-    // higher level function to handle compute & compare overhead
     const setWithComputed = (
       update: T | ((state: T) => T),
-      replace?: boolean
+      replace?: boolean,
     ) => {
-      set((state: T): T & A => {
+      const updater = (state: T): T & A => {
         const updated = typeof update === 'object' ? update : update(state);
 
         if (
@@ -115,7 +114,13 @@ const computedImpl: ComputedStateImpl = (f, compute, opts) => {
         }
 
         return computeAndMerge({ ...state, ...updated });
-      }, replace);
+      };
+
+      if (replace) {
+        set(updater, true);
+      } else {
+        set(updater, replace);
+      }
     };
 
     const _api = api as Mutate<StoreApi<T>, [['@trg/zustand-computed', A]]>;

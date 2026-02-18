@@ -15,6 +15,7 @@ export const GlobalLoading: React.FC = () => {
   useEffect(() => {
     if (isLoading) {
       setIsVisible(true);
+      return;
     } else {
       const timer = setTimeout(() => setIsVisible(false), 1000);
       return () => clearTimeout(timer);

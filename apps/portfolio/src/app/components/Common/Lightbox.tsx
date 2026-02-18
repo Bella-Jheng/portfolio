@@ -3,13 +3,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Overlay } from '../Atom/Overlay';
-import {
-  Play,
-  VideoIndicator,
-  VolumeMute,
-  VolumeUp,
-  Close,
-} from '@/public/icon';
+import { Play, VolumeMute, VolumeUp, Close } from '@/public/icon';
 
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Thumbs, FreeMode, Zoom } from 'swiper/modules';

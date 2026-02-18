@@ -15,7 +15,7 @@ export default function Index() {
   const [hasSurged, setHasSurged] = useState(false);
   const sliderRef = useRef<HTMLDivElement>(null);
 
-  const { data: projects = [], isLoading: isApiLoading } = useProjects();
+  const { data: projects = [] } = useProjects();
 
   const hasShownInitialLoading = useLoadingStore.use.hasShownInitialLoading();
   const setInitialLoadingShown = useLoadingStore.use.setInitialLoadingShown();
@@ -26,17 +26,18 @@ export default function Index() {
 
   // Show 3-second loading on first visit only
   useEffect(() => {
-    if (!hasShownInitialLoading) {
-      showLoading();
-      const timer = setTimeout(() => {
-        closeLoading();
-        setInitialLoadingShown();
-      }, 2000);
-      return () => {
-        clearTimeout(timer);
-        closeLoading();
-      };
-    }
+    if (hasShownInitialLoading) return;
+
+    showLoading();
+    const timer = setTimeout(() => {
+      closeLoading();
+      setInitialLoadingShown();
+    }, 2000);
+
+    return () => {
+      clearTimeout(timer);
+      closeLoading();
+    };
   }, [
     hasShownInitialLoading,
     showLoading,

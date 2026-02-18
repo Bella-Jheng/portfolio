@@ -64,7 +64,7 @@ function ProjectsContent() {
   }, [categoryId, activeCategory]);
 
   const handleCategoryChange = (name: string) => {
-    const id = ID_MAP[name];
+    const id = ID_MAP[name as CategoryName];
     if (id && id !== categoryId) {
       setIsTabLoading(true);
       router.push(`/projects?category=${id}`, { scroll: false });
