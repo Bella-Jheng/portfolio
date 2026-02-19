@@ -10,7 +10,7 @@
   "include": [],
   "references": [
     {
-      "path": "./tsconfig.lib.json"
+      "path": "./apps/portfolio"
     }
   ],
   "extends": "./tsconfig.base.json"
