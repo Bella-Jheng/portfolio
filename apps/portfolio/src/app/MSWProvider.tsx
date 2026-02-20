@@ -7,10 +7,7 @@ export const MSWProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const init = async () => {
-      if (
-        typeof window !== 'undefined' &&
-        process.env.NODE_ENV === 'development'
-      ) {
+      if (typeof window !== 'undefined') {
         const { worker } = await import('./api/mocks/browser');
         await worker.start({
           onUnhandledRequest: 'bypass',
@@ -24,7 +21,7 @@ export const MSWProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [mswReady]);
 
-  if (!mswReady && process.env.NODE_ENV === 'development') {
+  if (!mswReady) {
     return null; // or a loading spinner
   }
 
