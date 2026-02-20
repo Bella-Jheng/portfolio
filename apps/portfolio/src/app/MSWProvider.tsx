@@ -10,6 +10,9 @@ export const MSWProvider = ({ children }: { children: React.ReactNode }) => {
       if (typeof window !== 'undefined') {
         const { worker } = await import('./api/mocks/browser');
         await worker.start({
+          serviceWorker: {
+            url: '/mockServiceWorker.js',
+          },
           onUnhandledRequest: 'bypass',
         });
         setMswReady(true);
