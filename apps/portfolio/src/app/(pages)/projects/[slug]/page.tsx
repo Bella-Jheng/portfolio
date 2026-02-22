@@ -141,7 +141,7 @@ export default function ProjectDetailPage({
                         href={link.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex-1 min-w-[140px] bg-txt-darkBrown text-white py-4 px-4 rounded-sm font-bold uppercase tracking-widest hover:bg-opacity-90 transition-all flex flex-col md:flex-row items-center justify-center gap-2 text-center"
+                        className="flex-1 min-w-[140px] bg-txt-darkBrown text-white py-4 px-4 rounded-sm font-bold uppercase tracking-widest hover:bg-opacity-90 transition-all flex flex-row items-center justify-center gap-2 text-center"
                       >
                         <span className="break-words">{link.label}</span>
                         <span className="flex items-center justify-center shrink-0">
