@@ -30,13 +30,13 @@ export const PROJECTS_DATA: FullProject[] = [
     category: '前端專案',
     period: '2023 - 2024',
     description:
-      '參與 HOLA 與特力屋電商平台前端底層架構轉型，建立穩固的 Monorepo 與 React 18 基礎。自 2023 年起，基於此強大架構陸續完成首頁、商品頁、分類頁與購物車等核心頁面改版。作為核心成員，我不僅負責技術傳承，更見證了新架構如何大幅降低開發門檻，讓團隊成員能高效創造更多價值。',
+      '原本兩個品牌各自維護專案，React 版本不一致、樣式架構混亂，共用邏輯分散。加入公司不到三個月，我就參與這場前端底層重建。這不是單純升級版本，而是決定未來 3–5 年技術走向的架構轉型。我參與 PoC 驗證與實際落地開發，從新人慢慢成為最熟悉整體架構的人。對我來說，架構的價值在於讓後面的人更好走。',
     imageUrl: Testrite1.src,
     link: '/projects/testrite-refactor',
     tags: [
       'Monorepo Migration',
       'React 18 Upgrade',
-      'Cross-team Collaboration',
+      'Architecture Design',
     ],
     technologies: [
       'Next.js',
@@ -46,26 +46,11 @@ export const PROJECTS_DATA: FullProject[] = [
       'TypeScript',
     ],
     media: [
-      {
-        type: 'image',
-        url: Testrite1.src,
-      },
-      {
-        type: 'image',
-        url: Testrite2.src,
-      },
-      {
-        type: 'image',
-        url: Testrite3.src,
-      },
-      {
-        type: 'image',
-        url: Testrite4.src,
-      },
-      {
-        type: 'image',
-        url: Testrite5.src,
-      },
+      { type: 'image', url: Testrite1.src },
+      { type: 'image', url: Testrite2.src },
+      { type: 'image', url: Testrite3.src },
+      { type: 'image', url: Testrite4.src },
+      { type: 'image', url: Testrite5.src },
     ],
     links: [
       {
@@ -78,55 +63,37 @@ export const PROJECTS_DATA: FullProject[] = [
         url: 'https://www.trplus.com.tw/',
         type: 'website',
       },
-      {
-        label: 'HOLA Presentation',
-        url: 'https://docs.google.com/presentation/d/1qkb68aICPlDcfbuCWM9oc-d-gkMQBuno/edit?usp=sharing&ouid=114070508472121616155&rtpof=true&sd=true',
-        type: 'presentation',
-      },
+      { label: 'HOLA Presentation', url: 'https://docs.google.com/presentation/d/1qkb68aICPlDcfbuCWM9oc-d-gkMQBuno/edit?usp=sharing&ouid=114070508472121616155&rtpof=true&sd=true', type: 'presentation', },
     ],
     sections: [
       {
-        title: '背景與轉型契機',
-        content:
-          '原有專案採 Single Repository 架構，品牌專案各自維護且技術版本不一致（React 17 / Bootstrap），共用邏輯分散、維護成本高。隨品牌擴展與功能複雜度提升，團隊決定導入 NX Monorepo 並進行全面技術升級。',
-      },
-      {
         title: '技術驗證與導入測試',
         content:
-          '在架構師規劃方向下，與資深工程師共同負責新技術導入前的驗證與 PoC 測試。評估 Monorepo 與既有專案的耦合程度，測試 React 18 升級相容性、Tailwind 對既有樣式架構的影響，以及 TypeScript 型別遷移可行性。分析各項技術優劣、實測開發效率提升幅度，並整理評估結果供團隊決策參考。',
+          '最大的難題不是「要不要用 NX」，而是舊專案高度耦合該怎麼拆？React 18 升級會不會出現不可預期問題？Tailwind 與 Bootstrap 如何共存？我與資深工程師一起進行 PoC 測試，實際驗證並行渲染影響範圍、共用 lib 抽離可行性與 TypeScript 轉換成本，整理實測結果提供團隊決策依據。',
       },
       {
         title: '架構落地與實際開發',
         content:
-          '架構穩定上線後，依序參與頁面與模組實作，負責 API 串接驗測與資料流程整合。在實務開發中深化對模組邊界劃分、型別設計與可維護性結構的理解，確保新架構能穩定支撐實際商業需求。',
+          '架構定案後真正的挑戰才開始。API 邏輯分散、模組邊界模糊、舊頁面需要邊跑邊改。我負責資料流整合與 API 串接，在實務中重新思考模組切分與型別設計，確保架構能長期支撐商業需求。',
       },
       {
-        title: '持續改版與架構效益',
+        title: '技術傳承與團隊影響',
         content:
-          '基於重構後的穩固架構，自 2023 年至今持續推進首頁、商品頁、分類頁與購物車頁的現代化改版。模組化與標準化的設計不僅加速了功能迭代，更顯著降低了新頁面的開發門檻，讓後續加入的開發人員能在此基礎上快速創造出高品質的頁面與功能。',
-      },
-      {
-        title: '跨團隊溝通與整合角色',
-        content:
-          '在專案推進過程中，擔任 PM、前端外包團隊與後端團隊之間的技術溝通橋樑。協助釐清 API 規格、對齊實作細節與驗收標準，降低溝通成本並確保開發節奏穩定。',
-      },
-      {
-        title: '成長與影響',
-        content:
-          '從入職未滿三個月的新人開始參與架構轉型專案，全程見證技術決策到穩定上線過程。在資深前輩離職後，不僅成為團隊中唯一透徹了解整體架構的成員，更承擔起技術傳承的責任，協助新進學弟妹理解專案結構與開發規範。此經驗不僅奠定了架構設計能力，更培養了帶領團隊與知識管理的軟實力。',
+          '資深工程師離職後，我成為最熟悉整體架構的人，開始協助新人理解專案結構與開發規範。這段經驗讓我不只是寫功能，而是開始思考如何建立一個能被傳承的系統。',
       },
     ],
   },
+
   {
     id: 'christmas-tree',
-    title: '聖誕樹專案-客製體驗式商品頁',
+    title: '聖誕樹專案－客製體驗式商品頁',
     category: '前端專案',
     period: '2024',
     description:
       '為聖誕購物季量身打造的高互動活動頁面，整合複雜的客製化邏輯與即時畫面更新，提供消費者身歷其境的購物體驗。',
     imageUrl: XmasTree1.src,
     link: '/projects/christmas-tree',
-    tags: ['Interactive', 'State Management', 'UX'],
+    tags: ['Interactive', 'State Design', 'Performance'],
     technologies: [
       'React',
       'RTK Query',
@@ -135,15 +102,8 @@ export const PROJECTS_DATA: FullProject[] = [
       'Tailwind CSS',
     ],
     media: [
-      {
-        type: 'image',
-        url: XmasTree1.src,
-      },
-      {
-        type: 'image',
-        url: XmasTree2.src,
-      },
-
+      { type: 'image', url: XmasTree1.src },
+      { type: 'image', url: XmasTree2.src },
       {
         type: 'video',
         url: 'https://www.youtube.com/watch?v=bxVzMaaWvIo',
@@ -159,81 +119,86 @@ export const PROJECTS_DATA: FullProject[] = [
     ],
     sections: [
       {
-        title: '專案背景',
+        title: '資料流設計與狀態同步機制',
         content:
-          '聖誕樹商品具有高度多樣性（尺寸、裝飾、底座），傳統的電商商品頁難以展現組合後的樣貌。',
+          '正式區與測試區 SKU 各自獨立，無法直接共用邏輯，因此我先設計一層 SKU mapping abstraction，將不同環境商品映射至統一前端資料模型，避免環境差異污染業務邏輯。\n\n頁面 mount 時呼叫 product-list API 取得完整商品資料，轉換為 normalized 結構後存入 Zustand。狀態依照吊飾類別切分，確保單一分類更新不會觸發整體 re-render。\n\n當使用者加減商品數量時，會：\n1. 更新對應 SKU 數量\n2. 重新計算總價\n3. 根據 SKU 對應圖片與座標配置，動態渲染到樹上\n\n所有邏輯皆集中在狀態層計算，UI 僅負責呈現，確保資料流單向且可追蹤。這讓整個高度互動頁面在複雜條件下仍能維持穩定與一致性。'
       },
       {
-        title: '主要技術核心',
+        title: '效能優化：降低 Zustand 更新頻率',
         content:
-          '1. 商品選擇後的資料模型設計:\n設計前端資料結構與狀態管理方式，確保多商品組合下的資料可追蹤、可擴充且具備高可維護性。\n2. 即時價格動態計算機制:\n使用前端運算邏輯，在使用者點選商品的同時進行即時價格重算，確保 UI 與最終金額狀態完全同步。\n3. 裝飾圖片動態載入與定位系統:\n根據使用者選擇，動態載入對應裝飾圖片，並精準渲染至指定座標位置，確保畫面互動即時且流暢。\n4. 高效圖片載入與資料存取優化:\n透過資源預載、lazy loading 與狀態快取策略，降低 re-render 與 API 負擔，提升整體畫面效能與使用體驗。\n5. 批次購物車 API 交易控制與rollback機制:\n設計批次發送購物車 API 流程，若任一請求失敗即觸發 rollback，確保資料一致性與交易完整性。',
-      },
-      {
-        title: '核心挑戰',
-        content:
-          '此頁面為高度互動型客製化商品頁，核心挑戰在於：\n・前端效能優化\n・複雜資料流設計\n・即時運算與 UI 同步控制\n・交易一致性管理\n是一個對「前端架構設計能力」與「效能優化思維」要求極高的專案。',
-      },
+          '在專案初期我更重視功能正確性，但功能穩定後，我會回頭檢視資料流與 render 次數。這次透過合併請求與一次性寫入 store，降低不必要的 state update。\n我習慣在專案完成後，再進行一輪效能與資料流檢討。對我而言，持續優化是工程的一部分。\n初版實作使用 useQuery 以吊飾分類拆開打 product-list API（星星 / 吊飾 / 緞帶…）。雖然拆分後邏輯直覺，但代價是：每個分類 API 回來就觸發一次 Zustand 寫入，導致初始化階段產生大量 state update 與 re-render，頁面載入體感偏重。\n優化後改用 useQueries 併發請求所有分類，並在「全部請求完成」後才進行資料 mapping、分類整理與 normalize，最後一次性寫入 Zustand。\n這個改動的關鍵不是減少 API，而是把多次零碎的 store 更新收斂成一次，明顯改善初始載入的渲染成本與互動順暢度。'
+      }
     ],
   },
   {
-    id: 'cms-development',
-    title: '電商廣告組版系統 (CMS) 開發',
-    category: '前端專案',
-    period: '2025',
-    description:
-      '從零到一開發內部廣告組版工具，讓營運人員能透過後台直接調整官網廣告版位，大幅降低工程端重複性的維護工作。',
-    imageUrl: NewBackoffice1.src,
-    link: '/projects/cms-development',
-    tags: ['Ad', 'Internal Tool', 'CMS', 'Efficiency'],
-    technologies: [
-      'React',
-      'Nx',
-      'TypeScript',
-      'DND Kit',
-      'Tailwind CSS',
-      'API Integration',
-    ],
-    media: [
-      {
-        type: 'image',
-        url: NewBackoffice1.src,
-      },
-      {
-        type: 'video',
-        url: 'https://www.youtube.com/watch?v=SSTAaGTBkQU',
-        thumbnailUrl: NewBackoffice2.src,
-      },
-    ],
-    links: [
-      {
-        label: 'Document Intro',
-        url: 'https://hackmd.io/@-pJOuWsHT5qfiLSWl-nBgQ/SJk21fAIge/edit',
-        type: 'document',
-      },
-      {
-        label: 'Video Demo',
-        url: 'https://www.youtube.com/watch?v=SSTAaGTBkQU',
-        type: 'presentation',
-      },
-    ],
-    sections: [
-      {
-        title: '參與開發項目',
-        content:
-          '從無到有主導系統開發流程，包含畫面設計、需求釐清、與使用者溝通、切版、邏輯實作、正式上線與後續維運。並交接於學弟妹，目前仍持續維運中、開發更多元的編輯設計及版位需求。',
-      },
-      {
-        title: '需求分析',
-        content:
-          '以前更新版位需要工程師修改程式碼並重新部署，耗時且效率低。目標是建立一個讓非工程背景的同仁也能簡單操作的系統。',
-      },
-      {
-        title: '功能亮點',
-        content:
-          '兼容多種版型、多種編輯框、嚴謹資料內容管理、視覺化預覽、即時發布、權限管理與操作紀錄追蹤。支援多種版塊類型（Banner、商品橫滑、影片區塊等）。',
-      },
-    ],
-  },
+  id: 'cms-development',
+  title: '電商廣告組版系統 (CMS) 開發',
+  category: '前端專案',
+  period: '2025',
+  description:
+    '以前更新官網廣告版位都需要工程師修改程式並重新部署，流程耗時且高度依賴技術人員。本專案從零開始設計並實作一套可視化組版系統，使營運人員能自行管理版位內容，同時維持資料結構的嚴謹性與前台版型穩定性。此專案不僅優化營運流程，更重構了版型管理與資料模型之間的關係，建立可擴充與可長期維護的架構基礎。',
+  imageUrl: NewBackoffice1.src,
+  link: '/projects/cms-development',
+  tags: ['Internal Tool', 'Schema Design', 'Dynamic Component', 'CMS'],
+  technologies: [
+    'React',
+    'Nx',
+    'TypeScript',
+    'DND Kit',
+    'Tailwind CSS',
+    'API Integration',
+  ],
+  media: [
+    {
+      type: 'image',
+      url: NewBackoffice1.src,
+    },
+    {
+      type: 'video',
+      url: 'https://www.youtube.com/watch?v=SSTAaGTBkQU',
+      thumbnailUrl: NewBackoffice2.src,
+    },
+  ],
+  links: [
+    {
+      label: 'Document Intro',
+      url: 'https://hackmd.io/@-pJOuWsHT5qfiLSWl-nBgQ/SJk21fAIge/edit',
+      type: 'document',
+    },
+    {
+      label: 'Video Demo',
+      url: 'https://www.youtube.com/watch?v=SSTAaGTBkQU',
+      type: 'presentation',
+    },
+  ],
+  sections: [
+    {
+      title: '專案角色與開發範圍',
+      content:
+        '主導系統從需求定義到正式上線的完整流程，包含與營運團隊釐清操作情境、設計版型抽象結構與資料 Schema、建立動態元件載入機制、開發可擴充編輯系統、API 串接與發布流程設計。上線後完成交接並持續優化，目前新增版型與功能皆能在既有架構下擴充，無需重構核心邏輯。',
+    },
+    {
+      title: '動態元件載入機制（Dynamic Component Injection）',
+      content:
+        '前台版位採資料驅動渲染設計，每一種版型對應一個 component mapping。前台依據後台設定的版型 type，動態載入對應元件並渲染內容。此設計使新增版型時僅需註冊對應 component，而不需修改既有渲染流程，大幅降低擴充成本並提升架構穩定性。',
+    },
+    {
+      title: 'Schema-based 編輯系統設計',
+      content:
+        '同一個編輯區塊可能因版型不同而產生不同輸入欄位（例如 Banner 需要圖片與連結，商品橫滑需要商品 SKU，影片區塊需要影片 URL）。為避免為每種版型撰寫獨立表單，因此設計 schema-based 表單生成機制：每種版型定義欄位結構，系統依據 schema 動態生成對應輸入元件，並統一處理資料驗證與格式轉換。此設計讓新增版型時只需新增 schema，而不需重寫整套編輯邏輯。',
+    },
+    {
+      title: '資料與版型分離設計',
+      content:
+        '系統將版型結構與內容資料分離。版型負責定義區塊排列與欄位規格，資料僅儲存實際內容與排序資訊。透過此設計，即使調整版型樣式，也不影響既有資料格式，確保長期維護穩定性與向後相容性。',
+    },
+    {
+      title: '功能亮點與系統能力',
+      content:
+        '系統支援多種版型註冊機制、拖拉排序（DND）、即時預覽、權限管理、操作紀錄追蹤與安全發布流程。前後台資料一致性由統一資料模型控管，避免非法格式破壞前台頁面。此專案將工程部署頻率顯著降低，同時保留版型控制與資料安全。',
+    },
+  ],
+},
   {
     id: 'portfolio',
     title: 'Personal Portfolio Platform',
