@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { FreeMode, Navigation, Thumbs } from 'swiper/modules';
 import type { Swiper as SwiperType } from 'swiper';
-import { Lightbox } from './Lightbox';
+import { Lightbox } from './lightbox/Lightbox';
 import { Play, VideoIndicator } from '@/public/icon';
 
 // Import Swiper styles

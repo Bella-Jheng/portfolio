@@ -2,9 +2,9 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Overlay } from '../Atom/Overlay';
+import { Overlay } from '../../Atom/Overlay';
 import { Play, VolumeMute, VolumeUp, Close } from '@/public/icon';
-
+import { ImageDetail } from './ImageDetail';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Thumbs, FreeMode, Zoom } from 'swiper/modules';
 
@@ -207,11 +207,19 @@ export const Lightbox: React.FC<LightboxProps> = ({
                   <div className="relative w-full h-full flex items-center justify-center">
                     {item.type === 'image' ? (
                       <div className="swiper-zoom-container relative w-full h-full">
-                        <img
+                        {/* <img
                           src={item.url}
                           alt={`Gallery item ${index}`}
                           className="object-contain"
                           sizes="100vw"
+                        /> */}
+                        <ImageDetail
+                          className="w-full md:w-auto md:h-full"
+                          imageInfo={{
+                            src: item.url,
+                            alt: `Gallery item ${index}`,
+                          }}
+                          onClick={(e) => e.stopPropagation()}
                         />
                       </div>
                     ) : (
