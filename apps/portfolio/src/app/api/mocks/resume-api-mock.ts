@@ -119,8 +119,8 @@ export const getResumeDataMock = (): ResumeData => ({
   ],
   education: [
     {
-      school: '國立臺北大學',
-      department: 'Department of Applied Foreign Languages',
+      school: '國立臺北商業大學 National Taipei University of Business',
+      department: '應用外語系 Department of Applied Foreign Languages',
       logoColor: '#9B4D96',
     },
   ],

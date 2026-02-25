@@ -131,74 +131,74 @@ export const PROJECTS_DATA: FullProject[] = [
     ],
   },
   {
-  id: 'cms-development',
-  title: '電商廣告組版系統 (CMS) 開發',
-  category: '前端專案',
-  period: '2025',
-  description:
-    '以前更新官網廣告版位都需要工程師修改程式並重新部署，流程耗時且高度依賴技術人員。本專案從零開始設計並實作一套可視化組版系統，使營運人員能自行管理版位內容，同時維持資料結構的嚴謹性與前台版型穩定性。此專案不僅優化營運流程，更重構了版型管理與資料模型之間的關係，建立可擴充與可長期維護的架構基礎。',
-  imageUrl: NewBackoffice1.src,
-  link: '/projects/cms-development',
-  tags: ['Internal Tool', 'Schema Design', 'Dynamic Component', 'CMS'],
-  technologies: [
-    'React',
-    'Nx',
-    'TypeScript',
-    'DND Kit',
-    'Tailwind CSS',
-    'API Integration',
-  ],
-  media: [
-    {
-      type: 'image',
-      url: NewBackoffice1.src,
-    },
-    {
-      type: 'video',
-      url: 'https://www.youtube.com/watch?v=SSTAaGTBkQU',
-      thumbnailUrl: NewBackoffice2.src,
-    },
-  ],
-  links: [
-    {
-      label: 'Document Intro',
-      url: 'https://hackmd.io/@-pJOuWsHT5qfiLSWl-nBgQ/SJk21fAIge/edit',
-      type: 'document',
-    },
-    {
-      label: 'Video Demo',
-      url: 'https://www.youtube.com/watch?v=SSTAaGTBkQU',
-      type: 'presentation',
-    },
-  ],
-  sections: [
-    {
-      title: '專案角色與開發範圍',
-      content:
-        '主導系統從需求定義到正式上線的完整流程，包含與營運團隊釐清操作情境、設計版型抽象結構與資料 Schema、建立動態元件載入機制、開發可擴充編輯系統、API 串接與發布流程設計。上線後完成交接並持續優化，目前新增版型與功能皆能在既有架構下擴充，無需重構核心邏輯。',
-    },
-    {
-      title: '動態元件載入機制（Dynamic Component Injection）',
-      content:
-        '前台版位採資料驅動渲染設計，每一種版型對應一個 component mapping。前台依據後台設定的版型 type，動態載入對應元件並渲染內容。此設計使新增版型時僅需註冊對應 component，而不需修改既有渲染流程，大幅降低擴充成本並提升架構穩定性。',
-    },
-    {
-      title: 'Schema-based 編輯系統設計',
-      content:
-        '同一個編輯區塊可能因版型不同而產生不同輸入欄位（例如 Banner 需要圖片與連結，商品橫滑需要商品 SKU，影片區塊需要影片 URL）。為避免為每種版型撰寫獨立表單，因此設計 schema-based 表單生成機制：每種版型定義欄位結構，系統依據 schema 動態生成對應輸入元件，並統一處理資料驗證與格式轉換。此設計讓新增版型時只需新增 schema，而不需重寫整套編輯邏輯。',
-    },
-    {
-      title: '資料與版型分離設計',
-      content:
-        '系統將版型結構與內容資料分離。版型負責定義區塊排列與欄位規格，資料僅儲存實際內容與排序資訊。透過此設計，即使調整版型樣式，也不影響既有資料格式，確保長期維護穩定性與向後相容性。',
-    },
-    {
-      title: '功能亮點與系統能力',
-      content:
-        '系統支援多種版型註冊機制、拖拉排序（DND）、即時預覽、權限管理、操作紀錄追蹤與安全發布流程。前後台資料一致性由統一資料模型控管，避免非法格式破壞前台頁面。此專案將工程部署頻率顯著降低，同時保留版型控制與資料安全。',
-    },
-  ],
-},
+    id: 'cms-development',
+    title: '電商廣告組版系統 (CMS) 開發',
+    category: '前端專案',
+    period: '2025',
+    description:
+      '以前更新官網廣告版位都需要工程師修改程式並重新部署，流程耗時且高度依賴技術人員。本專案從零開始設計並實作一套可視化組版系統，使營運人員能自行管理版位內容，同時維持資料結構的嚴謹性與前台版型穩定性。此專案不僅優化營運流程，更重構了版型管理與資料模型之間的關係，建立可擴充與可長期維護的架構基礎。',
+    imageUrl: NewBackoffice1.src,
+    link: '/projects/cms-development',
+    tags: ['Internal Tool', 'Schema Design', 'Dynamic Component', 'CMS'],
+    technologies: [
+      'React',
+      'Nx',
+      'TypeScript',
+      'DND Kit',
+      'Tailwind CSS',
+      'API Integration',
+    ],
+    media: [
+      {
+        type: 'image',
+        url: NewBackoffice1.src,
+      },
+      {
+        type: 'video',
+        url: 'https://www.youtube.com/watch?v=SSTAaGTBkQU',
+        thumbnailUrl: NewBackoffice2.src,
+      },
+    ],
+    links: [
+      {
+        label: 'Document Intro',
+        url: 'https://hackmd.io/@-pJOuWsHT5qfiLSWl-nBgQ/SJk21fAIge/edit',
+        type: 'document',
+      },
+      {
+        label: 'Video Demo',
+        url: 'https://www.youtube.com/watch?v=SSTAaGTBkQU',
+        type: 'presentation',
+      },
+    ],
+    sections: [
+      {
+        title: '專案角色與開發範圍',
+        content:
+          '主導系統從需求定義到正式上線的完整流程，包含與營運團隊釐清操作情境、設計版型抽象結構與資料 Schema、建立動態元件載入機制、開發可擴充編輯系統、API 串接與發布流程設計。上線後完成交接並持續優化，目前新增版型與功能皆能在既有架構下擴充，無需重構核心邏輯。',
+      },
+      {
+        title: '動態元件載入機制（Dynamic Component Injection）',
+        content:
+          '前台版位採資料驅動渲染設計，每一種版型對應一個 component mapping。前台依據後台設定的版型 type，動態載入對應元件並渲染內容。此設計使新增版型時僅需註冊對應 component，而不需修改既有渲染流程，大幅降低擴充成本並提升架構穩定性。',
+      },
+      {
+        title: 'Schema-based 編輯系統設計',
+        content:
+          '同一個編輯區塊可能因版型不同而產生不同輸入欄位（例如 Banner 需要圖片與連結，商品橫滑需要商品 SKU，影片區塊需要影片 URL）。為避免為每種版型撰寫獨立表單，因此設計 schema-based 表單生成機制：每種版型定義欄位結構，系統依據 schema 動態生成對應輸入元件，並統一處理資料驗證與格式轉換。此設計讓新增版型時只需新增 schema，而不需重寫整套編輯邏輯。',
+      },
+      {
+        title: '資料與版型分離設計',
+        content:
+          '系統將版型結構與內容資料分離。版型負責定義區塊排列與欄位規格，資料僅儲存實際內容與排序資訊。透過此設計，即使調整版型樣式，也不影響既有資料格式，確保長期維護穩定性與向後相容性。',
+      },
+      {
+        title: '功能亮點與系統能力',
+        content:
+          '系統支援多種版型註冊機制、拖拉排序（DND）、即時預覽、權限管理、操作紀錄追蹤與安全發布流程。前後台資料一致性由統一資料模型控管，避免非法格式破壞前台頁面。此專案將工程部署頻率顯著降低，同時保留版型控制與資料安全。',
+      },
+    ],
+  },
   {
     id: 'portfolio',
     title: 'Personal Portfolio Platform',
@@ -240,7 +240,7 @@ export const PROJECTS_DATA: FullProject[] = [
       },
       {
         label: 'Demo Site',
-        url: 'https://yiting-portfolio.vercel.app',
+        url: 'https://portfolio-liard-pi-12.vercel.app/',
         type: 'website',
       },
     ],

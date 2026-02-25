@@ -218,7 +218,7 @@ export default function Index() {
         ref={sliderRef}
         className={`py-32 transition-all duration-1000 reveal-section relative z-10 w-full min-h-screen ${isSliderVisible ? 'is-revealed' : ''}`}
       >
-        <ProjectSlider title="您可能會喜歡" projects={projects} />
+        <ProjectSlider title="You May Like" projects={projects} />
       </div>
     </div>
   );
