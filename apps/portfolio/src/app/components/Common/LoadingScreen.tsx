@@ -5,10 +5,12 @@ import { BlueFlower, BlackFlower, RedFlower } from '@/public/img';
 
 interface LoadingScreenProps {
   className?: string;
+  text?: string;
 }
 
 export const LoadingScreen: React.FC<LoadingScreenProps> = ({
   className = '',
+  text = 'LOADING',
 }) => {
   return (
     <div
@@ -48,11 +50,15 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
       </div>
 
       <div className="flex items-end gap-1">
-        <span className="w-1.5 h-1.5 rounded-full bg-gray-400 mb-1.5 animate-pulse"></span>
-        <span className="w-1.5 h-1.5 rounded-full bg-gray-400 mb-1.5 animate-pulse delay-75"></span>
-        <span className="w-1.5 h-1.5 rounded-full bg-gray-400 mb-1.5 animate-pulse delay-150"></span>
-        <h2 className="text-base md:text-lg font-bold text-gray-500 mx-2 tracking-widest">
-          LOADING
+        {text === 'LOADING' && (
+          <>
+            <span className="w-1.5 h-1.5 rounded-full bg-gray-400 mb-1.5 animate-pulse"></span>
+            <span className="w-1.5 h-1.5 rounded-full bg-gray-400 mb-1.5 animate-pulse delay-75"></span>
+            <span className="w-1.5 h-1.5 rounded-full bg-gray-400 mb-1.5 animate-pulse delay-150"></span>
+          </>
+        )}
+        <h2 className="text-base md:text-lg font-bold text-gray-500 mx-2 tracking-widest uppercase">
+          {text}
         </h2>
         <span className="w-1.5 h-1.5 rounded-full bg-gray-400 mb-1.5 animate-pulse delay-150"></span>
         <span className="w-1.5 h-1.5 rounded-full bg-gray-400 mb-1.5 animate-pulse delay-75"></span>

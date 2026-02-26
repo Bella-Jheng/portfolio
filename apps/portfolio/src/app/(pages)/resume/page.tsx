@@ -2,13 +2,12 @@
 
 import React, { useRef, useState, useEffect } from 'react';
 
-import { toPng } from 'html-to-image';
-import { jsPDF } from 'jspdf';
 import { Tag } from '../../components/Atom/Tag';
 import { ArrowRight } from '@/public/icon';
 import { BlackFlower, RedFlower, BlueFlower, Resume } from '@/public/img';
 import { RevealOnScroll } from '../../components/Common/RevealOnScroll';
 import { useResume } from '../../api/resume-api';
+import { DownloadPDF } from '../../components/Common/DownloadPDF';
 
 const FLOWERS = [
   {
@@ -50,65 +49,6 @@ export default function ResumePage() {
     return () => clearInterval(interval);
   }, []);
 
-  const handleDownloadPdf = async () => {
-    if (resumeRef.current === null) {
-      return;
-    }
-
-    setIsExporting(true);
-    // Wait for the state update to reflect in the DOM
-    await new Promise((resolve) => setTimeout(resolve, 100));
-
-    try {
-      const dataUrl = await toPng(resumeRef.current, {
-        cacheBust: true,
-        pixelRatio: 3,
-        backgroundColor: '#ffffff',
-        style: {
-          margin: '0',
-          transform: 'scale(1)',
-          boxShadow: 'none',
-        },
-      });
-
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-
-      const imgProps = pdf.getImageProperties(dataUrl);
-      const imgWidth = pdfWidth;
-      const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
-
-      let heightLeft = imgHeight;
-      let position = 0;
-
-      // Add first page
-      pdf.addImage(dataUrl, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pdfHeight;
-
-      // Add subsequent pages if content is longer than one page
-      while (heightLeft > 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(dataUrl, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pdfHeight;
-      }
-
-      const today = new Date();
-      const year = today.getFullYear();
-      const month = today.getMonth() + 1;
-      const day = today.getDate();
-      const formattedMonth = String(month).padStart(2, '0');
-      const formattedDay = String(day).padStart(2, '0');
-      const dateString = `${year}-${formattedMonth}-${formattedDay}`;
-      pdf.save(`yiting-resume-${dateString}.pdf`);
-    } catch (err) {
-      console.error('Failed to download PDF', err);
-    } finally {
-      setIsExporting(false);
-    }
-  };
-
   if (isLoading) {
     return null;
   }
@@ -136,17 +76,12 @@ export default function ResumePage() {
             } ${rotatingIndex === index ? 'rotate-180' : ''}`}
           />
         ))}
-
       <div className="max-w-6xl mx-auto mb-8 flex justify-end relative z-10">
-        <button
-          onClick={handleDownloadPdf}
-          className="group flex items-center text-txt-darkBrown font-bold text-sm uppercase tracking-widest hover:text-[#5E7985] transition-all duration-300"
-        >
-          Download PDF
-          <span className="ml-2 text-lg group-hover:translate-x-1 transition-transform">
-            →
-          </span>
-        </button>
+        <DownloadPDF
+          targetRef={resumeRef}
+          onExportingChange={setIsExporting}
+          fileName="resume"
+        />
       </div>
 
       <div
@@ -186,7 +121,7 @@ export default function ResumePage() {
         )}
 
         {/* Me Section */}
-        <RevealOnScroll>
+        <RevealOnScroll forceVisible={isExporting}>
           <section className="mb-12">
             <div className="flex items-center gap-2 mb-6">
               <h2 className="text-4xl font-black">Me</h2>
@@ -215,13 +150,13 @@ export default function ResumePage() {
           </section>
         </RevealOnScroll>
 
-        <RevealOnScroll delay={200}>
+        <RevealOnScroll delay={200} forceVisible={isExporting}>
           <div className="border-b-2 border-dashed border-gray-300 my-10"></div>
         </RevealOnScroll>
 
         {/* Experience Section with Vertical Timeline */}
         <section className="mb-12 relative">
-          <RevealOnScroll delay={300}>
+          <RevealOnScroll delay={300} forceVisible={isExporting}>
             <div className="flex items-center gap-2 mb-8">
               <h2 className="text-4xl font-black text-[#5E7985]">Experience</h2>
               <img src={BlueFlower.src} alt="" className="w-8 h-8" />
@@ -233,7 +168,11 @@ export default function ResumePage() {
 
           <div className="space-y-12">
             {resumeData.experience.map((exp, idx) => (
-              <RevealOnScroll key={idx} delay={400 + idx * 200}>
+              <RevealOnScroll
+                key={idx}
+                delay={400 + idx * 200}
+                forceVisible={isExporting}
+              >
                 <div
                   className="group flex flex-col md:flex-row gap-8 p-6 md:p-6 bg-white md:bg-transparent border border-gray-100 md:border-none rounded-2xl md:rounded-none transition-all duration-300 relative hover:shadow-lg md:hover:shadow-none md:hover:bg-gray-50/50 md:rounded-xl"
                   style={{ zIndex: 1 }}
@@ -305,12 +244,12 @@ export default function ResumePage() {
           </div>
         </section>
 
-        <RevealOnScroll delay={500}>
+        <RevealOnScroll delay={500} forceVisible={isExporting}>
           <div className="border-b-2 border-dashed border-gray-300 my-10"></div>
         </RevealOnScroll>
 
         {/* Education Section */}
-        <RevealOnScroll delay={600}>
+        <RevealOnScroll delay={600} forceVisible={isExporting}>
           <section>
             <div className="flex items-center gap-2 mb-8">
               <h2 className="text-4xl font-black text-[#B23A3A]">Education</h2>
