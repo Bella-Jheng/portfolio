@@ -14,7 +14,7 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import './ProjectSlider.scss';
 
-import { Project } from '../../api/project-list-api.type';
+import { Project } from '../../../api/project-list-api.type';
 
 interface ProjectSliderProps {
   title?: string;
