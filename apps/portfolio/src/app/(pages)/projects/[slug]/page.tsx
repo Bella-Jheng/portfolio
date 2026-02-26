@@ -133,24 +133,38 @@ export default function ProjectDetailPage({
                   ))}
 
                 {/* Action Buttons */}
-                <div className="flex flex-wrap gap-4 pt-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-8">
                   {project.links && project.links.length > 0 ? (
-                    project.links.map((link, idx) => (
-                      <a
-                        key={idx}
-                        href={link.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex-1 min-w-[140px] bg-txt-darkBrown text-white py-4 px-4 rounded-sm font-bold uppercase tracking-widest hover:bg-opacity-90 transition-all flex flex-row items-center justify-center gap-2 text-center"
-                      >
-                        <span className="break-words">{link.label}</span>
-                        <span className="flex items-center justify-center shrink-0">
-                          <ExternalLink className="w-5 h-5" />
-                        </span>
-                      </a>
-                    ))
+                    project.links.map((link, idx) => {
+                      const isPrimary = idx === 0;
+                      return (
+                        <a
+                          key={idx}
+                          href={link.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`
+                            ${
+                              isPrimary
+                                ? 'bg-txt-darkBrown text-white hover:bg-opacity-90'
+                                : 'border border-txt-darkBrown bg-transparent text-txt-darkBrown hover:bg-txt-darkBrown hover:text-white'
+                            }
+                            py-3 px-6 rounded-sm font-bold uppercase tracking-widest 
+                            transition-all duration-300 flex flex-row items-center justify-center gap-2 text-center
+                            hover:-translate-y-1 hover:shadow-md active:translate-y-0 group
+                          `}
+                        >
+                          <span className="text-sm break-words">
+                            {link.label}
+                          </span>
+                          <span className="flex items-center justify-center shrink-0">
+                            <ExternalLink className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                          </span>
+                        </a>
+                      );
+                    })
                   ) : (
-                    <button className="flex-1 bg-gray-200 text-gray-500 py-4 rounded-sm font-bold uppercase tracking-widest cursor-not-allowed flex items-center justify-center gap-2">
+                    <button className="bg-gray-200 text-gray-500 py-3 rounded-full font-bold uppercase tracking-widest cursor-not-allowed flex items-center justify-center gap-2 w-full">
                       No Link Available
                     </button>
                   )}
