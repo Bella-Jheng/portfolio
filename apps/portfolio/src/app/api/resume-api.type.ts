@@ -19,6 +19,7 @@ export interface EducationItem {
   school: string;
   department: string;
   logoColor: string;
+  logoText: string;
 }
 
 export interface ResumeData {

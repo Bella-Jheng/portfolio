@@ -87,7 +87,15 @@ export const ProjectSlider: React.FC<ProjectSliderProps> = ({
         </button>
 
         <button
-          onClick={() => swiperRef.current?.slideNext()}
+          onClick={() => {
+            if (swiperRef.current) {
+              if (swiperRef.current.isEnd) {
+                swiperRef.current.slideTo(0);
+              } else {
+                swiperRef.current.slideNext();
+              }
+            }
+          }}
           className="absolute right-6 top-[40%] -translate-y-1/2 z-50 w-12 h-12 bg-white/90 border border-gray-100 rounded-full shadow-lg flex items-center justify-center text-txt-darkBrown opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white hover:scale-110 translate-x-4 group-hover:translate-x-0"
           aria-label="Next"
         >

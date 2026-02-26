@@ -119,9 +119,10 @@ export const getResumeDataMock = (): ResumeData => ({
   ],
   education: [
     {
-      school: '國立臺北商業大學 National Taipei University of Business',
-      department: '應用外語系 Department of Applied Foreign Languages',
+      school: 'National Taipei University of Business 國立臺北商業大學',
+      department: 'Department of Applied Foreign Languages 應用外語系',
       logoColor: '#9B4D96',
+      logoText: 'NTUB',
     },
   ],
 });

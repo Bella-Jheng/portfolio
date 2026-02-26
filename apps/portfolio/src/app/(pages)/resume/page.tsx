@@ -329,7 +329,7 @@ export default function ResumePage() {
                   >
                     <div className="w-16 h-16 border-2 border-white rounded-full flex items-center justify-center">
                       <span className="text-white text-sm text-center font-bold">
-                        {edu.school}
+                        {edu.logoText}
                       </span>
                     </div>
                   </div>
