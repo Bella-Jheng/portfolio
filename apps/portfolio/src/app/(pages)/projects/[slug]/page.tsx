@@ -2,11 +2,11 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ProjectGallery } from '../../../components/Common/Gallery';
+import { Gallery as ProjectGallery } from '../../../components/Common/gallery';
 import { Tag } from '../../../components/Atom/Tag';
 import { Heart, HeartFilled, Share, ExternalLink } from '@/public/icon';
-import { ShareModal } from '../../../components/Common/ShareModal';
-import { RevealOnScroll } from '../../../components/Common/RevealOnScroll';
+import { ShareModal } from '../../../components/Common/share-modal';
+import { RevealOnScroll } from '../../../components/Common/reveal-on-scroll';
 import { useProjectDetail } from '../../../api/project-detail-api';
 
 export default function ProjectDetailPage({

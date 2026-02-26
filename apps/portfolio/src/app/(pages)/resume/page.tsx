@@ -5,9 +5,9 @@ import React, { useRef, useState, useEffect } from 'react';
 import { Tag } from '../../components/Atom/Tag';
 import { ArrowRight } from '@/public/icon';
 import { BlackFlower, RedFlower, BlueFlower, Resume } from '@/public/img';
-import { RevealOnScroll } from '../../components/Common/RevealOnScroll';
+import { RevealOnScroll } from '../../components/Common/reveal-on-scroll';
 import { useResume } from '../../api/resume-api';
-import { DownloadPDF } from '../../components/Common/DownloadPDF';
+import { DownloadPDF } from '../../components/Common/download-pdf';
 
 const FLOWERS = [
   {

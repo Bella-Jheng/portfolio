@@ -12,7 +12,7 @@ export const metadata = {
 
 import { MSWProvider } from '../MSWProvider';
 import ReactQueryProvider from '../ReactQueryProvider';
-import { GlobalLoading } from '../components/Common/GlobalLoading';
+import { GlobalLoading } from '../components/Common/loading';
 
 export default function RootLayout({
   children,

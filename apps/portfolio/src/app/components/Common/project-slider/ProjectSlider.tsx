@@ -3,7 +3,7 @@
 import React, { useRef } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { FreeMode, Navigation, Pagination } from 'swiper/modules';
-import { ProjectCard } from './ProjectCard';
+import { ProjectCard } from '../project-card';
 import { Swiper as SwiperType } from 'swiper';
 import { ChevronLeft, ChevronRight } from '@/public/icon';
 

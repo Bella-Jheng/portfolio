@@ -1,10 +1,10 @@
 'use client';
 import React from 'react';
 import Link from 'next/link';
-import { Tag } from '../Atom/Tag';
+import { Tag } from '../../Atom/Tag';
 import { ArrowRight } from '@/public/icon';
 
-import { Project } from '../../api';
+import { Project } from '@/app/api';
 
 type ProjectCardProps = Project;
 

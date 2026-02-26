@@ -3,8 +3,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ArrowRight } from '@/public/icon';
 import { BlueFlower } from '@/public/img';
-import { ProjectSlider } from '../components/Common/ProjectSlider';
-import { FlowerBackground } from '../components/Common/FlowerBackground';
+import { ProjectSlider } from '../components/Common/project-slider';
+import { FlowerBackground } from '../components/Common/flower-background';
 import { useProjects } from '../api/project-list-api';
 import Link from 'next/link';
 import { useLoadingStore } from '../store/loading.store';

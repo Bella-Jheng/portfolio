@@ -1,10 +1,12 @@
 'use client';
 import React, { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ProjectCard } from '../../components/Common/ProjectCard';
-import { ProjectCardSkeleton } from '../../components/Common/ProjectCardSkeleton';
+import {
+  ProjectCard,
+  ProjectCardSkeleton,
+} from '../../components/Common/project-card';
 import { ProjectTabs } from '../../components/Atom/Tabs';
-import { RevealOnScroll } from '../../components/Common/RevealOnScroll';
+import { RevealOnScroll } from '../../components/Common/reveal-on-scroll';
 
 import { useProjects } from '../../api';
 import { ProjectCategory } from '../../api/project-list-api.type';

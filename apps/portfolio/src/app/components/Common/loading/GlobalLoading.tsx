@@ -1,7 +1,7 @@
 'use client';
 
 import { useIsFetching } from '@tanstack/react-query';
-import { useLoadingStore } from '../../store/loading.store';
+import { useLoadingStore } from '../../../store/loading.store';
 import { LoadingScreen } from './LoadingScreen';
 import { useEffect, useState } from 'react';
 

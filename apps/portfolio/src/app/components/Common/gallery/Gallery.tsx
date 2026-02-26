@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { FreeMode, Navigation, Thumbs } from 'swiper/modules';
 import type { Swiper as SwiperType } from 'swiper';
-import { Lightbox } from './lightbox/Lightbox';
+import { Lightbox } from '../light-box';
 import { Play, VideoIndicator } from '@/public/icon';
 
 // Import Swiper styles
@@ -23,7 +23,7 @@ interface ProjectGalleryProps {
   media: MediaItem[];
 }
 
-export const ProjectGallery: React.FC<ProjectGalleryProps> = ({ media }) => {
+export const Gallery: React.FC<ProjectGalleryProps> = ({ media }) => {
   const [thumbsSwiper, setThumbsSwiper] = useState<SwiperType | null>(null);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [activeMediaIndex, setActiveMediaIndex] = useState(0);
