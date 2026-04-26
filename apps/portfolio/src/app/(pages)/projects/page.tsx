@@ -9,7 +9,7 @@ import { ProjectTabs } from '../../components/Atom/Tabs';
 import { RevealOnScroll } from '../../components/Common/reveal-on-scroll';
 
 import { useProjects } from '../../api';
-import { ProjectCategory } from '../../api/project-list-api.type';
+import { useLanguage } from '../../hooks/use-language';
 import {
   Portfolio1,
   Portfolio2,
@@ -24,53 +24,43 @@ console.log(
   Portfolio4.src,
   Portfolio5.src,
 );
-const CATEGORIES: readonly ['全部', ...ProjectCategory[]] = [
-  '全部',
-  '前端專案',
-  'PM 專案',
-  '後端專案',
-  '其他',
-] as const;
+const CATEGORIES_ZH = ['全部', '前端專案', 'PM 專案', '後端專案', '其他'] as const;
+const CATEGORIES_EN = ['All', 'Frontend', 'PM', 'Backend', 'Other'] as const;
 
-type CategoryName = (typeof CATEGORIES)[number];
-
-const CATEGORY_MAP: Record<string, CategoryName> = {
-  all: '全部',
+const CATEGORY_MAP: Record<string, string> = {
+  all: 'all',
   frontend: '前端專案',
   pm: 'PM 專案',
   backend: '後端專案',
   other: '其他',
 };
 
-const ID_MAP: Record<CategoryName, string> = Object.fromEntries(
-  Object.entries(CATEGORY_MAP).map(([id, name]) => [name, id]),
-) as Record<CategoryName, string>;
-
 function ProjectsContent() {
+  const { isEn } = useLanguage();
   const router = useRouter();
   const searchParams = useSearchParams();
   const categoryId = searchParams.get('category') || 'all';
 
   const { data: projects = [] } = useProjects();
 
-  const [activeCategory, setActiveCategory] = useState(
-    CATEGORY_MAP[categoryId] || '全部',
-  );
+  const [activeCategory, setActiveCategory] = useState(categoryId);
   const [isTabLoading, setIsTabLoading] = useState(false);
 
+  const categories = isEn ? CATEGORIES_EN : CATEGORIES_ZH;
+
   useEffect(() => {
-    const name = CATEGORY_MAP[categoryId];
-    if (name && name !== activeCategory) {
-      setActiveCategory(name);
+    if (categoryId !== activeCategory) {
+      setActiveCategory(categoryId);
     }
   }, [categoryId, activeCategory]);
 
-  const handleCategoryChange = (name: string) => {
-    const id = ID_MAP[name as CategoryName];
+  const handleCategoryChange = (label: string) => {
+    const index = (categories as readonly string[]).indexOf(label);
+    const id = Object.keys(CATEGORY_MAP)[index];
+    
     if (id && id !== categoryId) {
       setIsTabLoading(true);
       router.push(`/projects?category=${id}`, { scroll: false });
-      // Short delay to show skeleton and ensure smooth transition
       setTimeout(() => {
         setIsTabLoading(false);
       }, 600);
@@ -78,9 +68,9 @@ function ProjectsContent() {
   };
 
   const filteredProjects =
-    activeCategory === '全部'
+    activeCategory === 'all'
       ? projects
-      : projects.filter((project) => project.category === activeCategory);
+      : projects.filter((project) => project.category === CATEGORY_MAP[activeCategory]);
 
   return (
     <div className="min-h-screen bg-[#F1F2CA] pt-24 md:pt-32 pb-10 px-4 md:px-10">
@@ -89,7 +79,7 @@ function ProjectsContent() {
           <header className="mb-8">
             <div className="flex items-start mb-4">
               <h2 className="text-4xl md:text-5xl font-black text-txt-brown tracking-tight">
-                作品集
+                {isEn ? 'Projects' : '作品集'}
               </h2>
               <span className="text-xs md:text-sm text-gray-700 mt-1 ml-1">
                 ({filteredProjects.length.toString().padStart(2, '0')})
@@ -100,8 +90,8 @@ function ProjectsContent() {
 
         <RevealOnScroll delay={100}>
           <ProjectTabs
-            categories={CATEGORIES}
-            activeCategory={activeCategory}
+            categories={categories}
+            activeCategory={categories[Object.keys(CATEGORY_MAP).indexOf(activeCategory)]}
             onCategoryChange={handleCategoryChange}
           />
         </RevealOnScroll>

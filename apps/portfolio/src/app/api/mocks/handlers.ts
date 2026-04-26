@@ -11,18 +11,24 @@ export const handlers = [
       lastName: 'Maverick',
     });
   }),
-  http.get('/api/projects', () => {
-    return HttpResponse.json(getProjectListApiResponse());
+  http.get('/api/projects', ({ request }) => {
+    const url = new URL(request.url);
+    const lang = (url.searchParams.get('lang') as 'zh' | 'en') || 'zh';
+    return HttpResponse.json(getProjectListApiResponse(lang));
   }),
-  http.get('/api/projects/:id', ({ params }) => {
-    const { id } = params;
-    const project = getProjectDetailApiResponse(id as string);
+  http.get('/api/project-detail/:slug', ({ params, request }) => {
+    const { slug } = params;
+    const url = new URL(request.url);
+    const lang = (url.searchParams.get('lang') as 'zh' | 'en') || 'zh';
+    const project = getProjectDetailApiResponse(slug as string, lang);
     if (!project) {
       return new HttpResponse(null, { status: 404 });
     }
     return HttpResponse.json(project);
   }),
-  http.get('/api/resume', () => {
-    return HttpResponse.json(getResumeDataMock());
+  http.get('/api/resume', ({ request }) => {
+    const url = new URL(request.url);
+    const lang = (url.searchParams.get('lang') as 'zh' | 'en') || 'zh';
+    return HttpResponse.json(getResumeDataMock(lang));
   }),
 ];

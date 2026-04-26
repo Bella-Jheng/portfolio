@@ -8,12 +8,14 @@ import { Heart, HeartFilled, Share, ExternalLink } from '@/public/icon';
 import { ShareModal } from '../../../components/Common/share-modal';
 import { RevealOnScroll } from '../../../components/Common/reveal-on-scroll';
 import { useProjectDetail } from '../../../api/project-detail-api';
+import { useLanguage } from '../../../hooks/use-language';
 
 export default function ProjectDetailPage({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
+  const { isEn } = useLanguage();
   const { slug } = React.use(params);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
@@ -29,10 +31,10 @@ export default function ProjectDetailPage({
       <div className="bg-[#FBFAF1] min-h-screen py-10 px-4 md:px-10 flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-4xl font-black text-txt-darkBrown mb-4">
-            Project Not Found
+            {isEn ? 'Project Not Found' : '找不到該專案'}
           </h1>
           <Link href="/projects" className="text-[#5E7985] font-bold underline">
-            Back to Projects
+            {isEn ? 'Back to Projects' : '回到作品集'}
           </Link>
         </div>
       </div>
@@ -49,7 +51,7 @@ export default function ProjectDetailPage({
               href="/projects"
               className="hover:text-txt-darkBrown transition-colors"
             >
-              Projects
+              {isEn ? 'Projects' : '作品集'}
             </Link>
             <span>/</span>
             <span className="text-txt-darkBrown">{project.title}</span>
@@ -113,7 +115,7 @@ export default function ProjectDetailPage({
 
                 <div className="prose prose-sm max-w-none text-txt-darkBrown leading-relaxed">
                   <h3 className="text-xl font-bold text-txt-darkBrown mb-2">
-                    About the Project
+                    {isEn ? 'About the Project' : '關於此專案'}
                   </h3>
                   <p>{project.description}</p>
                 </div>
@@ -165,7 +167,7 @@ export default function ProjectDetailPage({
                     })
                   ) : (
                     <button className="bg-gray-200 text-gray-500 py-3 rounded-full font-bold uppercase tracking-widest cursor-not-allowed flex items-center justify-center gap-2 w-full">
-                      No Link Available
+                      {isEn ? 'No Link Available' : '暫無連結'}
                     </button>
                   )}
                 </div>

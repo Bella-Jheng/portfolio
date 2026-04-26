@@ -8,8 +8,10 @@ import { FlowerBackground } from '../components/Common/flower-background';
 import { useProjects } from '../api/project-list-api';
 import Link from 'next/link';
 import { useLoadingStore } from '../store/loading.store';
+import { useLanguage } from '../hooks/use-language';
 
 export default function Index() {
+  const { isEn } = useLanguage();
   const [scrollY, setScrollY] = useState(0);
   const [isSliderVisible, setIsSliderVisible] = useState(false);
   const [hasSurged, setHasSurged] = useState(false);
@@ -167,7 +169,7 @@ export default function Index() {
           <div className="mt-4">
             <Link href="/resume">
               <button className="group flex items-center gap-2 border-2 border-txt-darkBrown px-6 py-2 md:px-7 md:py-2.5 rounded-full font-semibold text-txt-darkBrown text-sm md:text-base shadow-[4px_4px_0px_rgba(45,27,27,0.2)] md:shadow-[5px_5px_0px_rgba(45,27,27,0.2)] hover:shadow-none transition-all active:translate-x-[2px] active:translate-y-[2px]">
-                More About Me
+                {isEn ? 'More About Me' : '更多關於我'}
                 <ArrowRight className="w-4 h-4 md:w-5 md:h-5 transition-transform group-hover:translate-x-1" />
               </button>
             </Link>
@@ -177,7 +179,7 @@ export default function Index() {
         {/* Scroll Indicator */}
         <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-60 hover:opacity-100 transition-opacity duration-300">
           <span className="text-[10px] md:text-xs font-bold tracking-[0.3em] text-txt-darkBrown uppercase">
-            scroll
+            {isEn ? 'scroll' : '向下滾動'}
           </span>
           <div className="animate-bounce-slow">
             <svg
@@ -218,7 +220,7 @@ export default function Index() {
         ref={sliderRef}
         className={`py-32 transition-all duration-1000 reveal-section relative z-10 w-full min-h-screen ${isSliderVisible ? 'is-revealed' : ''}`}
       >
-        <ProjectSlider title="You Might also Like" projects={projects} />
+        <ProjectSlider title={isEn ? 'Featured Projects' : '精選作品'} projects={projects} />
       </div>
     </div>
   );

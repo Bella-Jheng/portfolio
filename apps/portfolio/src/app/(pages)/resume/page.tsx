@@ -8,6 +8,7 @@ import { BlackFlower, RedFlower, BlueFlower, Resume } from '@/public/img';
 import { RevealOnScroll } from '../../components/Common/reveal-on-scroll';
 import { useResume } from '../../api/resume-api';
 import { DownloadPDF } from '../../components/Common/download-pdf';
+import { useLanguage } from '../../hooks/use-language';
 
 const FLOWERS = [
   {
@@ -33,6 +34,7 @@ const FLOWERS = [
 ];
 
 export default function ResumePage() {
+  const { isEn } = useLanguage();
   const { data: resumeData, isLoading, isError } = useResume();
   const [isExporting, setIsExporting] = useState(false);
   const [rotatingIndex, setRotatingIndex] = useState<number | null>(null);
@@ -57,7 +59,7 @@ export default function ResumePage() {
     return (
       <div className="bg-[#FBFAF1] min-h-screen flex items-center justify-center">
         <div className="text-[#B23A3A] font-bold">
-          Error loading resume data.
+          {isEn ? 'Error loading resume data.' : '載入履歷資料失敗。'}
         </div>
       </div>
     );
@@ -94,23 +96,32 @@ export default function ResumePage() {
           <>
             <section className="mb-12">
               <div className="flex items-center gap-2 mb-6 text-[#A6C98A]">
-                <h2 className="text-4xl font-black">Basic</h2>
+                <h2 className="text-4xl font-black">
+                  {isEn ? 'Basic' : '基本資訊'}
+                </h2>
                 <img src={BlackFlower.src} alt="" className="w-6 h-6" />
               </div>
 
               <div className="space-y-2 text-base text-txt-darkBrown">
                 <p className="font-bold text-xl text-txt-darkBrown mb-4">
-                  鄭伊婷 yiting
+                  {isEn ? 'Yiting Jheng 鄭伊婷' : '鄭伊婷 yiting'}
                 </p>
                 <p>
-                  <span className="font-bold">職位:</span> 前端軟體工程師
-                  Front-End Software Engineer
+                  <span className="font-bold">
+                    {isEn ? 'Position:' : '職位:'}
+                  </span>{' '}
+                  {isEn ? 'Front-End Software Engineer' : '前端軟體工程師'}
                 </p>
                 <p>
-                  <span className="font-bold">聯絡電話:</span> 0909015558
+                  <span className="font-bold">
+                    {isEn ? 'Phone:' : '聯絡電話:'}
+                  </span>{' '}
+                  0909015558
                 </p>
                 <p>
-                  <span className="font-bold">聯絡信箱:</span>{' '}
+                  <span className="font-bold">
+                    {isEn ? 'Email:' : '聯絡信箱:'}
+                  </span>{' '}
                   bz850308@gmail.com
                 </p>
               </div>
@@ -124,7 +135,9 @@ export default function ResumePage() {
         <RevealOnScroll forceVisible={isExporting}>
           <section className="mb-12">
             <div className="flex items-center gap-2 mb-6">
-              <h2 className="text-4xl font-black">Me</h2>
+              <h2 className="text-4xl font-black">
+                {isEn ? 'About Me' : '關於我'}
+              </h2>
               <img src={BlackFlower.src} alt="" className="w-6 h-6" />
             </div>
 
@@ -158,7 +171,9 @@ export default function ResumePage() {
         <section className="mb-12 relative">
           <RevealOnScroll delay={300} forceVisible={isExporting}>
             <div className="flex items-center gap-2 mb-8">
-              <h2 className="text-4xl font-black text-[#5E7985]">Experience</h2>
+              <h2 className="text-4xl font-black text-[#5E7985]">
+                {isEn ? 'Experience' : '工作經驗'}
+              </h2>
               <img src={BlueFlower.src} alt="" className="w-8 h-8" />
             </div>
           </RevealOnScroll>
@@ -174,7 +189,7 @@ export default function ResumePage() {
                 forceVisible={isExporting}
               >
                 <div
-                  className="group flex flex-col md:flex-row gap-8 p-6 md:p-6 bg-white md:bg-transparent border border-gray-100 md:border-none rounded-2xl md:rounded-none transition-all duration-300 relative hover:shadow-lg md:hover:shadow-none md:hover:bg-gray-50/50 md:rounded-xl"
+                  className="group flex flex-col md:flex-row gap-8 p-6 md:p-6 bg-white md:bg-transparent border border-gray-100 md:border-none rounded-2xl transition-all duration-300 relative hover:shadow-lg md:hover:shadow-none md:hover:bg-gray-50/50 md:rounded-xl"
                   style={{ zIndex: 1 }}
                 >
                   <div className="relative">
@@ -201,13 +216,16 @@ export default function ResumePage() {
                       </span>
                     </div>
                   </div>
-                  <div className="flex flex-col">
+                  <div className="flex flex-col flex-1">
                     <h3 className="text-2xl font-black mb-6 text-txt-darkBrown group-hover:text-[#5E7985] transition-colors duration-300">
                       {exp.title}
                     </h3>
                     <ul className="text-base space-y-2 text-txt-darkBrown flex-grow">
                       {exp.bulletPoints.map((point, pIdx) => (
-                        <li key={pIdx} className="pl-2">
+                        <li
+                          key={pIdx}
+                          className="pl-4 relative before:content-[''] before:absolute before:left-0 before:top-[0.6em] before:w-1.5 before:h-1.5 before:bg-gray-300 before:rounded-full"
+                        >
                           {point}
                         </li>
                       ))}
@@ -232,7 +250,7 @@ export default function ResumePage() {
                           href={exp.projectUrl}
                           className="group/link flex items-center text-txt-darkBrown font-bold text-sm uppercase tracking-widest hover:text-[#5E7985] transition-all duration-300 underline md:no-underline underline-offset-4"
                         >
-                          more projects
+                          {isEn ? 'see projects' : '查看更多作品'}
                           <ArrowRight className="ml-1 w-4 h-4 transform transition-transform duration-300 group-hover/link:translate-x-1" />
                         </a>
                       )}
@@ -252,7 +270,9 @@ export default function ResumePage() {
         <RevealOnScroll delay={600} forceVisible={isExporting}>
           <section>
             <div className="flex items-center gap-2 mb-8">
-              <h2 className="text-4xl font-black text-[#B23A3A]">Education</h2>
+              <h2 className="text-4xl font-black text-[#B23A3A]">
+                {isEn ? 'Education' : '學歷'}
+              </h2>
               <img src={RedFlower.src} alt="" className="w-6 h-6" />
             </div>
 
@@ -273,8 +293,12 @@ export default function ResumePage() {
                     </div>
                   </div>
                   <div>
-                    <p className="font-bold text-xl">{edu.school}</p>
-                    <p className="text-base text-gray-700">{edu.department}</p>
+                    <p className="font-bold text-xl">
+                      {edu.school}
+                    </p>
+                    <p className="text-base text-gray-700">
+                      {edu.department}
+                    </p>
                   </div>
                 </div>
               ))}

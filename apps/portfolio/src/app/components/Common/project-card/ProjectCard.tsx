@@ -5,16 +5,18 @@ import { Tag } from '../../Atom/Tag';
 import { ArrowRight } from '@/public/icon';
 
 import { Project } from '@/app/api';
+import { useLanguage } from '@/app/hooks/use-language';
 
 type ProjectCardProps = Project;
 
 export const ProjectCard: React.FC<ProjectCardProps> = ({
-  title,
-  description,
   imageUrl,
   link,
   tags = [],
+  title,
+  description,
 }) => {
+  const { isEn } = useLanguage();
   return (
     <Link
       href={link}
@@ -47,7 +49,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
 
         {/* Decorative arrow */}
         <div className="mt-4 flex items-center text-txt-red font-bold text-xs uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-x-[-10px] group-hover:translate-x-0">
-          View Project
+          {isEn ? 'View Project' : '查看專案'}
           <ArrowRight className="ml-2 w-4 h-4" />
         </div>
       </div>
