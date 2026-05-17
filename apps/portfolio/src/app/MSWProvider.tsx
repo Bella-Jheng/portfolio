@@ -1,31 +1,28 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export const MSWProvider = ({ children }: { children: React.ReactNode }) => {
   const [mswReady, setMswReady] = useState(false);
+  const startedRef = useRef(false);
 
   useEffect(() => {
-    const init = async () => {
-      if (typeof window !== 'undefined') {
-        const { worker } = await import('./api/mocks/browser');
-        await worker.start({
-          serviceWorker: {
-            url: '/mockServiceWorker.js',
-          },
-          onUnhandledRequest: 'bypass',
-        });
-        setMswReady(true);
-      }
-    };
+    if (startedRef.current) return;
+    startedRef.current = true;
 
-    if (!mswReady) {
-      init();
-    }
-  }, [mswReady]);
+    import('./api/mocks/browser')
+      .then(({ worker }) =>
+        worker.start({
+          serviceWorker: { url: '/mockServiceWorker.js' },
+          onUnhandledRequest: 'bypass',
+        }),
+      )
+      .then(() => setMswReady(true))
+      .catch(() => setMswReady(true));
+  }, []);
 
   if (!mswReady) {
-    return null; // or a loading spinner
+    return null;
   }
 
   return <>{children}</>;
