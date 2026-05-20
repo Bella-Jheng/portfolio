@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  -webkit-text-size-adjust: 100%;
+  line-height: 1.5;
+  tab-size: 4;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Noto Sans TC', ui-sans-serif, system-ui, sans-serif;
+  line-height: inherit;
+  margin: 0;
+  background-color: #FFFDF5;
+  color: #4A4A4A;
+}
+
+*,
+::before,
+::after {
+  box-sizing: border-box;
+  border-width: 0;
+  border-style: solid;
+  border-color: currentColor;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+p, pre {
+  margin: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: inherit;
+}
+
+select option {
+  background-color: #FAF7F4;
+  color: #2D2420;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #C4544A40;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #C4544A80;
+}
+
+/* Typewriter blinking cursor — kept global so the keyframe is available */
+@keyframes blink-cursor {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+.cursor-blink {
+  display: inline-block;
+  animation: blink-cursor 0.8s step-end infinite;
+}

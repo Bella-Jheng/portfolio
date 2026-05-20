@@ -1,0 +1,64 @@
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 0.85;
+  }
+}
+
+.logoSymbol {
+  font-family: 'Noto Serif TC', serif;
+  font-size: 1.25rem;
+  animation: hueRotate 8s linear infinite;
+}
+
+@keyframes hueRotate {
+  0%   { filter: hue-rotate(0deg)   drop-shadow(0 0 4px rgba(201,168,76,0.5)); }
+  25%  { filter: hue-rotate(60deg)  drop-shadow(0 0 8px rgba(248,113,113,0.6)); }
+  50%  { filter: hue-rotate(180deg) drop-shadow(0 0 8px rgba(96,165,250,0.6)); }
+  75%  { filter: hue-rotate(300deg) drop-shadow(0 0 8px rgba(192,132,252,0.6)); }
+  100% { filter: hue-rotate(360deg) drop-shadow(0 0 4px rgba(201,168,76,0.5)); }
+}
+
+.navLink {
+  position: relative;
+  font-size: 0.875rem;
+  letter-spacing: 0.05em;
+  transition: color 0.2s;
+  padding-bottom: 2px;
+  color: #8A7260;
+  text-decoration: none;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    border-radius: 99px;
+    background: linear-gradient(90deg, #C9A84C, #60a5fa, #c084fc);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+  }
+
+  &:hover {
+    color: #F7F0E3;
+    &::after {
+      transform: scaleX(1);
+    }
+  }
+}
+
+.navLinkActive {
+  color: #C9A84C;
+
+  &::after {
+    transform: scaleX(1);
+  }
+}

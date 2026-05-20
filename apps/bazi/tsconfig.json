@@ -1,0 +1,45 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "preserve",
+    "noEmit": true,
+    "emitDeclarationOnly": false,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": ["./src/*"],
+      "@trg/utils": ["../../libs/index.ts"]
+    }
+  },
+  "include": [
+    "svgr.d.ts",
+    "../../apps/bazi/.next/types/**/*.ts",
+    "../../dist/apps/bazi/.next/types/**/*.ts",
+    "next-env.d.ts",
+    "src/**/*.js",
+    "src/**/*.jsx",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    ".next/types/**/*.ts",
+    "../../libs/**/*.ts"
+  ],
+  "exclude": [
+    "out-tsc",
+    "dist",
+    "node_modules",
+    ".next",
+    "eslint.config.js",
+    "eslint.config.cjs",
+    "eslint.config.mjs"
+  ]
+}

@@ -1,0 +1,49 @@
+.card {
+  position: relative;
+  border-radius: 14px;
+  padding: 14px 10px;
+  border: 1px solid #F0EBE3;
+  background: white;
+  cursor: default;
+  transition: box-shadow 0.25s ease, border-color 0.25s ease;
+  overflow: hidden;
+  text-align: center;
+}
+
+/* Element-based top accent stripe */
+.wood   { border-top: 3px solid #7AC97A; }
+.fire   { border-top: 3px solid #E87878; }
+.earth  { border-top: 3px solid #D4A830; }
+.metal  { border-top: 3px solid #C8900A; }
+.water  { border-top: 3px solid #9070C0; }
+.default { border-top: 3px solid #FCD060; }
+
+.label {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: #9E9E9E;
+  margin-bottom: 8px;
+}
+
+.stem {
+  font-family: 'Noto Serif TC', serif;
+  font-size: 1.75rem;
+  line-height: 1.1;
+  color: #4A4A4A;
+  font-weight: 600;
+}
+
+.branch {
+  font-family: 'Noto Serif TC', serif;
+  font-size: 1.75rem;
+  line-height: 1.1;
+  color: #7a7a7a;
+  margin-top: 2px;
+}
+
+.elementLabel {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  margin-top: 8px;
+  color: #8e8e9f;
+}

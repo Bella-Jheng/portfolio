@@ -1,0 +1,9 @@
+.next
+.env
+.env.local
+node_modules
+dist
+out-tsc
+
+# Firebase service account key - 絕對不能 commit！
+service-account.json
