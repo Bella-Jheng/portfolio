@@ -245,6 +245,68 @@ before or it is disabled.
 
 ---
 
+### 7. Firebase Admin SDK 在 Next.js build 時初始化失敗
+
+**現象：** Vercel 部署時 build 階段出現 Firebase 初始化錯誤。本地開發正常，但 `next build` 跑到一半就因為找不到環境變數而崩潰。
+
+**根本原因：** 原始寫法是 `export const db = getDb()`，這讓 Firebase Admin SDK 在模組被 import 的瞬間就執行初始化。Next.js build 時會靜態分析所有 route，導致 `getDb()` 在 build 階段被呼叫，但此時 `FIREBASE_PROJECT_ID` 等環境變數尚未注入。
+
+**解法：** 用 JavaScript `Proxy` 實現懶初始化——`db` 的 import 介面維持不變，但真正的初始化延遲到第一次 request 進來時才執行：
+
+```ts
+let _db: ReturnType<typeof getFirestore> | null = null;
+
+function getDb() {
+  if (_db) return _db;
+  // 只有第一次被 request 觸發時才真的初始化
+  const app = getApps().length === 0
+    ? initializeApp({ credential: cert(getCredential()) })
+    : getApps()[0];
+  _db = getFirestore(app);
+  return _db;
+}
+
+export const db = new Proxy({} as ReturnType<typeof getFirestore>, {
+  get(_, prop) {
+    return Reflect.get(getDb(), prop as string);
+  },
+});
+```
+
+這樣所有 import `db` 的地方完全不需要改，只是把初始化時機從「模組載入時」推遲到「第一次呼叫時」。
+
+**學到的事：** Next.js build 是靜態分析，不等於執行期環境。任何需要 runtime 環境變數的初始化都不能放在模組頂層直接執行。
+
+---
+
+### 8. readingId 分散在元件，導致重複呼叫與重導邏輯混亂
+
+**現象：** 登入後首頁偶爾不會自動跳轉到結果頁；Header 的「排盤」連結不管有沒有既有命盤都只導向 `/`，使用者需要再做一次操作才能回到自己的結果。
+
+**根本原因：** `readingId`（使用者是否有既有命盤）的 fetch 邏輯只放在首頁元件裡，而且每次渲染都重新呼叫一次 `/api/user/reading`。這造成兩個問題：
+1. Header 等其他元件無法知道 `readingId`，只能靜態連到 `/`
+2. 首頁同時有 `loading`（auth）和 `getToken`（非同步）兩個依賴，競速條件讓跳轉不穩定
+
+**解法：** 把 `readingId` fetch 提升到 `AuthProvider`，在 `onAuthStateChanged` 觸發（即登入成功）時統一取一次，並暴露 `readingId` 和 `readingLoading` 給所有元件使用：
+
+```ts
+// auth-context.tsx — 登入後自動 fetch，全域共用
+const fetchReading = useCallback(async (currentUser: User) => {
+  setReadingLoading(true);
+  const token = await currentUser.getIdToken();
+  const res = await fetch('/api/user/reading', { headers: { Authorization: `Bearer ${token}` } });
+  const data = await res.json();
+  setReadingId(data.readingId ?? null);
+  setReadingLoading(false);
+}, []);
+```
+
+首頁和 Header 都改成讀 context 的值，不再各自 fetch。「排盤」按鈕也從 `<Link href="/">` 改成 button，依據 `readingId` 智慧導向 `/result/:id` 或 `/`。
+
+**學到的事：** 跨元件共用的非同步狀態應該放在最近的共同 Provider，而不是讓每個元件各自 fetch。競速條件通常是「狀態分散」的症狀，不是個別元件的 bug。
+
+---
+
 ## 架構設計思考
 
 ### 同命盤快取 vs 個人化記錄
