@@ -1,0 +1,156 @@
+/* Background dots pattern */
+.bg-dots {
+  position: relative;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle at 20% 30%, rgba(255,255,255,0.15) 1px, transparent 1px),
+      radial-gradient(circle at 80% 70%, rgba(255,255,255,0.12) 1px, transparent 1px);
+    background-size: 20px 20px;
+    pointer-events: none;
+    z-index: -1;
+  }
+}
+
+
+
+/* Float animation for cat images */
+@keyframes floatY {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+.animate-float {
+  animation: floatY 3.5s ease-in-out infinite;
+}
+
+/* Background blob animations */
+@keyframes blobEntrance1 {
+  0% {
+    transform: translate(0, 0) scale(1.8);
+    opacity: 0;
+  }
+  50% {
+    transform: translate(0, 0) scale(0.5);
+    opacity: 0.25;
+  }
+  100% {
+    transform: translate(0, 0) scale(1.0);
+    opacity: 0.5;
+  }
+}
+
+@keyframes blobEntrance2 {
+  0% {
+    transform: translate(0, 0) scale(1.8);
+    opacity: 0;
+  }
+  50% {
+    transform: translate(0, 0) scale(0.5);
+    opacity: 0.22;
+  }
+  100% {
+    transform: translate(0, 0) scale(1.0);
+    opacity: 0.45;
+  }
+}
+
+@keyframes blobEntrance3 {
+  0% {
+    transform: translate(0, 0) scale(1.8);
+    opacity: 0;
+  }
+  50% {
+    transform: translate(0, 0) scale(0.5);
+    opacity: 0.18;
+  }
+  100% {
+    transform: translate(0, 0) scale(1.0);
+    opacity: 0.35;
+  }
+}
+
+@keyframes driftBlob1 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.5;
+  }
+  33% {
+    transform: translate(140px, -90px) scale(1.25);
+    opacity: 0.65;
+  }
+  66% {
+    transform: translate(-70px, 70px) scale(0.85);
+    opacity: 0.3;
+  }
+}
+
+@keyframes driftBlob2 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.45;
+  }
+  50% {
+    transform: translate(-120px, 140px) scale(1.3);
+    opacity: 0.65;
+  }
+}
+
+@keyframes driftBlob3 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.35;
+  }
+  40% {
+    transform: translate(-90px, -70px) scale(0.7);
+    opacity: 0.2;
+  }
+  80% {
+    transform: translate(90px, 50px) scale(1.25);
+    opacity: 0.55;
+  }
+}
+
+.animate-blob-1 {
+  animation: blobEntrance1 5s ease-in-out forwards,
+             driftBlob1 22s ease-in-out infinite 5s;
+}
+
+.animate-blob-2 {
+  animation: blobEntrance2 5.5s ease-in-out forwards,
+             driftBlob2 18s ease-in-out infinite alternate 5.5s;
+}
+
+.animate-blob-3 {
+  animation: blobEntrance3 6s ease-in-out forwards,
+             driftBlob3 25s ease-in-out infinite 6s;
+}
+
+/* Sparkling animation for stars */
+@keyframes sparkle {
+  0%, 100% {
+    transform: scale(0.5) rotate(0deg);
+    opacity: 0.15;
+    filter: drop-shadow(0 0 2px rgba(252, 208, 96, 0));
+  }
+  50% {
+    transform: scale(1.2) rotate(180deg);
+    opacity: 0.95;
+    filter: drop-shadow(0 0 8px rgba(252, 208, 96, 0.7));
+  }
+}
+
+.animate-sparkle {
+  animation: sparkle 3s ease-in-out infinite;
+}
+
+/* Cosmic spin animation */
+@keyframes spinSlow {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.animate-spin-slow {
+  animation: spinSlow 60s linear infinite;
+}

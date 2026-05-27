@@ -5,6 +5,8 @@ import { answerCustomQuestion } from '../../../lib/anthropic';
 import { getDominantElements } from '../../../lib/bazi-calculator';
 import type { AskQuestionRequest, BaziPillars, FortuneReading, QuestionAnswer } from '../../../types/bazi';
 
+const ADMIN_UID = process.env.ADMIN_UID ?? '';
+
 async function extractUid(request: NextRequest): Promise<string | null> {
   const token = request.headers.get('Authorization')?.replace('Bearer ', '');
   if (!token) return null;
@@ -45,7 +47,8 @@ export async function GET(
     );
 
     const userId = await extractUid(request);
-    const remainingToday = userId
+    const isAdmin = !!userId && userId === ADMIN_UID;
+    const remainingToday = userId && !isAdmin
       ? Math.max(0, 3 - (await countTodayQuestionsForUser(userId)))
       : null;
 
@@ -84,8 +87,9 @@ export async function POST(
     const fortune = data.fortune as FortuneReading;
     const existingQuestions = (data.questions ?? []) as QuestionAnswer[];
 
-    const todayCount = await countTodayQuestionsForUser(userId);
-    if (todayCount >= 3) {
+    const isAdmin = userId === ADMIN_UID;
+    const todayCount = isAdmin ? 0 : await countTodayQuestionsForUser(userId);
+    if (!isAdmin && todayCount >= 3) {
       return NextResponse.json({ error: '今日提問已達上限（3 題），明天再來吧！', todayCount }, { status: 429 });
     }
 
@@ -131,7 +135,7 @@ export async function POST(
     });
 
     const sanitized = updatedQuestions.map(({ userId: _uid, ...q }) => q);
-    const remaining = Math.max(0, 3 - (todayCount + 1));
+    const remaining = isAdmin ? null : Math.max(0, 3 - (todayCount + 1));
     return NextResponse.json({ answer, questions: sanitized, remainingToday: remaining });
   } catch (error) {
     console.error('Ask question error:', error);

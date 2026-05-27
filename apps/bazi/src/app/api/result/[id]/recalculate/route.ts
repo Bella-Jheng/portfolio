@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '../../../../lib/firebase';
 import { getAuth } from 'firebase-admin/auth';
 import { generateBaziReading } from '../../../../lib/anthropic';
-import { calculateBaziPillars, getDominantElements } from '../../../../lib/bazi-calculator';
+import { calculateBaziPillars, getDominantElements, calculateMajorFortune, getAnnualPillar, STEMS, BRANCHES } from '../../../../lib/bazi-calculator';
 
 const ADMIN_UID = process.env.ADMIN_UID ?? '';
 
@@ -55,6 +55,23 @@ export async function PUT(
       .map((kd) => `【${kd['title']}】\n${kd['content']}`)
       .join('\n\n');
 
+    const currentYear = new Date().getFullYear();
+    const yearStemIdx = STEMS.indexOf(pillars.year.stem);
+    const monthStemIdx = STEMS.indexOf(pillars.month.stem);
+    const monthBranchIdx = BRANCHES.indexOf(pillars.month.branch);
+    let majorFortuneInfo: { currentCycle: string; currentAnnual: string } | undefined;
+    if (gender && yearStemIdx >= 0 && monthStemIdx >= 0 && monthBranchIdx >= 0) {
+      const mf = calculateMajorFortune(birthYear, birthMonth, birthDay, gender, yearStemIdx, monthStemIdx, monthBranchIdx);
+      const virtualAge = currentYear - birthYear + 1;
+      const cycleIdx = mf.cycles.findLastIndex((c) => c.startAge <= virtualAge);
+      const cycle = cycleIdx >= 0 ? mf.cycles[cycleIdx] : null;
+      const annual = getAnnualPillar(currentYear);
+      majorFortuneInfo = {
+        currentCycle: cycle ? `${cycle.stem}${cycle.branch}（起運歲 ${cycle.startAge}，${cycle.startYear} 年起）` : '尚未入大運',
+        currentAnnual: `${annual.stem}${annual.branch}（${currentYear} 年）`,
+      };
+    }
+
     const fortune = await generateBaziReading({
       name: name ?? undefined,
       gender: gender ?? undefined,
@@ -64,7 +81,8 @@ export async function PUT(
       birthHour: birthHour ?? undefined,
       pillars,
       knowledge,
-      currentYear: new Date().getFullYear(),
+      currentYear,
+      majorFortuneInfo,
     });
 
     await db.collection('readings').doc(id).update({

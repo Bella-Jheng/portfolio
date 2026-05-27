@@ -8,6 +8,48 @@ import { Loading } from '../../../components/Common/loading/Loading';
 import { useAuth } from '../../../lib/auth-context';
 import Link from 'next/link';
 
+function CorrectionButton({ readingId }: { readingId: string }) {
+  const { user, getToken } = useAuth();
+  const [sent, setSent] = useState(false);
+  const [sending, setSending] = useState(false);
+
+  if (!user) return null;
+
+  const handleRequest = async () => {
+    setSending(true);
+    try {
+      const token = await getToken();
+      await fetch(`/api/result/${readingId}/request-correction`, {
+        method: 'POST',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      setSent(true);
+    } catch {
+      // silent fail — user can retry
+    } finally {
+      setSending(false);
+    }
+  };
+
+  if (sent) {
+    return (
+      <p className="text-[11px] text-[#7AC97A] tracking-wider text-center">
+        ✓ 已通知管理員，我們會盡快協助更正
+      </p>
+    );
+  }
+
+  return (
+    <button
+      onClick={handleRequest}
+      disabled={sending}
+      className="text-xs text-bz-muted border border-bz-gold/20 px-5 py-2 rounded-full hover:border-bz-gold/50 hover:text-[#4A4A4A] transition-all disabled:opacity-40"
+    >
+      {sending ? '送出中…' : '✏️ 通知管理員更改日期'}
+    </button>
+  );
+}
+
 export default function ResultPage() {
   const params = useParams();
   const id = params.id as string;
@@ -56,7 +98,7 @@ export default function ResultPage() {
           href="/"
           className="bg-bz-terra text-white px-6 py-3 rounded-full text-sm tracking-wider hover:bg-bz-terra-dark transition-all"
         >
-          重新排盤
+          返回首頁
         </Link>
       </div>
     );
@@ -67,13 +109,8 @@ export default function ResultPage() {
       <div className="max-w-5xl mx-auto px-2 md:px-6">
         <ResultDisplay reading={reading} onUpdate={setReading} />
 
-        <div className="mt-12 text-center">
-          <Link
-            href="/"
-            className="text-bz-muted text-sm hover:text-bz-brown transition-colors tracking-wider font-semibold"
-          >
-            ← 重新排盤
-          </Link>
+        <div className="mt-10 flex flex-col items-center gap-3">
+          <CorrectionButton readingId={id} />
         </div>
       </div>
     </div>

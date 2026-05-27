@@ -21,9 +21,12 @@ function getCredential(): ServiceAccount {
   };
 }
 
-function getFirebaseApp() {
-  if (getApps().length > 0) return getApps()[0];
-  return initializeApp({ credential: cert(getCredential()) });
+function getDb() {
+  const isNew = getApps().length === 0;
+  const app = isNew ? initializeApp({ credential: cert(getCredential()) }) : getApps()[0];
+  const firestore = getFirestore(app);
+  if (isNew) firestore.settings({ ignoreUndefinedProperties: true });
+  return firestore;
 }
 
-export const db = getFirestore(getFirebaseApp());
+export const db = getDb();

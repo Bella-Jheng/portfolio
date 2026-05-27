@@ -12,7 +12,7 @@ const months = Array.from({ length: 12 }, (_, i) => i + 1);
 const days = Array.from({ length: 31 }, (_, i) => i + 1);
 
 const inputClass =
-  'w-full bg-[#FAF7F4] border border-[#EAE5DF] rounded-xl px-4 py-3 text-[#4A4A4A] placeholder:text-[#9E9E9E] focus:outline-none focus:border-[#FCD060] transition-colors text-sm';
+  'w-full bg-[#FAF7F4] border border-[#EAE5DF] rounded-xl px-4 py-3 text-[#4A4A4A] placeholder:text-[#636363] focus:outline-none focus:border-[#FCD060] transition-colors text-sm';
 
 const selectClass =
   'bg-[#FAF7F4] border border-[#EAE5DF] rounded-xl px-3 py-3 text-[#4A4A4A] focus:outline-none focus:border-[#FCD060] transition-colors text-sm w-full';
@@ -97,7 +97,7 @@ export function BirthForm() {
                 className={`flex-1 py-3 rounded-xl border text-sm font-medium transition-all ${
                   form.gender === g
                     ? 'bg-[#4A4A4A] text-white border-[#4A4A4A] shadow-md'
-                    : 'border-[#EAE5DF] text-[#9E9E9E] hover:border-[#4A4A4A] hover:text-[#4A4A4A] bg-[#FAF7F4]'
+                    : 'border-[#EAE5DF] text-[#636363] hover:border-[#4A4A4A] hover:text-[#4A4A4A] bg-[#FAF7F4]'
                 }`}
               >
                 {g === 'male' ? '男 ♂' : '女 ♀'}

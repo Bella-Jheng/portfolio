@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '../../lib/firebase';
 import { getAuth } from 'firebase-admin/auth';
 import { generateBaziReading } from '../../lib/anthropic';
-import { calculateBaziPillars, getDominantElements } from '../../lib/bazi-calculator';
+import { calculateBaziPillars, getDominantElements, calculateMajorFortune, getAnnualPillar, STEMS, BRANCHES } from '../../lib/bazi-calculator';
 import type { CalculateRequest } from '../../types/bazi';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -23,6 +23,20 @@ export async function POST(request: NextRequest) {
     const createdBy = await extractUid(request);
     const body = (await request.json()) as CalculateRequest;
     const { name, gender, birthYear, birthMonth, birthDay, birthHour } = body;
+
+    // If the user already has a reading, return it without recalculating
+    if (createdBy) {
+      const existing = await db
+        .collection('readings')
+        .where('createdBy', '==', createdBy)
+        .orderBy('createdAt', 'desc')
+        .limit(1)
+        .get();
+      if (!existing.empty) {
+        const doc = existing.docs[0];
+        return NextResponse.json({ id: doc.id, ...doc.data() });
+      }
+    }
 
     if (!name?.trim()) {
       return NextResponse.json({ error: '請填寫姓名' }, { status: 400 });
@@ -57,6 +71,23 @@ export async function POST(request: NextRequest) {
       })
       .join('\n\n');
 
+    const currentYear = new Date().getFullYear();
+    const yearStemIdx = STEMS.indexOf(pillars.year.stem);
+    const monthStemIdx = STEMS.indexOf(pillars.month.stem);
+    const monthBranchIdx = BRANCHES.indexOf(pillars.month.branch);
+    let majorFortuneInfo: { currentCycle: string; currentAnnual: string } | undefined;
+    if (gender && yearStemIdx >= 0 && monthStemIdx >= 0 && monthBranchIdx >= 0) {
+      const mf = calculateMajorFortune(birthYear, birthMonth, birthDay, gender, yearStemIdx, monthStemIdx, monthBranchIdx);
+      const virtualAge = currentYear - birthYear + 1;
+      const cycleIdx = mf.cycles.findLastIndex((c) => c.startAge <= virtualAge);
+      const cycle = cycleIdx >= 0 ? mf.cycles[cycleIdx] : null;
+      const annual = getAnnualPillar(currentYear);
+      majorFortuneInfo = {
+        currentCycle: cycle ? `${cycle.stem}${cycle.branch}（起運歲 ${cycle.startAge}，${cycle.startYear} 年起）` : '尚未入大運',
+        currentAnnual: `${annual.stem}${annual.branch}（${currentYear} 年）`,
+      };
+    }
+
     const fortune = await generateBaziReading({
       name,
       gender,
@@ -66,7 +97,8 @@ export async function POST(request: NextRequest) {
       birthHour,
       pillars,
       knowledge,
-      currentYear: new Date().getFullYear(),
+      currentYear,
+      majorFortuneInfo,
     });
 
     const id = uuidv4();

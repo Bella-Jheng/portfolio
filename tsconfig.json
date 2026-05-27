@@ -11,6 +11,9 @@
   "references": [
     {
       "path": "./apps/portfolio"
+    },
+    {
+      "path": "./apps/bazi"
     }
   ],
   "extends": "./tsconfig.base.json"

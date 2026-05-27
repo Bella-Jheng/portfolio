@@ -5,12 +5,34 @@ import { formatPillarsForPrompt } from './bazi-calculator';
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY!);
 const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
+function sanitizeJsonControlChars(input: string): string {
+  let inString = false;
+  let escaped = false;
+  let result = '';
+  for (const char of input) {
+    if (escaped) { result += char; escaped = false; continue; }
+    if (char === '\\' && inString) { result += char; escaped = true; continue; }
+    if (char === '"') { inString = !inString; result += char; continue; }
+    if (inString && char.charCodeAt(0) < 0x20) {
+      if (char === '\n') result += '\\n';
+      else if (char === '\r') result += '\\r';
+      else if (char === '\t') result += '\\t';
+      else result += `\\u${char.charCodeAt(0).toString(16).padStart(4, '0')}`;
+      continue;
+    }
+    result += char;
+  }
+  return result;
+}
+
 async function withRetry<T>(fn: () => Promise<T>, retries = 3, delayMs = 2000): Promise<T> {
   for (let i = 0; i < retries; i++) {
     try {
       return await fn();
     } catch (err) {
-      const isRetryable = err instanceof Error && err.message.includes('503');
+      const status = (err as { status?: number })?.status;
+      const isRetryable = status === 503 || status === 429 || status === 500 ||
+        (err instanceof Error && (err.message.includes('503') || err.message.includes('overloaded')));
       if (!isRetryable || i === retries - 1) throw err;
       await new Promise(r => setTimeout(r, delayMs * (i + 1)));
     }
@@ -28,8 +50,9 @@ export async function generateBaziReading(params: {
   pillars: BaziPillars;
   knowledge: string;
   currentYear: number;
+  majorFortuneInfo?: { currentCycle: string; currentAnnual: string };
 }): Promise<FortuneReading> {
-  const { name, gender, birthYear, birthMonth, birthDay, birthHour, pillars, knowledge, currentYear } = params;
+  const { name, gender, birthYear, birthMonth, birthDay, birthHour, pillars, knowledge, currentYear, majorFortuneInfo } = params;
 
   const genderText = gender === 'male' ? '男' : gender === 'female' ? '女' : '未提供';
   const birthTimeText = birthHour !== undefined ? `${birthHour}時` : '（未提供時辰）';
@@ -39,8 +62,12 @@ export async function generateBaziReading(params: {
     ? `\n以下是命理知識庫，請根據這些知識進行分析：\n---\n${knowledge}\n---\n`
     : '';
 
+  const cycleSection = majorFortuneInfo
+    ? `\n【當前大運 / 流年】\n目前大運：${majorFortuneInfo.currentCycle}\n今年流年：${majorFortuneInfo.currentAnnual}\n`
+    : '';
+
   const prompt = `你是一位精通子平八字的命理師。請根據以下已排出的八字命盤，依照子平命理規則進行深度分析。
-${knowledgeSection}
+${knowledgeSection}${cycleSection}
 【命主資料】
 姓名：${nameText}
 性別：${genderText}
@@ -105,15 +132,26 @@ ${formatPillarsForPrompt(pillars)}
 
 請分析以下九個面向（繁體中文），每個面向都要有具體說明，不要只給結論：
 
-1. **命盤總覽**（150-200字）：格局判斷（附加分合計%）、用神忌神、目前走的大運（請根據出生資料與性別推算起運歲數與大運方向）
-2. **性格特質**（150-250字）：日主五行 + 最突出的 2~3 個十神組合特質，語氣親切像對本人說話
-3. **${currentYear} 年整體運勢**（100-200字）：大運 × 流年組合評級，說明邏輯
-4. **${currentYear} 年財運**（100-200字）：用神忌神判斷 + 具體建議
-5. **${currentYear} 年工作事業**（100-200字）：十神角度 + 今年適合的行動
-6. **${currentYear} 年感情桃花**（100-200字）：夫妻星 + 桃花時機 + 夫妻宮狀態
-7. **${currentYear} 年健康**（100-200字）：命盤弱點五行 + 今年需注意部位
-8. **補運建議**（100字內）：用神顏色、方向、生肖、飾品
+1. **命盤總覽**（200-500字）：格局判斷（附加分合計%）、用神忌神、命格（月令主氣十神決定，例：傷官格、正財格）、目前走的大運（請根據出生資料與性別推算起運歲數與大運方向）
+2. **性格特質**（200-500字）：日主五行 + 最突出的 2~3 個十神組合特質，語氣親切像對本人說話
+3. **${currentYear} 年整體運勢**（200-500字）：大運 × 流年組合評級，說明邏輯
+4. **${currentYear} 年財運**（200-500字）：用神忌神判斷 + 具體建議
+5. **${currentYear} 年工作事業**（200-500字）：十神角度 + 今年適合的行動
+6. **${currentYear} 年感情桃花**（200-500字）：夫妻星 + 桃花時機 + 夫妻宮狀態
+7. **${currentYear} 年健康**（200-500字）：命盤弱點五行 + 今年需注意部位
+8. **補運建議**（200-500字）：用神顏色、方向、生肖、飾品
 9. **年度重點行動建議**：具體可操作的 3~5 個建議（每條一句話，以「1. 2. 3.」格式列出）
+10. **大運 × 流年解析**（200-500字）：${majorFortuneInfo
+  ? `根據目前大運「${majorFortuneInfo.currentCycle}」與今年流年「${majorFortuneInfo.currentAnnual}」，解析此大運的核心氣場與五行特質對命主的影響，再說明今年流年干支與大運的交互作用（相生、相剋、沖合），點出今年整體的有利方向與需要注意的風險。`
+  : '（未提供大運資訊，請略過此項，輸出空字串）'}
+
+11. **十神命格格局深度解析**（遵循徐玉蘭老師體系）：
+    - 判定身強身弱（得令/得地/得助三項各別說明）
+    - 確認格局（月柱透出十神優先，再看月支本氣）
+    - 說明複合格局（若有制化關係需標注）
+    - 用神忌神（身強：洩剋耗為用；身弱：生比為用）
+    - 六個面向各 2–4 句：①核心性格 ②優勢能力 ③潛在風險 ④事業方向 ⑤感情特質（依性別分析夫星/妻星） ⑥身強弱對此格局的影響
+    - 注意：晚子時（23:00–24:00）歸當日計算，月柱不變
 
 請以以下 JSON 格式回覆，不要加入其他文字：
 {
@@ -125,7 +163,9 @@ ${formatPillarsForPrompt(pillars)}
   "romance": "感情桃花...",
   "health": "健康...",
   "remedy": "補運建議...",
-  "actions": "1. 具體建議一\n2. 具體建議二\n3. 具體建議三"
+  "actions": "1. 具體建議一\n2. 具體建議二\n3. 具體建議三",
+  "cycleAnalysis": "大運 × 流年解析...",
+  "tenGodAnalysis": "【格局】格局名稱｜身強/弱｜用神：XX｜忌神：XX\n【核心性格】...\n【優勢能力】...\n【潛在風險】...\n【事業方向】...\n【感情特質】...\n【格局影響】..."
 }`;
 
   const result = await withRetry(() => model.generateContent(prompt));
@@ -134,7 +174,7 @@ ${formatPillarsForPrompt(pillars)}
   const jsonMatch = text.match(/\{[\s\S]*\}/);
   if (!jsonMatch) throw new Error('Failed to parse AI response as JSON');
 
-  return JSON.parse(jsonMatch[0]) as FortuneReading;
+  return JSON.parse(sanitizeJsonControlChars(jsonMatch[0])) as FortuneReading;
 }
 
 export async function answerCustomQuestion(params: {
@@ -170,7 +210,7 @@ ${formatPillarsForPrompt(pillars)}
 【問題】
 ${question}
 
-請用繁體中文回答（100-200字），結合命盤格局（身強/身弱）、用神忌神與十神關係作答，直接回答問題，不需要重複問題或加入額外說明。`;
+請用繁體中文回答（200-500字），結合命盤格局（身強/身弱）、用神忌神與十神關係作答，直接回答問題，不需要重複問題或加入額外說明。`;
 
   const result = await withRetry(() => model.generateContent(prompt));
   return result.response.text();

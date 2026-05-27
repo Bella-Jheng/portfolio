@@ -54,8 +54,30 @@ const JIEQI_COEFF: Record<number, number> = {
   12: 7.1921,  // 大雪 → 子月 start
 };
 
+// 中氣 (mid-month solar terms) coefficients — used for 逆排 起運 calculation
+const ZHONGQI_COEFF: Record<number, number> = {
+  1:  20.3872, // 大寒
+  2:  19.1568, // 雨水
+  3:  20.8420, // 春分
+  4:  20.5922, // 穀雨
+  5:  21.1966, // 小滿
+  6:  21.9300, // 夏至
+  7:  23.1300, // 大暑
+  8:  23.2820, // 處暑
+  9:  23.0420, // 秋分
+  10: 23.4979, // 霜降
+  11: 22.9300, // 小雪
+  12: 22.3300, // 冬至
+};
+
 function getSolarTermDay(year: number, calendarMonth: number): number {
   const C = JIEQI_COEFF[calendarMonth];
+  const Y = year % 100 === 0 ? 100 : year % 100;
+  return Math.floor(Y * 0.2422 + C) - Math.floor((Y - 1) / 4);
+}
+
+function getZhongqiDay(year: number, calendarMonth: number): number {
+  const C = ZHONGQI_COEFF[calendarMonth];
   const Y = year % 100 === 0 ? 100 : year % 100;
   return Math.floor(Y * 0.2422 + C) - Math.floor((Y - 1) / 4);
 }
@@ -119,11 +141,11 @@ function getMonthPillar(year: number, month: number, day: number): Pillar {
 
 // ─── Day pillar ──────────────────────────────────────────────────────────────
 // Reference: 1900/01/01 = 甲戌 (stem 0, branch 10)
-// 晚子時(23:00–24:00) = 當天日柱; 早子時(00:00–01:00) = 隔天日柱
+// 晚子時(23:00–24:00) 和 早子時(00:00–01:00) 均屬隔天日柱
 function getDayPillar(year: number, month: number, day: number, hour?: number): Pillar {
   let jdn = getJulianDayNumber(year, month, day);
-  // Early 子時 (00:00–01:00) belongs to next day's pillar
-  if (hour === 0) jdn += 1;
+  // 子時 (23:00–01:00) belongs to the next day's pillar
+  if (hour === 23 || hour === 0) jdn += 1;
 
   const d = jdn - JDN_BASE;
   const stemIndex   = mod(d, 10);
@@ -170,7 +192,7 @@ export function calculateBaziPillars(
   const dayPillar   = getDayPillar(year, month, day, hour);
 
   const jdn = getJulianDayNumber(year, month, day);
-  const d   = jdn - JDN_BASE + (hour === 0 ? 1 : 0);
+  const d   = jdn - JDN_BASE + (hour === 23 || hour === 0 ? 1 : 0);
   const dayStemIndex = mod(d, 10);
 
   const hourPillar = hour !== undefined
@@ -274,7 +296,8 @@ function daysInMonth(year: number, month: number): number {
   return new Date(year, month, 0).getDate();
 }
 
-function daysToNextTerm(year: number, month: number, day: number): number {
+// 順排：count forward to next 節 (Chinese month start term)
+function daysToNextJie(year: number, month: number, day: number): number {
   const termDay = getSolarTermDay(year, month);
   if (day < termDay) return termDay - day;
   const nm = month === 12 ? 1 : month + 1;
@@ -282,12 +305,14 @@ function daysToNextTerm(year: number, month: number, day: number): number {
   return daysInMonth(year, month) - day + getSolarTermDay(ny, nm);
 }
 
-function daysToPrevTerm(year: number, month: number, day: number): number {
-  const termDay = getSolarTermDay(year, month);
-  if (day >= termDay) return day - termDay;
+// 逆排：count backward to previous 中氣 (mid-month term of preceding month)
+// Traditional rule: for 逆排, distance = days back to the previous 中氣
+function daysToPrevZhongqi(year: number, month: number, day: number): number {
+  const zhongqiDay = getZhongqiDay(year, month);
+  if (day > zhongqiDay) return day - zhongqiDay;
   const pm = month === 1 ? 12 : month - 1;
   const py = month === 1 ? year - 1 : year;
-  return daysInMonth(py, pm) - getSolarTermDay(py, pm) + day;
+  return daysInMonth(py, pm) - getZhongqiDay(py, pm) + day;
 }
 
 export function calculateMajorFortune(
@@ -300,10 +325,11 @@ export function calculateMajorFortune(
   const isForward = (isMale && yearIsYang) || (!isMale && !yearIsYang);
 
   const days = isForward
-    ? daysToNextTerm(year, month, day)
-    : daysToPrevTerm(year, month, day);
+    ? daysToNextJie(year, month, day)
+    : daysToPrevZhongqi(year, month, day);
 
-  const startAge   = Math.ceil(days / 3);
+  // D ÷ 3 整數部分 = 起運年數；餘數 × 4 = 起運月數
+  const startAge    = Math.floor(days / 3);
   const startMonths = (days % 3) * 4;
 
   const cycles: MajorFortuneCycle[] = Array.from({ length: 9 }, (_, i) => {
@@ -312,11 +338,33 @@ export function calculateMajorFortune(
       stem:      STEMS[mod(monthStemIndex + offset, 10)],
       branch:    BRANCHES[mod(monthBranchIndex + offset, 12)],
       startAge:  startAge + i * 10,
-      startYear: year + startAge + i * 10 - 1,
+      startYear: year + startAge + i * 10,
     };
   });
 
   return { startDays: days, startAge, startMonths, cycles };
+}
+
+// ─── Fortune pattern (命格) ───────────────────────────────────────────────────
+// Rule: month stem (月干透出) takes priority; fall back to month branch main hidden stem
+const PATTERN_NAMES: Record<TenGod, string> = {
+  食神: '食神格', 傷官: '傷官格',
+  偏財: '偏財格', 正財: '正財格',
+  七殺: '七殺格', 正官: '正官格',
+  偏印: '偏印格', 正印: '正印格',
+  比肩: '建祿格', 劫財: '月劫格',
+};
+
+export function getFortunePattern(monthBranch: string, monthStem: string, dayStem: string): string {
+  // Priority 1: month stem transparent ten god (not 比肩/劫財)
+  const stemGod = getTenGod(dayStem, monthStem);
+  if (stemGod !== '比肩' && stemGod !== '劫財') {
+    return PATTERN_NAMES[stemGod] ?? '特殊格局';
+  }
+  // Priority 2: month branch main hidden stem
+  const mainBranchStem = BRANCH_HIDDEN_STEMS[monthBranch]?.[0];
+  if (!mainBranchStem) return '特殊格局';
+  return PATTERN_NAMES[getTenGod(dayStem, mainBranchStem)] ?? '特殊格局';
 }
 
 // ─── Annual luck pillar (流年) ────────────────────────────────────────────────

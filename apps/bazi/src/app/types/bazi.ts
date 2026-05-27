@@ -23,6 +23,8 @@ export interface FortuneReading {
   health: string;
   remedy?: string;
   actions?: string;
+  cycleAnalysis?: string;
+  tenGodAnalysis?: string;
 }
 
 export interface QuestionAnswer {
@@ -45,6 +47,8 @@ export interface Reading {
   questions: QuestionAnswer[];
   createdAt: string;
   remainingToday?: number | null;
+  correctionRequested?: boolean;
+  correctionRequestedAt?: string;
 }
 
 export interface Knowledge {
