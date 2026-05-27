@@ -25,22 +25,20 @@ const item = {
 
 export default function LandingPage() {
   const router = useRouter();
-  const { user, loading, getToken } = useAuth();
+  const { user, loading, readingId, readingLoading } = useAuth();
 
   useEffect(() => {
-    if (loading || !user) return;
-    const check = async () => {
-      const token = await getToken();
-      const res = await fetch('/api/user/reading', {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      const data = await res.json();
-      if (data.readingId) {
-        router.replace(`/result/${data.readingId}`);
-      }
-    };
-    check();
-  }, [user, loading, getToken, router]);
+    if (loading || readingLoading || !user || !readingId) return;
+    router.replace(`/result/${readingId}`);
+  }, [user, loading, readingId, readingLoading, router]);
+
+  const handleStart = () => {
+    if (user && readingId) {
+      router.push(`/result/${readingId}`);
+    } else {
+      router.push('/form');
+    }
+  };
 
   return (
     <div className={`min-h-[calc(100vh-3.5rem)] flex flex-col items-center justify-center px-5 py-16 relative overflow-hidden bg-gradient-to-br from-[#FFFDF5] via-[#FFF9EE] to-[#FFF5E7] ${styles['bg-dots']}`}>
@@ -146,7 +144,7 @@ export default function LandingPage() {
           transition={{ delay: 0.5, duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
         >
           <button
-            onClick={() => router.push('/form')}
+            onClick={handleStart}
             className="w-full bg-[#FCD060] text-[#4A4A4A] font-black py-4 rounded-2xl tracking-[0.2em] text-sm hover:bg-[#FDE49B] shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:shadow-sm transition-all"
           >
             開始測算 ✦

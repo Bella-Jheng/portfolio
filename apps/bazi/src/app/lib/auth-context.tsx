@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import type { User } from 'firebase/auth';
 import { onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth';
 import { auth, googleProvider } from './firebase-client';
@@ -11,6 +11,8 @@ interface AuthContextValue {
   user: User | null;
   loading: boolean;
   isAdmin: boolean;
+  readingId: string | null;
+  readingLoading: boolean;
   login: () => Promise<void>;
   logout: () => Promise<void>;
   getToken: () => Promise<string | null>;
@@ -21,14 +23,37 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [readingId, setReadingId] = useState<string | null>(null);
+  const [readingLoading, setReadingLoading] = useState(false);
+
+  const fetchReading = useCallback(async (currentUser: User) => {
+    setReadingLoading(true);
+    try {
+      const token = await currentUser.getIdToken();
+      const res = await fetch('/api/user/reading', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      setReadingId(data.readingId ?? null);
+    } catch {
+      setReadingId(null);
+    } finally {
+      setReadingLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => {
       setUser(u);
       setLoading(false);
+      if (u) {
+        fetchReading(u);
+      } else {
+        setReadingId(null);
+      }
     });
     return unsub;
-  }, []);
+  }, [fetchReading]);
 
   const login = async () => {
     await signInWithPopup(auth, googleProvider);
@@ -36,6 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     await signOut(auth);
+    setReadingId(null);
   };
 
   const getToken = async () => {
@@ -46,7 +72,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const isAdmin = !!ADMIN_UID && user?.uid === ADMIN_UID;
 
   return (
-    <AuthContext.Provider value={{ user, loading, isAdmin, login, logout, getToken }}>
+    <AuthContext.Provider value={{ user, loading, isAdmin, readingId, readingLoading, login, logout, getToken }}>
       {children}
     </AuthContext.Provider>
   );

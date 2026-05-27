@@ -21,12 +21,21 @@ function getCredential(): ServiceAccount {
   };
 }
 
+let _db: ReturnType<typeof getFirestore> | null = null;
+
 function getDb() {
+  if (_db) return _db;
   const isNew = getApps().length === 0;
   const app = isNew ? initializeApp({ credential: cert(getCredential()) }) : getApps()[0];
   const firestore = getFirestore(app);
   if (isNew) firestore.settings({ ignoreUndefinedProperties: true });
-  return firestore;
+  _db = firestore;
+  return _db;
 }
 
-export const db = getDb();
+// Proxy：import { db } 的寫法不變，但 Firebase 實際上在第一次 request 時才初始化，不在 build 時
+export const db = new Proxy({} as ReturnType<typeof getFirestore>, {
+  get(_, prop) {
+    return Reflect.get(getDb(), prop as string);
+  },
+});

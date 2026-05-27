@@ -3,14 +3,17 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '../../lib/auth-context';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export function Header() {
   const pathname = usePathname();
-  const { user, loading, isAdmin, login, logout } = useAuth();
+  const router = useRouter();
+  const { user, loading, isAdmin, readingId, login, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+
+  const isPaiPanActive = pathname === '/' || pathname.startsWith('/result/');
 
   const linkClass = (href: string) =>
     `text-sm font-medium tracking-wide transition-colors ${
@@ -23,6 +26,11 @@ export function Header() {
     `text-base font-bold tracking-wide transition-colors py-2 border-b border-black/5 ${
       pathname === href ? 'text-[#FCD060]' : 'text-[#4A4A4A]'
     }`;
+
+  const handlePaiPan = (closeMenu = false) => {
+    if (closeMenu) setIsOpen(false);
+    router.push(user && readingId ? `/result/${readingId}` : '/');
+  };
 
   return (
       <header className="fixed top-0 left-0 right-0 z-50 bg-[#FFFDF5]/90 backdrop-blur-md border-b border-black/5">
@@ -44,7 +52,7 @@ export function Header() {
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center gap-6">
-              <Link href="/" className={linkClass('/')}>排盤</Link>
+              <button onClick={() => handlePaiPan()} className={`text-sm font-medium tracking-wide transition-colors ${isPaiPanActive ? 'text-[#FCD060]' : 'text-[#636363] hover:text-[#4A4A4A]'}`}>排盤</button>
               {isAdmin && (
                 <>
                   <Link href="/dashboard" className={linkClass('/dashboard')}>命盤列表</Link>
@@ -86,7 +94,7 @@ export function Header() {
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
             className="md:hidden absolute top-16 left-0 right-0 bg-[#FFFDF5] border-b border-black/5 px-6 pb-6 pt-4 flex flex-col gap-4 shadow-lg z-40">
-            <Link href="/" className={mobileLinkClass('/')} onClick={() => setIsOpen(false)}>排盤</Link>
+            <button onClick={() => handlePaiPan(true)} className={`text-base font-bold tracking-wide transition-colors py-2 border-b border-black/5 text-left ${isPaiPanActive ? 'text-[#FCD060]' : 'text-[#4A4A4A]'}`}>排盤</button>
             {isAdmin && (
               <>
                 <Link href="/dashboard" className={mobileLinkClass('/dashboard')} onClick={() => setIsOpen(false)}>命盤列表</Link>
