@@ -7,6 +7,10 @@ const { composePlugins, withNx } = require('@nx/next');
  **/
 const nextConfig = {
   nx: {},
+  productionBrowserSourceMaps: true,
+  experimental: {
+    serverSourceMaps: true,
+  },
   outputFileTracingRoot: require('path').join(__dirname, '../../'),
   serverExternalPackages: ['firebase-admin'],
   images: {
