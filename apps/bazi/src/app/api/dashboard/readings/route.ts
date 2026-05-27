@@ -9,7 +9,8 @@ async function verifyAdmin(request: NextRequest): Promise<boolean> {
   try {
     const decoded = await getAdminAuth().verifyIdToken(token);
     return decoded.uid === ADMIN_UID;
-  } catch {
+  } catch (e) {
+    console.error('[verifyAdmin] failed:', e);
     return false;
   }
 }
