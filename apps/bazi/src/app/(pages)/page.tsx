@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { useEffect } from 'react';
 import styles from './page.module.scss';
 import { useAuth } from '../lib/auth-context';
+import { useModalStore } from '../lib/modal-store';
 
 const REVEALS = [
   { emoji: '🔮', label: '性格命格', desc: '天生個性、優勢與潛在盲點' },
@@ -25,7 +26,8 @@ const item = {
 
 export default function LandingPage() {
   const router = useRouter();
-  const { user, loading, readingId, readingLoading } = useAuth();
+  const { user, loading, readingId, readingLoading, login } = useAuth();
+  const { show } = useModalStore();
 
   useEffect(() => {
     if (loading || readingLoading || !user || !readingId) return;
@@ -33,11 +35,18 @@ export default function LandingPage() {
   }, [user, loading, readingId, readingLoading, router]);
 
   const handleStart = () => {
-    if (user && readingId) {
-      router.push(`/result/${readingId}`);
-    } else {
-      router.push('/form');
+    if (loading || readingLoading) return;
+    if (!user) {
+      show({
+        title: '請先登入',
+        message: '需要登入 Google 帳號才能開始排盤，系統會將你的命盤與帳號綁定，方便下次直接查看。',
+        confirmLabel: 'Google 登入',
+        cancelLabel: '取消',
+        onConfirm: login,
+      });
+      return;
     }
+    router.push(readingId ? `/result/${readingId}` : '/form');
   };
 
   return (
