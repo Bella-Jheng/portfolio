@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '../../../../lib/firebase';
-import { getAuth } from 'firebase-admin/auth';
+import { db, getAdminAuth } from '../../../../lib/firebase';
+
 import { generateBaziReading } from '../../../../lib/anthropic';
 import { calculateBaziPillars, getDominantElements, calculateMajorFortune, getAnnualPillar, STEMS, BRANCHES } from '../../../../lib/bazi-calculator';
 
@@ -10,7 +10,7 @@ async function verifyAdmin(request: NextRequest): Promise<boolean> {
   const token = request.headers.get('Authorization')?.replace('Bearer ', '');
   if (!token || !ADMIN_UID) return false;
   try {
-    const decoded = await getAuth().verifyIdToken(token);
+    const decoded = await getAdminAuth().verifyIdToken(token);
     return decoded.uid === ADMIN_UID;
   } catch {
     return false;

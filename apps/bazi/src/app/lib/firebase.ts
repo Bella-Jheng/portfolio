@@ -1,5 +1,6 @@
 import { initializeApp, getApps, cert, type ServiceAccount } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
+import { getAuth as _getAuth } from 'firebase-admin/auth';
 
 function getCredential(): ServiceAccount {
   // 本地開發：直接讀 service-account.json（放在 apps/bazi/ 根目錄，已加入 .gitignore）
@@ -39,3 +40,9 @@ export const db = new Proxy({} as ReturnType<typeof getFirestore>, {
     return Reflect.get(getDb(), prop as string);
   },
 });
+
+// 確保 app 已初始化後再回傳 Auth，避免 getAuth() 在 app 尚未建立時拋出
+export function getAdminAuth() {
+  getDb(); // triggers app initialization if not yet done
+  return _getAuth();
+}

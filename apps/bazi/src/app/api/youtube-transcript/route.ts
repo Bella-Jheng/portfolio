@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { YoutubeTranscript } from 'youtube-transcript';
-import { getAuth } from 'firebase-admin/auth';
+import { getAdminAuth } from '../../lib/firebase';
+
 
 async function verifyUser(request: NextRequest): Promise<boolean> {
   const token = request.headers.get('Authorization')?.replace('Bearer ', '');
   if (!token) return false;
   try {
-    await getAuth().verifyIdToken(token);
+    await getAdminAuth().verifyIdToken(token);
     return true;
   } catch {
     return false;

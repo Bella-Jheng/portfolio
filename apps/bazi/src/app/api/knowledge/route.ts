@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '../../lib/firebase';
-import { getAuth } from 'firebase-admin/auth';
+import { db, getAdminAuth } from '../../lib/firebase';
+
 import { v4 as uuidv4 } from 'uuid';
 
 const ADMIN_UID = process.env.ADMIN_UID ?? '';
@@ -9,7 +9,7 @@ async function verifyAdmin(request: NextRequest): Promise<boolean> {
   const token = request.headers.get('Authorization')?.replace('Bearer ', '');
   if (!token || !ADMIN_UID) return false;
   try {
-    const decoded = await getAuth().verifyIdToken(token);
+    const decoded = await getAdminAuth().verifyIdToken(token);
     return decoded.uid === ADMIN_UID;
   } catch {
     return false;

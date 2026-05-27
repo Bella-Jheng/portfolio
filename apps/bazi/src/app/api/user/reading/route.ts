@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '../../../lib/firebase';
-import { getAuth } from 'firebase-admin/auth';
+import { db, getAdminAuth } from '../../../lib/firebase';
+
 
 async function extractUid(request: NextRequest): Promise<string | null> {
   const token = request.headers.get('Authorization')?.replace('Bearer ', '');
   if (!token) return null;
   try {
-    const decoded = await getAuth().verifyIdToken(token);
+    const decoded = await getAdminAuth().verifyIdToken(token);
     return decoded.uid;
   } catch {
     return null;

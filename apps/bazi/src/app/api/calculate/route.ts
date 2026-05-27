@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '../../lib/firebase';
-import { getAuth } from 'firebase-admin/auth';
+import { db, getAdminAuth } from '../../lib/firebase';
+
 import { generateBaziReading } from '../../lib/anthropic';
 import { calculateBaziPillars, getDominantElements, calculateMajorFortune, getAnnualPillar, STEMS, BRANCHES } from '../../lib/bazi-calculator';
 import type { CalculateRequest } from '../../types/bazi';
 import { v4 as uuidv4 } from 'uuid';
 
 async function extractUid(request: NextRequest): Promise<string | null> {
-  const auth = getAuth();
+  const auth = getAdminAuth();
   const token = request.headers.get('Authorization')?.replace('Bearer ', '');
   if (!token) return null;
   try {

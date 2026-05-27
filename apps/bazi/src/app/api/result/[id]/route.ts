@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '../../../lib/firebase';
-import { getAuth } from 'firebase-admin/auth';
+import { db, getAdminAuth } from '../../../lib/firebase';
+
 import { answerCustomQuestion } from '../../../lib/anthropic';
 import { getDominantElements } from '../../../lib/bazi-calculator';
 import type { AskQuestionRequest, BaziPillars, FortuneReading, QuestionAnswer } from '../../../types/bazi';
@@ -11,7 +11,7 @@ async function extractUid(request: NextRequest): Promise<string | null> {
   const token = request.headers.get('Authorization')?.replace('Bearer ', '');
   if (!token) return null;
   try {
-    const decoded = await getAuth().verifyIdToken(token);
+    const decoded = await getAdminAuth().verifyIdToken(token);
     return decoded.uid;
   } catch {
     return null;
