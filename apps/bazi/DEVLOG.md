@@ -19,6 +19,19 @@
 
 ---
 
+## 開發時程
+
+| 日期 | 里程碑 |
+|------|--------|
+| 2026-05-20 | 初始化專案，Firebase + AI 整合基礎建設 |
+| 2026-05-27 | 功能大幅擴充：ResultDisplay 拆分成模組化 slides、表單頁、知識庫管理、追問功能 |
+| 2026-05-27 | Refactor：readingId 集中到 AuthProvider，修正首頁跳轉競速條件 |
+| 2026-05-27 ~ 28 | 部署除錯：解決 Vercel 上所有 API 403 問題、加入 source maps |
+
+從第一個 commit 到部署成功約 **8 天**，密集開發集中在 5/27 ~ 5/28。
+
+---
+
 ## 功能進度
 
 ### 核心功能
@@ -304,6 +317,42 @@ const fetchReading = useCallback(async (currentUser: User) => {
 首頁和 Header 都改成讀 context 的值，不再各自 fetch。「排盤」按鈕也從 `<Link href="/">` 改成 button，依據 `readingId` 智慧導向 `/result/:id` 或 `/`。
 
 **學到的事：** 跨元件共用的非同步狀態應該放在最近的共同 Provider，而不是讓每個元件各自 fetch。競速條件通常是「狀態分散」的症狀，不是個別元件的 bug。
+
+---
+
+### 9. Vercel 部署後所有需要 Firebase Auth 的 API 一律回 403
+
+**現象：** 本地開發完全正常，部署到 Vercel 後所有需要登入的 API（`/api/dashboard/readings`、`/api/result/:id` 等）全部回 403，無法判斷是哪一步出錯，因為 `catch` 都是空的。
+
+**根本原因（三層）：**
+
+**第一層：`FIREBASE_PRIVATE_KEY` 格式錯誤**
+從 Firebase Console 下載的 service account JSON 裡，`private_key` 欄位格式是：
+```
+-----BEGIN PRIVATE KEY-----\nMIIE...\n-----END PRIVATE KEY-----\n
+```
+貼到 Vercel 環境變數時，把 header/footer 弄丟了，只剩中間的 base64 內容。Firebase Admin SDK 無法解析沒有 PEM header 的 key，初始化直接失敗，但錯誤被 `catch {}` 吃掉，對外只看到 403。
+
+正確格式（Vercel 環境變數填入）：
+```
+-----BEGIN PRIVATE KEY-----\nMIIE...\n-----END PRIVATE KEY-----\n
+```
+用 `\n` 而不是真實換行，程式碼裡有 `.replace(/\\n/g, '\n')` 會自動轉換。
+
+**第二層：`getAuth()` 在 cold start 時先於 Firebase 初始化被呼叫**
+`db` 是用 Proxy 做懶初始化，本身 import 不會觸發 Firebase app 建立。但 `verifyAdmin` 裡是直接呼叫 `getAuth()`，在 Vercel serverless cold start 時，Firebase app 還沒初始化，`getAuth()` 就 throw 了，又被 `catch` 吃掉。
+
+本地之所以沒問題：Node.js 是持久進程，其他 request 早就初始化過 app 了。
+
+修法：在 `firebase.ts` 新增 `getAdminAuth()`，內部先呼叫 `getDb()` 確保 app 已建立再回傳 `getAuth()`。所有 API route 改用這個 helper。
+
+**第三層：Vercel 環境變數沒有開 Preview**
+Vercel 的環境變數分 Production / Preview / Development 三個範圍，只設 Production 的話 Preview 部署拿不到，一樣 403。
+
+**學到的事：**
+- 空的 `catch {}` 是除錯的大敵，至少要 `console.error` 把錯誤吐到 Vercel Function Logs
+- Vercel serverless 每個 Lambda 都是獨立 cold start，不能假設其他 module 已被初始化過
+- PEM key 格式的 header/footer 不是裝飾，沒有就整個壞掉
 
 ---
 
