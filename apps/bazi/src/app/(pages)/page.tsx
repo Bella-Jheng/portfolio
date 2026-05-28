@@ -26,13 +26,13 @@ const item = {
 
 export default function LandingPage() {
   const router = useRouter();
-  const { user, loading, readingId, readingLoading, login } = useAuth();
+  const { user, loading, isAdmin, readingId, readingLoading, login } = useAuth();
   const { show } = useModalStore();
 
   useEffect(() => {
-    if (loading || readingLoading || !user || !readingId) return;
+    if (loading || readingLoading || !user || !readingId || isAdmin) return;
     router.replace(`/result/${readingId}`);
-  }, [user, loading, readingId, readingLoading, router]);
+  }, [user, loading, isAdmin, readingId, readingLoading, router]);
 
   const handleStart = () => {
     if (loading || readingLoading) return;
@@ -46,7 +46,7 @@ export default function LandingPage() {
       });
       return;
     }
-    router.push(readingId ? `/result/${readingId}` : '/form');
+    router.push(isAdmin || !readingId ? '/form' : `/result/${readingId}`);
   };
 
   return (

@@ -18,14 +18,17 @@ async function extractUid(request: NextRequest): Promise<string | null> {
   }
 }
 
+const ADMIN_UID = process.env.ADMIN_UID ?? '';
+
 export async function POST(request: NextRequest) {
   try {
     const createdBy = await extractUid(request);
+    const isAdmin = !!ADMIN_UID && createdBy === ADMIN_UID;
     const body = (await request.json()) as CalculateRequest;
     const { name, gender, birthYear, birthMonth, birthDay, birthHour } = body;
 
-    // If the user already has a reading, return it without recalculating
-    if (createdBy) {
+    // Admin can always create new readings; regular users are limited to one
+    if (createdBy && !isAdmin) {
       const existing = await db
         .collection('readings')
         .where('createdBy', '==', createdBy)
@@ -114,7 +117,7 @@ export async function POST(request: NextRequest) {
       pillars,
       fortune,
       questions: [],
-      createdBy: createdBy ?? null,
+      createdBy: isAdmin ? null : (createdBy ?? null),
       createdAt: now,
       updatedAt: now,
     });
