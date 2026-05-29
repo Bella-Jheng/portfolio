@@ -49,6 +49,8 @@ function getDayElement(reading: Reading): string {
   return STEM_ELEMENT[reading.pillars?.day?.stem ?? ''] ?? '';
 }
 
+type EditForm = { birthYear: number; birthMonth: number; birthDay: number; birthHour: number | null };
+
 export default function DashboardPage() {
   const { user, loading, isAdmin, login, getToken } = useAuth();
   const [readings, setReadings] = useState<Reading[]>([]);
@@ -56,6 +58,10 @@ export default function DashboardPage() {
   const [error, setError] = useState('');
   const [filter, setFilter] = useState<ElementFilter>('全部');
   const [selected, setSelected] = useState<Reading | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState<EditForm | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isAdmin) return;
@@ -91,6 +97,54 @@ export default function DashboardPage() {
   const handleUpdate = (updated: Reading) => {
     setReadings((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
     setSelected(updated);
+  };
+
+  const startEdit = (r: Reading, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingId(r.id);
+    setEditForm({ birthYear: r.birthYear, birthMonth: r.birthMonth, birthDay: r.birthDay, birthHour: r.birthHour ?? null });
+  };
+
+  const cancelEdit = () => { setEditingId(null); setEditForm(null); };
+
+  const saveEdit = async (id: string) => {
+    if (!editForm) return;
+    setSaving(true);
+    try {
+      const token = await getToken();
+      const res = await fetch(`/api/dashboard/readings/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify(editForm),
+      });
+      if (!res.ok) { setError('更新失敗'); return; }
+      const updated = await res.json();
+      setReadings((prev) => prev.map((r) => (r.id === id ? updated : r)));
+      cancelEdit();
+    } catch {
+      setError('網路錯誤');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const deleteReading = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm('確定要刪除這筆命盤？')) return;
+    setDeletingId(id);
+    try {
+      const token = await getToken();
+      const res = await fetch(`/api/dashboard/readings/${id}`, {
+        method: 'DELETE',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (!res.ok) { setError('刪除失敗'); return; }
+      setReadings((prev) => prev.filter((r) => r.id !== id));
+    } catch {
+      setError('網路錯誤');
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   if (loading) {
@@ -242,61 +296,108 @@ export default function DashboardPage() {
           {filteredReadings.map((r) => {
             const el = getDayElement(r);
             const elStyle = ELEMENT_STYLE[el];
+            const isEditing = editingId === r.id;
+            const isDeleting = deletingId === r.id;
             return (
-              <button
+              <div
                 key={r.id}
-                onClick={() => setSelected(r)}
-                className="w-full flex items-center justify-between border border-bz-gold/20 rounded-xl px-6 py-4 hover:border-bz-gold/40 hover:bg-white/[0.02] transition-all group text-left"
+                className="border border-bz-gold/20 rounded-xl overflow-hidden"
               >
-                <div className="flex items-start gap-3">
-                  {/* Element dot */}
-                  <div className="flex flex-col items-center gap-0.5 pt-0.5 shrink-0">
-                    <span
-                      className="w-2 h-2 rounded-full"
-                      style={{ backgroundColor: elStyle?.dot ?? 'transparent' }}
-                    />
-                    {el && (
-                      <span
-                        className="text-[9px] font-bold leading-none"
-                        style={{ color: elStyle?.dot }}
+                {/* Main row */}
+                <div
+                  className="flex items-center justify-between px-6 py-4 hover:bg-white/[0.02] transition-all group cursor-pointer"
+                  onClick={() => !isEditing && setSelected(r)}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="flex flex-col items-center gap-0.5 pt-0.5 shrink-0">
+                      <span className="w-2 h-2 rounded-full" style={{ backgroundColor: elStyle?.dot ?? 'transparent' }} />
+                      {el && <span className="text-[9px] font-bold leading-none" style={{ color: elStyle?.dot }}>{el}</span>}
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-bz-parchment text-sm font-serif group-hover:text-bz-gold transition-colors">
+                        {r.name || '（未提供姓名）'}
+                      </p>
+                      <p className="text-bz-muted text-xs">
+                        {r.birthYear}年{r.birthMonth}月{r.birthDay}日
+                        {r.birthHour !== undefined && r.birthHour !== null ? ` ${r.birthHour}時` : ''}
+                        {r.gender === 'male' ? ' · 男' : r.gender === 'female' ? ' · 女' : ''}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 shrink-0">
+                    <div className="text-right space-y-1">
+                      <p className="text-bz-muted/60 text-xs">{new Date(r.createdAt).toLocaleDateString('zh-TW')}</p>
+                      {r.correctionRequested && <p className="text-[#E87878] text-[10px] font-bold tracking-wide">✏️ 申請更改日期</p>}
+                      {r.questions.length > 0 && <p className="text-bz-gold/50 text-xs">{r.questions.length} 題追問</p>}
+                    </div>
+                    {/* Action buttons */}
+                    <div className="flex items-center gap-1 ml-2" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        onClick={(e) => startEdit(r, e)}
+                        className="p-1.5 rounded-lg text-bz-muted hover:text-bz-gold hover:bg-bz-gold/10 transition-all"
+                        title="編輯日期"
                       >
-                        {el}
-                      </span>
-                    )}
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-bz-parchment text-sm font-serif group-hover:text-bz-gold transition-colors">
-                      {r.name || '（未提供姓名）'}
-                    </p>
-                    <p className="text-bz-muted text-xs">
-                      {r.birthYear}年{r.birthMonth}月{r.birthDay}日
-                      {r.birthHour !== undefined && r.birthHour !== null
-                        ? ` ${r.birthHour}時`
-                        : ''}
-                      {r.gender === 'male'
-                        ? ' · 男'
-                        : r.gender === 'female'
-                          ? ' · 女'
-                          : ''}
-                    </p>
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 2.828L11.828 15.828a2 2 0 01-1.414.586H7v-3a2 2 0 01.586-1.414z" />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={(e) => deleteReading(r.id, e)}
+                        disabled={isDeleting}
+                        className="p-1.5 rounded-lg text-bz-muted hover:text-[#E87878] hover:bg-[#E87878]/10 transition-all disabled:opacity-40"
+                        title="刪除"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m-7 0a1 1 0 01-1-1V5a1 1 0 011-1h6a1 1 0 011 1v1a1 1 0 01-1 1H9z" />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                 </div>
-                <div className="text-right space-y-1 shrink-0">
-                  <p className="text-bz-muted/60 text-xs">
-                    {new Date(r.createdAt).toLocaleDateString('zh-TW')}
-                  </p>
-                  {r.correctionRequested && (
-                    <p className="text-[#E87878] text-[10px] font-bold tracking-wide">
-                      ✏️ 申請更改日期
-                    </p>
-                  )}
-                  {r.questions.length > 0 && (
-                    <p className="text-bz-gold/50 text-xs">
-                      {r.questions.length} 題追問
-                    </p>
-                  )}
-                </div>
-              </button>
+
+                {/* Inline edit form */}
+                {isEditing && editForm && (
+                  <div className="border-t border-bz-gold/20 px-6 py-4 bg-white/[0.01] flex flex-wrap items-end gap-3">
+                    {(
+                      [
+                        { label: '年', field: 'birthYear', min: 1900, max: 2100 },
+                        { label: '月', field: 'birthMonth', min: 1, max: 12 },
+                        { label: '日', field: 'birthDay', min: 1, max: 31 },
+                        { label: '時（可空）', field: 'birthHour', min: 0, max: 23 },
+                      ] as const
+                    ).map(({ label, field, min, max }) => (
+                      <label key={field} className="flex flex-col gap-1">
+                        <span className="text-bz-muted text-[10px]">{label}</span>
+                        <input
+                          type="number"
+                          min={min}
+                          max={max}
+                          value={editForm[field] ?? ''}
+                          onChange={(e) =>
+                            setEditForm((f) => f && ({ ...f, [field]: e.target.value === '' ? null : Number(e.target.value) }))
+                          }
+                          className="w-16 bg-transparent border border-bz-gold/30 rounded-lg px-2 py-1.5 text-bz-parchment text-xs text-center focus:outline-none focus:border-bz-gold/60"
+                        />
+                      </label>
+                    ))}
+                    <div className="flex gap-2 pb-0.5">
+                      <button
+                        onClick={() => saveEdit(r.id)}
+                        disabled={saving}
+                        className="px-4 py-1.5 rounded-full border border-bz-gold/40 text-bz-gold text-xs hover:bg-bz-gold/10 transition-all disabled:opacity-40"
+                      >
+                        {saving ? '重新排盤中…' : '儲存並重排'}
+                      </button>
+                      <button
+                        onClick={cancelEdit}
+                        className="px-4 py-1.5 rounded-full border border-bz-gold/20 text-bz-muted text-xs hover:border-bz-gold/40 transition-all"
+                      >
+                        取消
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             );
           })}
         </div>
