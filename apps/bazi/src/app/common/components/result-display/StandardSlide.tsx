@@ -2,13 +2,13 @@ function splitIntoPoints(text: string): string[] {
   if (!text) return [];
   const sentences = text
     .split(/(?<=[。！？])/)
-    .map((s) => s.trim())
-    .filter((s) => s.length > 1);
+    .map((sentence) => sentence.trim())
+    .filter((sentence) => sentence.length > 1);
   if (sentences.length > 1) return sentences;
   return text
     .split('，')
-    .map((s) => s.trim())
-    .filter((s) => s.length > 3)
+    .map((sentence) => sentence.trim())
+    .filter((sentence) => sentence.length > 3)
     .slice(0, 6);
 }
 
@@ -40,9 +40,9 @@ export function StandardSlide({ title, emoji, content, accentColor, mobile }: St
         <div className="h-px flex-1" style={{ backgroundColor: accentColor + '60' }} />
       </div>
       <div className={`space-y-4 pr-2 ${mobile ? '' : 'flex-1 overflow-y-auto'}`}>
-        {points.map((point, idx) => (
+        {points.map((point, index) => (
           <p
-            key={idx}
+            key={index}
             className="text-sm leading-relaxed text-[#6B5D57] font-medium pl-3 border-l-2"
             style={{ borderColor: accentColor }}
           >

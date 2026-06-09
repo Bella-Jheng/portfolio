@@ -17,13 +17,13 @@ function splitIntoPoints(text: string): string[] {
   if (!text) return [];
   const sentences = text
     .split(/(?<=[。！？])/)
-    .map((s) => s.trim())
-    .filter((s) => s.length > 1);
+    .map((sentence) => sentence.trim())
+    .filter((sentence) => sentence.length > 1);
   if (sentences.length > 1) return sentences;
   return text
     .split('，')
-    .map((s) => s.trim())
-    .filter((s) => s.length > 3)
+    .map((sentence) => sentence.trim())
+    .filter((sentence) => sentence.length > 3)
     .slice(0, 8);
 }
 
@@ -45,7 +45,7 @@ export function CycleAnalysisSlide({ reading, theme, mobile }: CycleAnalysisSlid
 
   const virtualAge = currentYear - reading.birthYear + 1;
   const cycleIdx = fortune
-    ? fortune.cycles.findLastIndex((c) => c.startAge <= virtualAge)
+    ? fortune.cycles.findLastIndex((cycle) => cycle.startAge <= virtualAge)
     : -1;
   const currentCycle = fortune && cycleIdx >= 0 ? fortune.cycles[cycleIdx] : null;
 
@@ -97,9 +97,9 @@ export function CycleAnalysisSlide({ reading, theme, mobile }: CycleAnalysisSlid
 
       {/* Content */}
       <div className={`space-y-3 pr-1 ${mobile ? '' : 'overflow-y-auto'}`}>
-        {points.map((point, idx) => (
+        {points.map((point, index) => (
           <p
-            key={idx}
+            key={index}
             className="text-sm leading-relaxed text-[#4A4A4A] font-medium pl-3 border-l-2"
             style={{ borderColor: theme.accent }}
           >

@@ -49,6 +49,9 @@ export interface Reading {
   remainingToday?: number | null;
   correctionRequested?: boolean;
   correctionRequestedAt?: string;
+  correctionUsed?: boolean;
+  correctionRequestedDate?: { year: number; month: number; day: number; hour?: number | null };
+  correctionApproved?: boolean;
 }
 
 export interface Knowledge {

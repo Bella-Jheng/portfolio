@@ -18,8 +18,8 @@ async function verifyAdmin(request: NextRequest): Promise<boolean> {
   try {
     const decoded = await getAdminAuth().verifyIdToken(token);
     return decoded.uid === ADMIN_UID;
-  } catch (e) {
-    console.error('[verifyAdmin] failed:', e);
+  } catch (error) {
+    console.error('[verifyAdmin] failed:', error);
     return false;
   }
 }
@@ -55,12 +55,12 @@ export async function PATCH(
 
     if (knowledgeDocs.length < 3) {
       const all = await db.collection('knowledge').orderBy('createdAt', 'asc').limit(20).get();
-      const existing = new Set(knowledgeDocs.map((d) => d.id));
-      knowledgeDocs = [...knowledgeDocs, ...all.docs.filter((d) => !existing.has(d.id))];
+      const existing = new Set(knowledgeDocs.map((doc) => doc.id));
+      knowledgeDocs = [...knowledgeDocs, ...all.docs.filter((doc) => !existing.has(doc.id))];
     }
 
     const knowledge = knowledgeDocs
-      .map((d) => d.data())
+      .map((doc) => doc.data())
       .map((kd) => `【${kd['title']}】\n${kd['content']}`)
       .join('\n\n');
 
@@ -72,7 +72,7 @@ export async function PATCH(
     if (gender && yearStemIdx >= 0 && monthStemIdx >= 0 && monthBranchIdx >= 0) {
       const mf = calculateMajorFortune(birthYear, birthMonth, birthDay, gender, yearStemIdx, monthStemIdx, monthBranchIdx);
       const virtualAge = currentYear - birthYear + 1;
-      const cycleIdx = mf.cycles.findLastIndex((c: { startAge: number }) => c.startAge <= virtualAge);
+      const cycleIdx = mf.cycles.findLastIndex((cycle: { startAge: number }) => cycle.startAge <= virtualAge);
       const cycle = cycleIdx >= 0 ? mf.cycles[cycleIdx] : null;
       const annual = getAnnualPillar(currentYear);
       majorFortuneInfo = {

@@ -7,7 +7,8 @@
     "**/.next": true,
     "**/out": true,
     "**/.turbo": true,
-    "**/coverage": true
+    "**/coverage": true,
+    "**/.nx": true
   },
   "search.exclude": {
     "**/node_modules": true,
@@ -16,9 +17,11 @@
     "**/out": true,
     "**/.turbo": true,
     "**/coverage": true,
+    "**/.nx": true,
     "**/package-lock.json": true,
     "**/yarn.lock": true,
-    "**/pnpm-lock.yaml": true
+    "**/pnpm-lock.yaml": true,
+    "**/*.tsbuildinfo": true
   },
   "files.watcherExclude": {
     "**/node_modules/**": true,
@@ -26,10 +29,21 @@
     "**/.next/**": true,
     "**/out/**": true,
     "**/.turbo/**": true,
-    "**/coverage/**": true
+    "**/coverage/**": true,
+    "**/.nx/**": true,
+    "**/*.tsbuildinfo": true
   },
+  // TypeScript Language Server 效能優化
   "typescript.preferences.importModuleSpecifierEnding": "minimal",
+  "typescript.tsserver.maxTsServerMemory": 4096,
+  "typescript.tsserver.experimental.enableProjectDiagnostics": false,
+  "typescript.disableAutomaticTypeAcquisition": true,
+  // ESLint 效能優化
   "eslint.workingDirectories": [
     { "mode": "auto" }
-  ]
+  ],
+  "eslint.lintTask.enable": false,
+  // Git 效能優化 — 避免 Source Control tab loading 卡住
+  "git.autofetch": false,
+  "git.decorations.enabled": false
 }

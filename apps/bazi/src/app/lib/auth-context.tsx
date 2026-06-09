@@ -43,11 +43,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (u) => {
-      setUser(u);
+    const unsub = onAuthStateChanged(auth, (authUser) => {
+      setUser(authUser);
       setLoading(false);
-      if (u) {
-        fetchReading(u);
+      if (authUser) {
+        fetchReading(authUser);
       } else {
         setReadingId(null);
       }

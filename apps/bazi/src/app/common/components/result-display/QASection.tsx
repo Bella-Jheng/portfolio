@@ -22,8 +22,8 @@ export function QASection({ reading, theme, onUpdate }: QASectionProps) {
 
   const limitReached = user ? remaining === 0 : false;
 
-  const handleAskQuestion = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleAskQuestion = async (event: React.FormEvent) => {
+    event.preventDefault();
     if (!question.trim()) return;
     setAskError('');
     setAsking(true);
@@ -125,8 +125,8 @@ export function QASection({ reading, theme, onUpdate }: QASectionProps) {
             <input
               type="text"
               value={question}
-              onChange={(e) => setQuestion(e.target.value)}
-              placeholder="例：我今年適合換工作嗎？"
+              onChange={(event) => setQuestion(event.target.value)}
+              placeholder="請輸入問題，越精準越好喔～"
               disabled={asking}
               className="flex-1 bg-white border border-[#EAE5DF] rounded-xl px-4 py-3 text-[#4A4A4A] placeholder:text-[#857C74] focus:outline-none focus:border-[#FCD060] transition-colors text-sm disabled:opacity-50"
             />

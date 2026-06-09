@@ -217,7 +217,7 @@ export function getDominantElements(pillars: BaziPillars): string[] {
     count[b] = (count[b] ?? 0) + 1;
   }
   const dayMaster = STEM_ELEMENTS[pillars.day.stem];
-  const sorted = Object.entries(count).sort((a, b) => b[1] - a[1]).map(([el]) => el);
+  const sorted = Object.entries(count).sort((entryA, entryB) => entryB[1] - entryA[1]).map(([el]) => el);
   const result = [dayMaster];
   for (const el of sorted) {
     if (!result.includes(el) && result.length < 2) result.push(el);
@@ -332,13 +332,13 @@ export function calculateMajorFortune(
   const startAge    = Math.floor(days / 3);
   const startMonths = (days % 3) * 4;
 
-  const cycles: MajorFortuneCycle[] = Array.from({ length: 9 }, (_, i) => {
-    const offset = isForward ? i + 1 : -(i + 1);
+  const cycles: MajorFortuneCycle[] = Array.from({ length: 9 }, (_, index) => {
+    const offset = isForward ? index + 1 : -(index + 1);
     return {
       stem:      STEMS[mod(monthStemIndex + offset, 10)],
       branch:    BRANCHES[mod(monthBranchIndex + offset, 12)],
-      startAge:  startAge + i * 10,
-      startYear: year + startAge + i * 10,
+      startAge:  startAge + index * 10,
+      startYear: year + startAge + index * 10,
     };
   });
 

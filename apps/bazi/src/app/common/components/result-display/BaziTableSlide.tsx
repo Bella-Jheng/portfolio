@@ -44,7 +44,7 @@ export function BaziTableSlide({ reading, theme, mobile }: BaziTableSlideProps) 
 
   const currentVirtualAge = new Date().getFullYear() - reading.birthYear + 1;
   const currentCycleIdx = fortune
-    ? fortune.cycles.findLastIndex((c) => c.startAge <= currentVirtualAge)
+    ? fortune.cycles.findLastIndex((cycle) => cycle.startAge <= currentVirtualAge)
     : -1;
   const HL = theme.accent + '20';
 
@@ -224,20 +224,20 @@ export function BaziTableSlide({ reading, theme, mobile }: BaziTableSlideProps) 
                 <span>起運歲</span>
                 <span>大運柱</span>
               </div>
-              {fortune.cycles.map((c, i) => {
-                const isActive = i === currentCycleIdx;
+              {fortune.cycles.map((cycle, index) => {
+                const isActive = index === currentCycleIdx;
                 return (
                   <div
-                    key={i}
+                    key={index}
                     className="flex flex-col items-center gap-1.5 px-2 py-2 rounded-xl min-w-[38px] transition-all"
                     style={isActive ? { backgroundColor: theme.accent } : {}}
                   >
                     <span className={`font-mono text-xs ${isActive ? 'font-black text-white' : 'text-[#5C5449]'}`}>
-                      {c.startAge}
+                      {cycle.startAge}
                     </span>
                     <div className="flex flex-col items-center leading-none font-black gap-0.5 mt-0.5">
-                      <span className={`text-sm md:text-base ${isActive ? 'text-white' : 'text-[#3A3A3A]'}`}>{c.stem}</span>
-                      <span className={`text-sm md:text-base ${isActive ? 'text-white' : 'text-[#3A3A3A]'}`}>{c.branch}</span>
+                      <span className={`text-sm md:text-base ${isActive ? 'text-white' : 'text-[#3A3A3A]'}`}>{cycle.stem}</span>
+                      <span className={`text-sm md:text-base ${isActive ? 'text-white' : 'text-[#3A3A3A]'}`}>{cycle.branch}</span>
                     </div>
                   </div>
                 );

@@ -1,8 +1,8 @@
 import './global.css';
-import { Header } from '../components/Layout/Header';
-import { Footer } from '../components/Layout/Footer';
-import { Providers } from '../components/Layout/Providers';
-import { Modal } from '../components/Common/modal/Modal';
+import { Header } from '../common/components/layout/Header';
+import { Footer } from '../common/components/layout/Footer';
+import { Providers } from '../common/components/layout/Providers';
+import { Modal } from '../common/components/modal/Modal';
 
 export const metadata = {
   title: '八字命理',

@@ -1,88 +1,113 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useParams } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import type { Reading } from '../../../types/bazi';
-import { ResultDisplay } from '../../../components/Common/result-display/ResultDisplay';
-import { Loading } from '../../../components/Common/loading/Loading';
+import { BirthDateInput } from '../../../common/components/birth-date-input/BirthDateInput';
+import { ResultDisplay } from '../../../common/components/result-display/ResultDisplay';
+import { Loading } from '../../../common/components/loading/Loading';
 import { useAuth } from '../../../lib/auth-context';
+import { useReading } from './api/use-reading';
+import { useRequestCorrection } from './api/use-request-correction';
 import Link from 'next/link';
 
-function CorrectionButton({ readingId }: { readingId: string }) {
-  const { user, getToken } = useAuth();
-  const [sent, setSent] = useState(false);
-  const [sending, setSending] = useState(false);
+type ModalStep = 'confirm' | 'form';
+
+function CorrectionButton({ reading }: { reading: Reading }) {
+  const { user } = useAuth();
+  const [modalStep, setModalStep] = useState<ModalStep | null>(null);
+  const [submitted, setSubmitted] = useState(false);
+  const [form, setForm] = useState<{ year: number; month: number; day: number; hour: number | null }>({
+    year: reading.birthYear,
+    month: reading.birthMonth,
+    day: reading.birthDay,
+    hour: reading.birthHour ?? null,
+  });
+
+  const mutation = useRequestCorrection(reading.id);
 
   if (!user) return null;
-
-  const handleRequest = async () => {
-    setSending(true);
-    try {
-      const token = await getToken();
-      await fetch(`/api/result/${readingId}/request-correction`, {
-        method: 'POST',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      setSent(true);
-    } catch {
-      // silent fail — user can retry
-    } finally {
-      setSending(false);
-    }
-  };
-
-  if (sent) {
+  if (reading.correctionUsed || submitted) {
     return (
-      <p className="text-[11px] text-[#7AC97A] tracking-wider text-center">
-        ✓ 已通知管理員，我們會盡快協助更正
+      <p className="text-xs text-bz-muted tracking-wider text-center">
+        資料更改中，請於三天後確認
       </p>
     );
   }
 
   return (
-    <button
-      onClick={handleRequest}
-      disabled={sending}
-      className="text-xs text-bz-muted border border-bz-gold/20 px-5 py-2 rounded-full hover:border-bz-gold/50 hover:text-[#4A4A4A] transition-all disabled:opacity-40"
-    >
-      {sending ? '送出中…' : '✏️ 通知管理員更改日期'}
-    </button>
+    <>
+      <button
+        onClick={() => setModalStep('confirm')}
+        className="text-xs text-bz-muted border border-bz-gold/20 px-5 py-2 rounded-full hover:border-bz-gold/50 hover:text-[#4A4A4A] transition-all"
+      >
+        ✏️ 通知管理員更改日期
+      </button>
+
+      {modalStep && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div className="bg-bz-paper rounded-2xl w-full max-w-sm p-6 shadow-xl space-y-5">
+            {modalStep === 'confirm' ? (
+              <>
+                <h3 className="text-bz-brown font-serif text-base text-center">確定要申請更改日期？</h3>
+                <p className="text-bz-muted text-sm text-center leading-relaxed">
+                  此功能<span className="text-bz-terra font-bold">僅限使用一次</span>，送出後即無法再次申請。
+                </p>
+                <div className="flex gap-3 pt-1">
+                  <button
+                    onClick={() => setModalStep(null)}
+                    className="flex-1 py-2 rounded-full border border-bz-border text-bz-muted text-sm hover:border-bz-mid transition-all"
+                  >
+                    取消
+                  </button>
+                  <button
+                    onClick={() => setModalStep('form')}
+                    className="flex-1 py-2 rounded-full bg-bz-terra text-white text-sm hover:bg-bz-terra-dark transition-all"
+                  >
+                    確定
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <h3 className="text-bz-brown font-serif text-base text-center">輸入正確的出生日期</h3>
+                <BirthDateInput value={form} onChange={(dateValue) => setForm(dateValue)} />
+                <p className="text-bz-muted text-xs text-center leading-relaxed">
+                  送出後管理員將人工確認並更新排盤資料，<br />請於三天後確認。
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setModalStep('confirm')}
+                    className="flex-1 py-2 rounded-full border border-bz-border text-bz-muted text-sm hover:border-bz-mid transition-all"
+                  >
+                    返回
+                  </button>
+                  <button
+                    onClick={() => mutation.mutate(form, { onSuccess: () => { setSubmitted(true); setModalStep(null); } })}
+                    disabled={mutation.isPending}
+                    className="flex-1 py-2 rounded-full bg-bz-terra text-white text-sm hover:bg-bz-terra-dark transition-all disabled:opacity-40"
+                  >
+                    {mutation.isPending ? '送出中…' : '送出申請'}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
 export default function ResultPage() {
   const params = useParams();
   const id = params.id as string;
-  const { getToken } = useAuth();
+  const queryClient = useQueryClient();
 
-  const [reading, setReading] = useState<Reading | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const { data: reading, isLoading, error } = useReading(id);
 
-  useEffect(() => {
-    const fetchReading = async () => {
-      try {
-        const token = await getToken();
-        const res = await fetch(`/api/result/${id}`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        });
-        if (!res.ok) {
-          setError('找不到此命盤，可能已過期或連結有誤');
-          return;
-        }
-        const data = await res.json();
-        setReading(data);
-      } catch {
-        setError('無法載入命盤，請稍後再試');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchReading();
-  }, [id, getToken]);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
         <Loading message="載入命盤中…" />
@@ -93,7 +118,9 @@ export default function ResultPage() {
   if (error || !reading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] gap-6 px-5 bg-gradient-to-b from-[#F7E5BD] via-[#FFFDF6] to-white">
-        <p className="text-bz-muted text-center font-medium">{error || '命盤不存在'}</p>
+        <p className="text-bz-muted text-center font-medium">
+          {error instanceof Error ? error.message : '找不到此命盤，可能已過期或連結有誤'}
+        </p>
         <Link
           href="/"
           className="bg-bz-terra text-white px-6 py-3 rounded-full text-sm tracking-wider hover:bg-bz-terra-dark transition-all"
@@ -107,10 +134,13 @@ export default function ResultPage() {
   return (
     <div className="w-full min-h-[calc(100vh-4rem)] bg-gradient-to-b from-[#F7E5BD] via-[#FFFDF6] to-white py-12">
       <div className="max-w-5xl mx-auto px-2 md:px-6">
-        <ResultDisplay reading={reading} onUpdate={setReading} />
+        <ResultDisplay
+          reading={reading}
+          onUpdate={(updated) => queryClient.setQueryData(['reading', id], updated)}
+        />
 
         <div className="mt-10 flex flex-col items-center gap-3">
-          <CorrectionButton readingId={id} />
+          <CorrectionButton reading={reading} />
         </div>
       </div>
     </div>

@@ -1,47 +1,57 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import clsx from 'clsx';
 import { useAuth } from '../../lib/auth-context';
 import type { Reading } from '../../types/bazi';
-import { STEM_ELEMENT } from '../../components/Common/result-display/theme';
-import { ResultDisplay } from '../../components/Common/result-display/ResultDisplay';
+import { STEM_ELEMENT } from '../../common/components/result-display/theme';
+import { ResultDisplay } from '../../common/components/result-display/ResultDisplay';
+import { useReadings } from './api/use-readings';
+import { type EditForm, useSaveReading } from './api/use-save-reading';
+import { useDeleteReading } from './api/use-delete-reading';
+import { useApproveCorrection } from './api/use-approve-correction';
 
 const ELEMENTS = ['全部', '木', '火', '土', '金', '水'] as const;
 type ElementFilter = (typeof ELEMENTS)[number];
 
 const ELEMENT_STYLE: Record<
   string,
-  { dot: string; activeBg: string; activeBorder: string; activeText: string }
+  { dot: string; dotText: string; activeBg: string; activeBorder: string; activeText: string }
 > = {
   木: {
-    dot: '#7AC97A',
-    activeBg: '#7AC97A18',
-    activeBorder: '#7AC97A60',
-    activeText: '#2E4C2E',
+    dot:          'bg-bz-element-wood-accent',
+    dotText:      'text-bz-element-wood-accent',
+    activeBg:     'bg-bz-element-wood-accent/10',
+    activeBorder: 'border-bz-element-wood-accent/40',
+    activeText:   'text-bz-element-wood-text',
   },
   火: {
-    dot: '#E87878',
-    activeBg: '#E8787818',
-    activeBorder: '#E8787860',
-    activeText: '#5C2D2D',
+    dot:          'bg-bz-element-fire-accent',
+    dotText:      'text-bz-element-fire-accent',
+    activeBg:     'bg-bz-element-fire-accent/10',
+    activeBorder: 'border-bz-element-fire-accent/40',
+    activeText:   'text-bz-element-fire-text',
   },
   土: {
-    dot: '#FCD060',
-    activeBg: '#FCD06018',
-    activeBorder: '#FCD06060',
-    activeText: '#4A3200',
+    dot:          'bg-bz-element-earth-accent',
+    dotText:      'text-bz-element-earth-accent',
+    activeBg:     'bg-bz-element-earth-accent/10',
+    activeBorder: 'border-bz-element-earth-accent/40',
+    activeText:   'text-bz-element-earth-text',
   },
   金: {
-    dot: '#C8900A',
-    activeBg: '#C8900A18',
-    activeBorder: '#C8900A60',
-    activeText: '#4A3200',
+    dot:          'bg-bz-element-metal-accent',
+    dotText:      'text-bz-element-metal-accent',
+    activeBg:     'bg-bz-element-metal-accent/10',
+    activeBorder: 'border-bz-element-metal-accent/40',
+    activeText:   'text-bz-element-metal-text',
   },
   水: {
-    dot: '#9070C0',
-    activeBg: '#9070C018',
-    activeBorder: '#9070C060',
-    activeText: '#36274D',
+    dot:          'bg-bz-element-water-accent',
+    dotText:      'text-bz-element-water-accent',
+    activeBg:     'bg-bz-element-water-accent/10',
+    activeBorder: 'border-bz-element-water-accent/40',
+    activeText:   'text-bz-element-water-text',
   },
 };
 
@@ -49,104 +59,57 @@ function getDayElement(reading: Reading): string {
   return STEM_ELEMENT[reading.pillars?.day?.stem ?? ''] ?? '';
 }
 
-type EditForm = { birthYear: number; birthMonth: number; birthDay: number; birthHour: number | null };
-
 export default function DashboardPage() {
-  const { user, loading, isAdmin, login, getToken } = useAuth();
-  const [readings, setReadings] = useState<Reading[]>([]);
-  const [fetching, setFetching] = useState(false);
+  const { user, loading, isAdmin, login } = useAuth();
+
   const [error, setError] = useState('');
   const [filter, setFilter] = useState<ElementFilter>('全部');
   const [selected, setSelected] = useState<Reading | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<EditForm | null>(null);
-  const [saving, setSaving] = useState(false);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!isAdmin) return;
+  // ── API hooks ─────────────────────────────────────────────────────────────
+  const { data, isLoading: fetching } = useReadings(isAdmin);
+  const saveMutation = useSaveReading();
+  const deleteMutation = useDeleteReading();
+  const approveMutation = useApproveCorrection();
 
-    const fetchReadings = async () => {
-      setFetching(true);
-      try {
-        const token = await getToken();
-        const res = await fetch('/api/dashboard/readings', {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        });
-        if (!res.ok) {
-          setError('讀取失敗');
-          return;
-        }
-        const data = await res.json();
-        setReadings(data.readings);
-      } catch {
-        setError('網路錯誤');
-      } finally {
-        setFetching(false);
-      }
-    };
+  const readings = data?.readings ?? [];
 
-    fetchReadings();
-  }, [isAdmin, getToken]);
-
+  // ── Helpers ───────────────────────────────────────────────────────────────
   const filteredReadings =
-    filter === '全部'
-      ? readings
-      : readings.filter((r) => getDayElement(r) === filter);
+    filter === '全部' ? readings : readings.filter((reading) => getDayElement(reading) === filter);
 
   const handleUpdate = (updated: Reading) => {
-    setReadings((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
+    // saveMutation's onSuccess already patches the cache; update the detail view too
     setSelected(updated);
   };
 
-  const startEdit = (r: Reading, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setEditingId(r.id);
-    setEditForm({ birthYear: r.birthYear, birthMonth: r.birthMonth, birthDay: r.birthDay, birthHour: r.birthHour ?? null });
+  const startEdit = (reading: Reading, event: React.MouseEvent) => {
+    event.stopPropagation();
+    setEditingId(reading.id);
+    setEditForm({ birthYear: reading.birthYear, birthMonth: reading.birthMonth, birthDay: reading.birthDay, birthHour: reading.birthHour ?? null });
   };
 
   const cancelEdit = () => { setEditingId(null); setEditForm(null); };
 
-  const saveEdit = async (id: string) => {
-    if (!editForm) return;
-    setSaving(true);
-    try {
-      const token = await getToken();
-      const res = await fetch(`/api/dashboard/readings/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-        body: JSON.stringify(editForm),
-      });
-      if (!res.ok) { setError('更新失敗'); return; }
-      const updated = await res.json();
-      setReadings((prev) => prev.map((r) => (r.id === id ? updated : r)));
-      cancelEdit();
-    } catch {
-      setError('網路錯誤');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const deleteReading = async (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleDelete = (id: string, event: React.MouseEvent) => {
+    event.stopPropagation();
     if (!confirm('確定要刪除這筆命盤？')) return;
-    setDeletingId(id);
-    try {
-      const token = await getToken();
-      const res = await fetch(`/api/dashboard/readings/${id}`, {
-        method: 'DELETE',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      if (!res.ok) { setError('刪除失敗'); return; }
-      setReadings((prev) => prev.filter((r) => r.id !== id));
-    } catch {
-      setError('網路錯誤');
-    } finally {
-      setDeletingId(null);
-    }
+    deleteMutation.mutate(id, {
+      onError: (err) => setError(err instanceof Error ? err.message : '刪除失敗'),
+    });
   };
 
+  const handleApprove = (id: string, event: React.MouseEvent) => {
+    event.stopPropagation();
+    if (!confirm('同意更改並重新排盤？這將使用用戶申請的日期重新計算，無法還原。')) return;
+    approveMutation.mutate(id, {
+      onError: (err) => setError(err instanceof Error ? err.message : '同意更改失敗'),
+    });
+  };
+
+  // ── Guards ────────────────────────────────────────────────────────────────
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
@@ -184,18 +147,8 @@ export default function DashboardPage() {
           onClick={() => setSelected(null)}
           className="flex items-center gap-1.5 text-bz-muted text-sm mb-8 hover:text-bz-parchment transition-colors"
         >
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M15 19l-7-7 7-7"
-            />
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
           返回列表
         </button>
@@ -203,10 +156,10 @@ export default function DashboardPage() {
           <div className="flex items-center gap-2">
             {getDayElement(selected) && (
               <span
-                className="inline-block w-2.5 h-2.5 rounded-full"
-                style={{
-                  backgroundColor: ELEMENT_STYLE[getDayElement(selected)]?.dot,
-                }}
+                className={clsx(
+                  'inline-block w-2.5 h-2.5 rounded-full',
+                  ELEMENT_STYLE[getDayElement(selected)]?.dot ?? 'bg-transparent',
+                )}
               />
             )}
             <h2 className="text-bz-parchment font-serif text-2xl tracking-wider">
@@ -215,14 +168,8 @@ export default function DashboardPage() {
           </div>
           <p className="text-bz-muted text-sm pl-4">
             {selected.birthYear}年{selected.birthMonth}月{selected.birthDay}日
-            {selected.birthHour !== undefined && selected.birthHour !== null
-              ? ` ${selected.birthHour}時`
-              : ''}
-            {selected.gender === 'male'
-              ? ' · 男'
-              : selected.gender === 'female'
-                ? ' · 女'
-                : ''}
+            {selected.birthHour !== undefined && selected.birthHour !== null ? ` ${selected.birthHour}時` : ''}
+            {selected.gender === 'male' ? ' · 男' : selected.gender === 'female' ? ' · 女' : ''}
           </p>
         </div>
         <ResultDisplay reading={selected} onUpdate={handleUpdate} />
@@ -233,9 +180,7 @@ export default function DashboardPage() {
   return (
     <div className="max-w-3xl mx-auto px-5 py-12">
       <div className="space-y-2 mb-8">
-        <h1 className="text-bz-parchment font-serif text-3xl tracking-wider">
-          命盤列表
-        </h1>
+        <h1 className="text-bz-parchment font-serif text-3xl tracking-wider">命盤列表</h1>
         <p className="text-bz-muted text-sm">所有已排命盤</p>
       </div>
 
@@ -247,35 +192,22 @@ export default function DashboardPage() {
           const count =
             el === '全部'
               ? readings.length
-              : readings.filter((r) => getDayElement(r) === el).length;
+              : readings.filter((reading) => getDayElement(reading) === el).length;
 
           return (
             <button
               key={el}
               onClick={() => setFilter(el)}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold border transition-all"
-              style={
+              className={clsx(
+                'flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold border transition-all',
                 isActive && s
-                  ? {
-                      backgroundColor: s.activeBg,
-                      borderColor: s.activeBorder,
-                      color: s.activeText,
-                    }
+                  ? [s.activeBg, s.activeBorder, s.activeText]
                   : isActive
-                    ? {
-                        backgroundColor: 'rgba(252,208,96,0.12)',
-                        borderColor: 'rgba(252,208,96,0.5)',
-                        color: '#8A7A60',
-                      }
-                    : { borderColor: 'rgba(252,208,96,0.2)', color: '#6B6159' }
-              }
-            >
-              {s && (
-                <span
-                  className="w-2 h-2 rounded-full shrink-0"
-                  style={{ backgroundColor: s.dot }}
-                />
+                    ? 'bg-bz-gold/[0.12] border-bz-gold/50 text-bz-mid'
+                    : 'border-bz-gold/20 text-bz-mid',
               )}
+            >
+              {s && <span className={clsx('w-2 h-2 rounded-full shrink-0', s.dot)} />}
               {el}
               <span className="opacity-60 font-mono">{count}</span>
             </button>
@@ -288,52 +220,68 @@ export default function DashboardPage() {
       {fetching ? (
         <p className="text-bz-muted text-sm">載入命盤中…</p>
       ) : filteredReadings.length === 0 ? (
-        <p className="text-bz-muted/60 text-sm text-center py-16">
-          尚無命盤紀錄
-        </p>
+        <p className="text-bz-muted/60 text-sm text-center py-16">尚無命盤紀錄</p>
       ) : (
         <div className="space-y-3">
-          {filteredReadings.map((r) => {
-            const el = getDayElement(r);
+          {filteredReadings.map((reading) => {
+            const el = getDayElement(reading);
             const elStyle = ELEMENT_STYLE[el];
-            const isEditing = editingId === r.id;
-            const isDeleting = deletingId === r.id;
+            const isEditing = editingId === reading.id;
+            const isDeleting = deleteMutation.isPending && deleteMutation.variables === reading.id;
+            const isApproving = approveMutation.isPending && approveMutation.variables === reading.id;
             return (
-              <div
-                key={r.id}
-                className="border border-bz-gold/20 rounded-xl overflow-hidden"
-              >
+              <div key={reading.id} className="border border-bz-gold/20 rounded-xl overflow-hidden">
                 {/* Main row */}
                 <div
                   className="flex items-center justify-between px-6 py-4 hover:bg-white/[0.02] transition-all group cursor-pointer"
-                  onClick={() => !isEditing && setSelected(r)}
+                  onClick={() => !isEditing && setSelected(reading)}
                 >
                   <div className="flex items-start gap-3">
                     <div className="flex flex-col items-center gap-0.5 pt-0.5 shrink-0">
-                      <span className="w-2 h-2 rounded-full" style={{ backgroundColor: elStyle?.dot ?? 'transparent' }} />
-                      {el && <span className="text-[9px] font-bold leading-none" style={{ color: elStyle?.dot }}>{el}</span>}
+                      <span className={clsx('w-2 h-2 rounded-full', elStyle?.dot ?? 'bg-transparent')} />
+                      {el && <span className={clsx('text-[9px] font-bold leading-none', elStyle?.dotText)}>{el}</span>}
                     </div>
                     <div className="space-y-1">
                       <p className="text-bz-parchment text-sm font-serif group-hover:text-bz-gold transition-colors">
-                        {r.name || '（未提供姓名）'}
+                        {reading.name || '（未提供姓名）'}
                       </p>
                       <p className="text-bz-muted text-xs">
-                        {r.birthYear}年{r.birthMonth}月{r.birthDay}日
-                        {r.birthHour !== undefined && r.birthHour !== null ? ` ${r.birthHour}時` : ''}
-                        {r.gender === 'male' ? ' · 男' : r.gender === 'female' ? ' · 女' : ''}
+                        {reading.birthYear}年{reading.birthMonth}月{reading.birthDay}日
+                        {reading.birthHour !== undefined && reading.birthHour !== null ? ` ${reading.birthHour}時` : ''}
+                        {reading.gender === 'male' ? ' · 男' : reading.gender === 'female' ? ' · 女' : ''}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
                     <div className="text-right space-y-1">
-                      <p className="text-bz-muted/60 text-xs">{new Date(r.createdAt).toLocaleDateString('zh-TW')}</p>
-                      {r.correctionRequested && <p className="text-[#E87878] text-[10px] font-bold tracking-wide">✏️ 申請更改日期</p>}
-                      {r.questions.length > 0 && <p className="text-bz-gold/50 text-xs">{r.questions.length} 題追問</p>}
+                      <p className="text-bz-muted/60 text-xs">{new Date(reading.createdAt).toLocaleDateString('zh-TW')}</p>
+                      {reading.correctionRequested && (
+                        <div className="text-right">
+                          <p className="text-[#E87878] text-[10px] font-bold tracking-wide">✏️ 申請更改日期</p>
+                          {reading.correctionRequestedDate && (
+                            <p className="text-[#E87878]/70 text-[10px]">
+                              → {reading.correctionRequestedDate.year}/{reading.correctionRequestedDate.month}/{reading.correctionRequestedDate.day}
+                              {reading.correctionRequestedDate.hour != null ? ` ${reading.correctionRequestedDate.hour}時` : ''}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                      {reading.questions.length > 0 && <p className="text-bz-gold/50 text-xs">{reading.questions.length} 題追問</p>}
                     </div>
                     {/* Action buttons */}
-                    <div className="flex items-center gap-1 ml-2" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex items-center gap-1 ml-2" onClick={(event) => event.stopPropagation()}>
+                      {reading.correctionRequested && (
+                        <button
+                          onClick={(event) => handleApprove(reading.id, event)}
+                          disabled={isApproving}
+                          className="px-2 py-1 rounded-lg text-[10px] font-bold text-[#E87878] border border-[#E87878]/30 hover:bg-[#E87878]/10 transition-all disabled:opacity-40 whitespace-nowrap"
+                          title="同意更改日期並重新排盤"
+                        >
+                          {isApproving ? '排盤中…' : '同意更改'}
+                        </button>
+                      )}
                       <button
-                        onClick={(e) => startEdit(r, e)}
+                        onClick={(event) => startEdit(reading, event)}
                         className="p-1.5 rounded-lg text-bz-muted hover:text-bz-gold hover:bg-bz-gold/10 transition-all"
                         title="編輯日期"
                       >
@@ -342,7 +290,7 @@ export default function DashboardPage() {
                         </svg>
                       </button>
                       <button
-                        onClick={(e) => deleteReading(r.id, e)}
+                        onClick={(event) => handleDelete(reading.id, event)}
                         disabled={isDeleting}
                         className="p-1.5 rounded-lg text-bz-muted hover:text-[#E87878] hover:bg-[#E87878]/10 transition-all disabled:opacity-40"
                         title="刪除"
@@ -373,8 +321,8 @@ export default function DashboardPage() {
                           min={min}
                           max={max}
                           value={editForm[field] ?? ''}
-                          onChange={(e) =>
-                            setEditForm((f) => f && ({ ...f, [field]: e.target.value === '' ? null : Number(e.target.value) }))
+                          onChange={(event) =>
+                            setEditForm((prevForm) => prevForm && ({ ...prevForm, [field]: event.target.value === '' ? null : Number(event.target.value) }))
                           }
                           className="w-16 bg-transparent border border-bz-gold/30 rounded-lg px-2 py-1.5 text-bz-parchment text-xs text-center focus:outline-none focus:border-bz-gold/60"
                         />
@@ -382,11 +330,17 @@ export default function DashboardPage() {
                     ))}
                     <div className="flex gap-2 pb-0.5">
                       <button
-                        onClick={() => saveEdit(r.id)}
-                        disabled={saving}
+                        onClick={() => {
+                          if (!editForm) return;
+                          saveMutation.mutate({ id: reading.id, form: editForm }, {
+                            onSuccess: () => cancelEdit(),
+                            onError: (err) => setError(err instanceof Error ? err.message : '更新失敗'),
+                          });
+                        }}
+                        disabled={saveMutation.isPending}
                         className="px-4 py-1.5 rounded-full border border-bz-gold/40 text-bz-gold text-xs hover:bg-bz-gold/10 transition-all disabled:opacity-40"
                       >
-                        {saving ? '重新排盤中…' : '儲存並重排'}
+                        {saveMutation.isPending ? '重新排盤中…' : '儲存並重排'}
                       </button>
                       <button
                         onClick={cancelEdit}

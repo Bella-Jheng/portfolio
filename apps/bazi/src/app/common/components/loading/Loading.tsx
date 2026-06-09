@@ -70,9 +70,9 @@ export function Loading({ message = '正在解析命盤…' }: { message?: strin
 
       {/* Progress steps */}
       <div className="w-full space-y-2">
-        {STEPS.map((step, i) => {
-          const done = i < stepIdx;
-          const active = i === stepIdx;
+        {STEPS.map((step, index) => {
+          const done = index < stepIdx;
+          const active = index === stepIdx;
           return (
             <div key={step} className="flex items-center gap-3">
               <div className="shrink-0 w-4 h-4 flex items-center justify-center">
@@ -128,13 +128,13 @@ export function Loading({ message = '正在解析命盤…' }: { message?: strin
 
         {/* Dot indicators */}
         <div className="flex gap-1 mt-4">
-          {KNOWLEDGE.map((_, i) => (
+          {KNOWLEDGE.map((_, index) => (
             <div
-              key={i}
+              key={index}
               className="h-0.5 rounded-full transition-all duration-500"
               style={{
-                width: i === cardIdx ? 16 : 4,
-                backgroundColor: i === cardIdx ? '#FCD060' : '#EAE5DF',
+                width: index === cardIdx ? 16 : 4,
+                backgroundColor: index === cardIdx ? '#FCD060' : '#EAE5DF',
               }}
             />
           ))}

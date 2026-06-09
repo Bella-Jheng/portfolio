@@ -2,12 +2,14 @@
 
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { BirthForm } from '../../components/Common/birth-form/BirthForm';
+import { BirthForm } from '../../common/components/birth-form/BirthForm';
+import { useCalculate } from './api/use-calculate';
 
 const STEPS = ['了解功能', '填寫資料', '查看結果'];
 
 export default function FormPage() {
   const router = useRouter();
+  const mutation = useCalculate();
 
   return (
     <div className="min-h-[calc(100vh-3.5rem)] flex flex-col items-center justify-start px-5 pt-10 pb-16 relative overflow-hidden bg-[#FFFDF5]">
@@ -23,8 +25,8 @@ export default function FormPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          {STEPS.map((label, i) => {
-            const stepNum = i + 1;
+          {STEPS.map((label, index) => {
+            const stepNum = index + 1;
             const isActive = stepNum === 2;
             const isDone = stepNum < 2;
             return (
@@ -49,7 +51,7 @@ export default function FormPage() {
                     {label}
                   </span>
                 </div>
-                {i < STEPS.length - 1 && (
+                {index < STEPS.length - 1 && (
                   <div
                     className={`w-16 h-px mb-5 mx-1 ${isDone ? 'bg-[#4A4A4A]' : 'bg-[#EAE5DF]'}`}
                   />
@@ -86,7 +88,11 @@ export default function FormPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.6, ease: [0.23, 1, 0.32, 1] as [number, number, number, number] }}
         >
-          <BirthForm />
+          <BirthForm
+            onSubmit={(form) => mutation.mutate(form)}
+            isPending={mutation.isPending}
+            apiError={mutation.error instanceof Error ? mutation.error.message : undefined}
+          />
         </motion.div>
       </div>
     </div>

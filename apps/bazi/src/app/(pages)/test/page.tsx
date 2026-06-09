@@ -13,9 +13,9 @@ import {
 import type { BaziPillars } from '../../types/bazi';
 
 const currentYear = new Date().getFullYear();
-const years = Array.from({ length: 120 }, (_, i) => currentYear - i);
-const months = Array.from({ length: 12 }, (_, i) => i + 1);
-const days = Array.from({ length: 31 }, (_, i) => i + 1);
+const years = Array.from({ length: 120 }, (_, index) => currentYear - index);
+const months = Array.from({ length: 12 }, (_, index) => index + 1);
+const days = Array.from({ length: 31 }, (_, index) => index + 1);
 
 const ELEMENT_COLOR: Record<string, string> = {
   木: '#7AC97A', 火: '#E87878', 土: '#FCD060', 金: '#C8900A', 水: '#9070C0',
@@ -87,8 +87,8 @@ export default function TestPage() {
     try {
       const pillars = calculateBaziPillars(year, month, day, hour);
       setResult(pillars);
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      console.error(error);
     }
   };
 
@@ -160,19 +160,19 @@ export default function TestPage() {
           <div className="grid grid-cols-4 gap-3">
             <div className="space-y-1.5">
               <label className="text-[10px] text-[#6B6159] font-bold tracking-widest">年</label>
-              <select value={year} onChange={e => setYear(Number(e.target.value))} className={selectClass}>
+              <select value={year} onChange={event => setYear(Number(event.target.value))} className={selectClass}>
                 {years.map(y => <option key={y} value={y}>{y}</option>)}
               </select>
             </div>
             <div className="space-y-1.5">
               <label className="text-[10px] text-[#6B6159] font-bold tracking-widest">月</label>
-              <select value={month} onChange={e => setMonth(Number(e.target.value))} className={selectClass}>
+              <select value={month} onChange={event => setMonth(Number(event.target.value))} className={selectClass}>
                 {months.map(m => <option key={m} value={m}>{m}</option>)}
               </select>
             </div>
             <div className="space-y-1.5">
               <label className="text-[10px] text-[#6B6159] font-bold tracking-widest">日</label>
-              <select value={day} onChange={e => setDay(Number(e.target.value))} className={selectClass}>
+              <select value={day} onChange={event => setDay(Number(event.target.value))} className={selectClass}>
                 {days.map(d => <option key={d} value={d}>{d}</option>)}
               </select>
             </div>
@@ -180,12 +180,12 @@ export default function TestPage() {
               <label className="text-[10px] text-[#6B6159] font-bold tracking-widest">時辰</label>
               <select
                 value={hour ?? ''}
-                onChange={e => setHour(e.target.value === '' ? undefined : Number(e.target.value))}
+                onChange={event => setHour(event.target.value === '' ? undefined : Number(event.target.value))}
                 className={selectClass}
               >
                 <option value="">不知道</option>
-                {SHICHEN.map(s => (
-                  <option key={s.branch} value={s.hours[0]}>{s.label}</option>
+                {SHICHEN.map(shichen => (
+                  <option key={shichen.branch} value={shichen.hours[0]}>{shichen.label}</option>
                 ))}
               </select>
             </div>
@@ -193,14 +193,14 @@ export default function TestPage() {
 
           <div className="flex items-center gap-3">
             <label className="text-[10px] text-[#6B6159] font-bold tracking-widest shrink-0">性別（大運用）</label>
-            {(['male', 'female'] as const).map(g => (
+            {(['male', 'female'] as const).map(genderOption => (
               <button
-                key={g}
+                key={genderOption}
                 type="button"
-                onClick={() => setGender(g)}
-                className={`px-4 py-1.5 rounded-lg border text-xs font-medium transition-all ${gender === g ? 'bg-[#4A4A4A] text-white border-[#4A4A4A]' : 'border-[#EAE5DF] text-[#636363] hover:border-[#4A4A4A]'}`}
+                onClick={() => setGender(genderOption)}
+                className={`px-4 py-1.5 rounded-lg border text-xs font-medium transition-all ${gender === genderOption ? 'bg-[#4A4A4A] text-white border-[#4A4A4A]' : 'border-[#EAE5DF] text-[#636363] hover:border-[#4A4A4A]'}`}
               >
-                {g === 'male' ? '男' : '女'}
+                {genderOption === 'male' ? '男' : '女'}
               </button>
             ))}
           </div>
@@ -220,7 +220,7 @@ export default function TestPage() {
               <h2 className="text-sm font-black tracking-widest text-[#4A4A4A]">排盤結果</h2>
               <span className="text-[10px] font-mono text-[#6B6159]">
                 {year}/{String(month).padStart(2,'0')}/{String(day).padStart(2,'0')}
-                {hour !== undefined ? ` ${SHICHEN.find(s=>s.hours[0]===hour)?.branch ?? ''}時` : ' 無時辰'}
+                {hour !== undefined ? ` ${SHICHEN.find(shichen=>shichen.hours[0]===hour)?.branch ?? ''}時` : ' 無時辰'}
               </span>
             </div>
 
@@ -252,16 +252,16 @@ export default function TestPage() {
                   <table className="text-center text-xs border-collapse w-full">
                     <tbody>
                       <tr>
-                        {majorFortune.cycles.map((c, i) => (
-                          <td key={i} className="px-2 py-1 text-[#636363] font-mono">{c.startAge}</td>
+                        {majorFortune.cycles.map((cycle, index) => (
+                          <td key={index} className="px-2 py-1 text-[#636363] font-mono">{cycle.startAge}</td>
                         ))}
                       </tr>
                       <tr>
-                        {majorFortune.cycles.map((c, i) => (
-                          <td key={i} className="px-2 py-2">
+                        {majorFortune.cycles.map((cycle, index) => (
+                          <td key={index} className="px-2 py-2">
                             <div className="flex flex-col items-center leading-none gap-0.5">
-                              <span className="font-black text-[#4A4A4A]">{c.stem}</span>
-                              <span className="font-black text-[#4A4A4A]">{c.branch}</span>
+                              <span className="font-black text-[#4A4A4A]">{cycle.stem}</span>
+                              <span className="font-black text-[#4A4A4A]">{cycle.branch}</span>
                             </div>
                           </td>
                         ))}

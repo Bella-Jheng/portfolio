@@ -72,12 +72,12 @@ export function MajorFortuneSlide({ reading, theme, mobile }: MajorFortuneSlideP
 
   const currentYear = new Date().getFullYear();
   const currentVirtualAge = currentYear - reading.birthYear + 1;
-  const currentCycleIdx = fortune.cycles.findLastIndex((c) => c.startAge <= currentVirtualAge);
+  const currentCycleIdx = fortune.cycles.findLastIndex((cycle) => cycle.startAge <= currentVirtualAge);
   const displayYears = Math.floor(fortune.startDays / 3);
   const displayMonths = (fortune.startDays % 3) * 4;
 
-  const annualLuck = Array.from({ length: 10 }, (_, i) => {
-    const y = currentYear - 4 + i;
+  const annualLuck = Array.from({ length: 10 }, (_, index) => {
+    const y = currentYear - 4 + index;
     return { year: y, age: y - reading.birthYear + 1, ...getAnnualPillar(y) };
   });
 
@@ -99,14 +99,14 @@ export function MajorFortuneSlide({ reading, theme, mobile }: MajorFortuneSlideP
         </div>
         <div className="overflow-x-auto bg-[#FAF8F5] border border-[#EAE5DF]/60 p-3 rounded-2xl">
           <div className="flex gap-1.5 min-w-max">
-            {fortune.cycles.map((c, i) => (
+            {fortune.cycles.map((cycle, index) => (
               <CycleCol
-                key={i}
-                age={c.startAge}
-                year={c.startYear}
-                stem={c.stem}
-                branch={c.branch}
-                isActive={i === currentCycleIdx}
+                key={index}
+                age={cycle.startAge}
+                year={cycle.startYear}
+                stem={cycle.stem}
+                branch={cycle.branch}
+                isActive={index === currentCycleIdx}
                 accent={theme.accent}
                 showYear
               />

@@ -64,8 +64,8 @@ export function TenGodsSlide({ reading, theme, mobile }: TenGodsSlideProps) {
   const sections = analysis ? parseAnalysisSections(analysis) : [];
 
   // Extract header section (格局 line) from sections
-  const headerSection = sections.find(s => s.label === '格局');
-  const bodySections = sections.filter(s => s.label !== '格局');
+  const headerSection = sections.find(section => section.label === '格局');
+  const bodySections = sections.filter(section => section.label !== '格局');
 
   return (
     <div className={`w-full h-full flex flex-col gap-4 text-left ${mobile ? '' : 'overflow-y-auto'}`}>

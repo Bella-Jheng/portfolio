@@ -9,8 +9,8 @@ async function verifyAdmin(request: NextRequest): Promise<boolean> {
   try {
     const decoded = await getAdminAuth().verifyIdToken(token);
     return decoded.uid === ADMIN_UID;
-  } catch (e) {
-    console.error('[verifyAdmin] failed:', e);
+  } catch (error) {
+    console.error('[verifyAdmin] failed:', error);
     return false;
   }
 }
@@ -28,7 +28,10 @@ export async function GET(request: NextRequest) {
       .get();
 
     const readings = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-    return NextResponse.json({ readings });
+    return NextResponse.json(
+      { readings },
+      { headers: { 'Cache-Control': 'no-store, private' } },
+    );
   } catch (error) {
     console.error('Dashboard readings error:', error);
     return NextResponse.json({ error: '讀取失敗' }, { status: 500 });

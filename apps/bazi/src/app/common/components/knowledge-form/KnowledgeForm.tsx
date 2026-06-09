@@ -106,7 +106,7 @@ export function KnowledgeForm() {
   };
 
   const updatePending = <K extends keyof PendingFile>(id: string, field: K, value: PendingFile[K]) =>
-    setPending(prev => prev.map(p => p.id === id ? { ...p, [field]: value } : p));
+    setPending(prev => prev.map(pendingItem => pendingItem.id === id ? { ...pendingItem, [field]: value } : pendingItem));
 
   const addPendingWithTags = async (items: Omit<PendingFile, 'id' | 'tags' | 'tagsLoading'>[]) => {
     const withIds = items.map(i => ({
@@ -120,7 +120,7 @@ export function KnowledgeForm() {
     // 非同步取得每個 item 的建議標籤
     for (const item of withIds) {
       const tags = await fetchSuggestedTags(item.title, item.content);
-      setPending(prev => prev.map(p => p.id === item.id ? { ...p, tags, tagsLoading: false } : p));
+      setPending(prev => prev.map(pendingItem => pendingItem.id === item.id ? { ...pendingItem, tags, tagsLoading: false } : pendingItem));
     }
   };
 
@@ -131,8 +131,8 @@ export function KnowledgeForm() {
     const items = await Promise.all(
       arr.map(f => new Promise<Omit<PendingFile, 'id' | 'tags' | 'tagsLoading'>>((resolve) => {
         const reader = new FileReader();
-        reader.onload = (e) => {
-          const raw = (e.target?.result as string) ?? '';
+        reader.onload = (readerEvent) => {
+          const raw = (readerEvent.target?.result as string) ?? '';
           const isSub = /\.(srt|vtt)$/i.test(f.name);
           resolve({
             filename: f.name,
@@ -147,10 +147,10 @@ export function KnowledgeForm() {
     await addPendingWithTags(items);
   };
 
-  const onDrop = useCallback(async (e: React.DragEvent) => {
-    e.preventDefault();
+  const onDrop = useCallback(async (dragEvent: React.DragEvent) => {
+    dragEvent.preventDefault();
     setDragging(false);
-    await readFiles(e.dataTransfer.files);
+    await readFiles(dragEvent.dataTransfer.files);
   }, []);
 
   const handleYoutube = async () => {
@@ -184,16 +184,16 @@ export function KnowledgeForm() {
   };
 
   const toggleTag = (id: string, tag: string) =>
-    setPending(prev => prev.map(p => {
-      if (p.id !== id) return p;
-      const tags = p.tags.includes(tag) ? p.tags.filter(t => t !== tag) : [...p.tags, tag];
-      return { ...p, tags };
+    setPending(prev => prev.map(pendingItem => {
+      if (pendingItem.id !== id) return pendingItem;
+      const tags = pendingItem.tags.includes(tag) ? pendingItem.tags.filter(existingTag => existingTag !== tag) : [...pendingItem.tags, tag];
+      return { ...pendingItem, tags };
     }));
 
   const toggleManualTag = (tag: string) =>
-    setManualTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
+    setManualTags(prev => prev.includes(tag) ? prev.filter(existingTag => existingTag !== tag) : [...prev, tag]);
 
-  const removePending = (id: string) => setPending(prev => prev.filter(p => p.id !== id));
+  const removePending = (id: string) => setPending(prev => prev.filter(pendingItem => pendingItem.id !== id));
 
   const postEntry = async (t: string, c: string, cat: string, tags: string[]) => {
     const token = await getToken();
@@ -212,13 +212,13 @@ export function KnowledgeForm() {
     if (!pending.length) return;
     setError(''); setSuccess(''); setSubmitting(true);
     try {
-      await Promise.all(pending.map(p => postEntry(p.title, p.content, p.category, p.tags)));
+      await Promise.all(pending.map(pendingItem => postEntry(pendingItem.title, pendingItem.content, pendingItem.category, pendingItem.tags)));
       setSuccess(`已成功新增 ${pending.length} 筆知識！`);
       setPending([]);
       await fetchEntries();
       setTimeout(() => setSuccess(''), 3000);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : '新增失敗');
+    } catch (error) {
+      setError(error instanceof Error ? error.message : '新增失敗');
     } finally {
       setSubmitting(false);
     }
@@ -232,8 +232,8 @@ export function KnowledgeForm() {
     setManualTagsLoading(false);
   };
 
-  const handleManualSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleManualSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
     setError(''); setSuccess(''); setSubmitting(true);
     try {
       await postEntry(title, content, category, manualTags);
@@ -256,7 +256,7 @@ export function KnowledgeForm() {
         method: 'DELETE',
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
-      setEntries(prev => prev.filter(e => e.id !== id));
+      setEntries(prev => prev.filter(entry => entry.id !== id));
     } catch {
       setError('刪除失敗');
     }
@@ -267,17 +267,17 @@ export function KnowledgeForm() {
       <div className="border border-bz-gold/20 rounded-xl overflow-hidden">
         {/* Mode Tabs */}
         <div className="flex border-b border-bz-gold/20">
-          {(['upload', 'manual'] as Mode[]).map((m) => (
+          {(['upload', 'manual'] as Mode[]).map((tabMode) => (
             <button
-              key={m}
-              onClick={() => { setMode(m); setError(''); setSuccess(''); }}
+              key={tabMode}
+              onClick={() => { setMode(tabMode); setError(''); setSuccess(''); }}
               className={`flex-1 py-3 text-sm tracking-wider transition-colors ${
-                mode === m
+                mode === tabMode
                   ? 'bg-bz-gold/10 text-bz-gold border-b-2 border-bz-gold'
                   : 'text-bz-muted hover:text-bz-parchment/70'
               }`}
             >
-              {m === 'upload' ? '上傳來源' : '手動輸入'}
+              {tabMode === 'upload' ? '上傳來源' : '手動輸入'}
             </button>
           ))}
         </div>
@@ -292,8 +292,8 @@ export function KnowledgeForm() {
                   <input
                     type="url"
                     value={ytUrl}
-                    onChange={(e) => setYtUrl(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleYoutube()}
+                    onChange={(event) => setYtUrl(event.target.value)}
+                    onKeyDown={(event) => event.key === 'Enter' && handleYoutube()}
                     placeholder="https://www.youtube.com/watch?v=..."
                     className="flex-1 bg-white/5 border border-bz-gold/20 rounded-lg px-4 py-2.5 text-bz-parchment placeholder:text-bz-muted/40 focus:outline-none focus:border-bz-gold/60 transition-colors text-sm"
                   />
@@ -323,7 +323,7 @@ export function KnowledgeForm() {
 
               {/* Drop Zone */}
               <div
-                onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+                onDragOver={(event) => { event.preventDefault(); setDragging(true); }}
                 onDragLeave={() => setDragging(false)}
                 onDrop={onDrop}
                 onClick={() => fileInputRef.current?.click()}
@@ -339,34 +339,34 @@ export function KnowledgeForm() {
                 <p className="text-bz-muted/50 text-xs">.txt · .md · .srt · .vtt，可多選</p>
               </div>
               <input ref={fileInputRef} type="file" accept=".txt,.md,.srt,.vtt" multiple className="hidden"
-                onChange={(e) => e.target.files && readFiles(e.target.files)} />
+                onChange={(event) => event.target.files && readFiles(event.target.files)} />
 
               {/* Pending files */}
               {pending.length > 0 && (
                 <div className="space-y-3">
                   <p className="text-bz-muted/60 text-xs">待新增（可調整標題、分類與標籤）</p>
-                  {pending.map((p) => (
-                    <div key={p.id} className="border border-bz-gold/15 rounded-lg p-4 space-y-3 bg-white/[0.02]">
+                  {pending.map((pendingItem) => (
+                    <div key={pendingItem.id} className="border border-bz-gold/15 rounded-lg p-4 space-y-3 bg-white/[0.02]">
                       <div className="flex items-center justify-between gap-2">
                         <span className="text-bz-muted/50 text-xs truncate">
-                          {p.filename.startsWith('youtube:') ? <span className="text-bz-red/70">▶ YouTube</span> : p.filename}
+                          {pendingItem.filename.startsWith('youtube:') ? <span className="text-bz-red/70">▶ YouTube</span> : pendingItem.filename}
                         </span>
-                        <button onClick={() => removePending(p.id)}
+                        <button onClick={() => removePending(pendingItem.id)}
                           className="text-bz-muted/40 hover:text-bz-red transition-colors text-xs shrink-0">✕</button>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <input value={p.title} onChange={(e) => updatePending(p.id, 'title', e.target.value)}
+                        <input value={pendingItem.title} onChange={(event) => updatePending(pendingItem.id, 'title', event.target.value)}
                           placeholder="標題"
                           className="md:col-span-2 bg-white/5 border border-bz-gold/20 rounded-lg px-3 py-2 text-bz-parchment text-sm focus:outline-none focus:border-bz-gold/60 transition-colors" />
-                        <select value={p.category} onChange={(e) => updatePending(p.id, 'category', e.target.value)}
+                        <select value={pendingItem.category} onChange={(event) => updatePending(pendingItem.id, 'category', event.target.value)}
                           className="bg-white/5 border border-bz-gold/20 rounded-lg px-3 py-2 text-bz-parchment text-sm focus:outline-none focus:border-bz-gold/60 transition-colors">
-                          {CATEGORIES.map(c => <option key={c.value} value={c.value} className="bg-bz-dark">{c.label}</option>)}
+                          {CATEGORIES.map(categoryItem => <option key={categoryItem.value} value={categoryItem.value} className="bg-bz-dark">{categoryItem.label}</option>)}
                         </select>
                       </div>
 
                       {/* Tags */}
                       <div className="space-y-2">
-                        {p.tagsLoading ? (
+                        {pendingItem.tagsLoading ? (
                           <p className="text-bz-muted/50 text-xs flex items-center gap-1.5">
                             <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
                               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
@@ -375,12 +375,12 @@ export function KnowledgeForm() {
                             AI 分析標籤中…
                           </p>
                         ) : (
-                          <TagPicker tags={p.tags} onToggle={(tag) => toggleTag(p.id, tag)} />
+                          <TagPicker tags={pendingItem.tags} onToggle={(tag) => toggleTag(pendingItem.id, tag)} />
                         )}
                       </div>
 
                       <p className="text-bz-muted/40 text-xs line-clamp-2 leading-relaxed">
-                        {p.content.slice(0, 200)}{p.content.length > 200 ? '…' : ''}
+                        {pendingItem.content.slice(0, 200)}{pendingItem.content.length > 200 ? '…' : ''}
                       </p>
                     </div>
                   ))}
@@ -404,15 +404,15 @@ export function KnowledgeForm() {
                   <label className="text-bz-parchment/70 text-xs tracking-widest uppercase">
                     標題 <span className="text-bz-red">*</span>
                   </label>
-                  <input type="text" value={title} onChange={(e) => setTitle(e.target.value)}
+                  <input type="text" value={title} onChange={(event) => setTitle(event.target.value)}
                     placeholder="例：天干五行特性" required
                     className="w-full bg-white/5 border border-bz-gold/20 rounded-lg px-4 py-3 text-bz-parchment placeholder:text-bz-muted/50 focus:outline-none focus:border-bz-gold/60 transition-colors text-sm" />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-bz-parchment/70 text-xs tracking-widest uppercase">分類</label>
-                  <select value={category} onChange={(e) => setCategory(e.target.value)}
+                  <select value={category} onChange={(event) => setCategory(event.target.value)}
                     className="w-full bg-white/5 border border-bz-gold/20 rounded-lg px-3 py-3 text-bz-parchment focus:outline-none focus:border-bz-gold/60 transition-colors text-sm">
-                    {CATEGORIES.map(c => <option key={c.value} value={c.value} className="bg-bz-dark">{c.label}</option>)}
+                    {CATEGORIES.map(categoryItem => <option key={categoryItem.value} value={categoryItem.value} className="bg-bz-dark">{categoryItem.label}</option>)}
                   </select>
                 </div>
               </div>
@@ -421,7 +421,7 @@ export function KnowledgeForm() {
                 <label className="text-bz-parchment/70 text-xs tracking-widest uppercase">
                   內容 <span className="text-bz-red">*</span>
                 </label>
-                <textarea value={content} onChange={(e) => setContent(e.target.value)}
+                <textarea value={content} onChange={(event) => setContent(event.target.value)}
                   placeholder="輸入命理知識內容，AI 將根據此知識為命主進行分析…"
                   required rows={8}
                   className="w-full bg-white/5 border border-bz-gold/20 rounded-lg px-4 py-3 text-bz-parchment placeholder:text-bz-muted/50 focus:outline-none focus:border-bz-gold/60 transition-colors text-sm resize-y" />
@@ -479,7 +479,7 @@ export function KnowledgeForm() {
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
                       <h3 className="text-bz-parchment font-medium text-sm">{entry.title}</h3>
                       <span className="text-bz-muted text-xs bg-white/5 px-2 py-0.5 rounded-full">
-                        {CATEGORIES.find(c => c.value === entry.category)?.label ?? entry.category}
+                        {CATEGORIES.find(categoryItem => categoryItem.value === entry.category)?.label ?? entry.category}
                       </span>
                       {entry.tags?.map(tag => (
                         <span key={tag} className="text-bz-gold/70 text-xs bg-bz-gold/10 border border-bz-gold/20 px-2 py-0.5 rounded-full">

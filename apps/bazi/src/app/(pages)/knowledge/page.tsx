@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '../../lib/auth-context';
-import { KnowledgeForm } from '../../components/Common/knowledge-form/KnowledgeForm';
+import { KnowledgeForm } from '../../common/components/knowledge-form/KnowledgeForm';
 
 export default function KnowledgePage() {
   const { user, loading, isAdmin, login } = useAuth();

@@ -52,7 +52,10 @@ export async function GET(
       ? Math.max(0, 3 - (await countTodayQuestionsForUser(userId)))
       : null;
 
-    return NextResponse.json({ id: doc.id, ...data, questions: sanitizedQuestions, remainingToday });
+    return NextResponse.json(
+      { id: doc.id, ...data, questions: sanitizedQuestions, remainingToday },
+      { headers: { 'Cache-Control': 'no-store, private' } },
+    );
   } catch (error) {
     console.error('Get result error:', error);
     return NextResponse.json({ error: '讀取命盤失敗' }, { status: 500 });
@@ -102,12 +105,12 @@ export async function POST(
 
     if (knowledgeDocs.length < 3) {
       const all = await db.collection('knowledge').orderBy('createdAt', 'asc').limit(20).get();
-      const existing = new Set(knowledgeDocs.map(d => d.id));
-      knowledgeDocs = [...knowledgeDocs, ...all.docs.filter(d => !existing.has(d.id))];
+      const existing = new Set(knowledgeDocs.map(doc => doc.id));
+      knowledgeDocs = [...knowledgeDocs, ...all.docs.filter(doc => !existing.has(doc.id))];
     }
 
     const knowledge = knowledgeDocs
-      .map((d) => d.data())
+      .map((doc) => doc.data())
       .map((kd) => `【${kd['title']}】\n${kd['content']}`)
       .join('\n\n');
 
@@ -136,7 +139,10 @@ export async function POST(
 
     const sanitized = updatedQuestions.map(({ userId: _uid, ...q }) => q);
     const remaining = isAdmin ? null : Math.max(0, 3 - (todayCount + 1));
-    return NextResponse.json({ answer, questions: sanitized, remainingToday: remaining });
+    return NextResponse.json(
+      { answer, questions: sanitized, remainingToday: remaining },
+      { headers: { 'Cache-Control': 'no-store, private' } },
+    );
   } catch (error) {
     console.error('Ask question error:', error);
     return NextResponse.json({ error: '提問失敗，請稍後再試' }, { status: 500 });

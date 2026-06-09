@@ -33,12 +33,14 @@ module.exports = {
           // Kept for pillar cards / decorative
           gold: '#C9A84C',
           'gold-light': '#FDF3DC',
-          // Element palette (for result hero gradients)
-          wood: '#7AC97A',
-          fire: '#E87878',
-          earth: '#D4A830',
-          metal: '#60A8D0',
-          water: '#9070C0',
+          // Element palette (五行配色)
+          element: {
+            wood:  { bg: '#F4FAF4', accent: '#7AC97A', text: '#2E4C2E' },
+            fire:  { bg: '#FFF5F5', accent: '#E87878', text: '#5C2D2D' },
+            earth: { bg: '#FFFDF5', accent: '#FCD060', text: '#4A4A4A' },
+            metal: { bg: '#FFFBE0', accent: '#C8900A', text: '#4A3200' },
+            water: { bg: '#F5EDFF', accent: '#9070C0', text: '#36274D' },
+          },
           // Mystic theme (dark/immersive)
           mystic: {
             bg: '#0a0a0f',
@@ -56,6 +58,7 @@ module.exports = {
             yellow: '#FCD060',
             yellowLight: '#FDE49B',
             text: '#4A4A4A',
+            dim: '#636363',
             muted: '#9E9E9E',
             border: '#F0EBE3',
           },

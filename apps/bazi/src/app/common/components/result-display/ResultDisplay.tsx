@@ -95,10 +95,10 @@ export function ResultDisplay({ reading, onUpdate }: ResultDisplayProps) {
   }, []);
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
+    const onKey = (event: KeyboardEvent) => {
       if (['INPUT', 'TEXTAREA'].includes((document.activeElement?.tagName ?? ''))) return;
-      if (e.key === 'ArrowRight') setTrackIndex((p) => p + 1);
-      if (e.key === 'ArrowLeft') setTrackIndex((p) => p - 1);
+      if (event.key === 'ArrowRight') setTrackIndex((prevIndex) => prevIndex + 1);
+      if (event.key === 'ArrowLeft') setTrackIndex((prevIndex) => prevIndex - 1);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -149,7 +149,7 @@ export function ResultDisplay({ reading, onUpdate }: ResultDisplayProps) {
       {/* Desktop: horizontal carousel */}
       <div className="hidden md:block relative">
         <button
-          onClick={() => { spring(); setTrackIndex((p) => p - 1); }}
+          onClick={() => { spring(); setTrackIndex((prevIndex) => prevIndex - 1); }}
           className="absolute top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full border border-[#EAE5DF] bg-white flex items-center justify-center text-[#4A4A4A] hover:bg-[#FAF7F4] active:scale-95 transition-all shadow-sm"
           style={{ left: arrowInset }}
         >
@@ -166,8 +166,8 @@ export function ResultDisplay({ reading, onUpdate }: ResultDisplayProps) {
             onDragStart={spring}
             onDragEnd={(_, info) => {
               spring();
-              if (info.offset.x < -70) setTrackIndex((p) => p + 1);
-              else if (info.offset.x > 70) setTrackIndex((p) => p - 1);
+              if (info.offset.x < -70) setTrackIndex((prevIndex) => prevIndex + 1);
+              else if (info.offset.x > 70) setTrackIndex((prevIndex) => prevIndex - 1);
             }}
             animate={{ x: offset }}
             transition={transitionConfig}
@@ -196,7 +196,7 @@ export function ResultDisplay({ reading, onUpdate }: ResultDisplayProps) {
         </div>
 
         <button
-          onClick={() => { spring(); setTrackIndex((p) => p + 1); }}
+          onClick={() => { spring(); setTrackIndex((prevIndex) => prevIndex + 1); }}
           className="absolute top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full border border-[#EAE5DF] bg-white flex items-center justify-center text-[#4A4A4A] hover:bg-[#FAF7F4] active:scale-95 transition-all shadow-sm"
           style={{ right: arrowInset }}
         >
