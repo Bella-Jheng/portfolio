@@ -60,7 +60,11 @@ export async function GET(
       return NextResponse.json({ error: '找不到此命盤' }, { status: 404 });
     }
 
-    const { createdBy: _createdBy, adminQuestions: rawAdminQs, ...data } = doc.data()!;
+    const docData = doc.data();
+    if (!docData) {
+      return NextResponse.json({ error: '找不到此命盤' }, { status: 404 });
+    }
+    const { createdBy: _createdBy, adminQuestions: rawAdminQs, ...data } = docData;
     const sanitizedQuestions = (data.questions ?? []).map(
       ({ userId: _uid, ...q }: { userId?: string; [k: string]: unknown }) => q,
     );
@@ -109,7 +113,10 @@ export async function POST(
       return NextResponse.json({ error: '找不到此命盤' }, { status: 404 });
     }
 
-    const data = doc.data()!;
+    const data = doc.data();
+    if (!data) {
+      return NextResponse.json({ error: '找不到此命盤' }, { status: 404 });
+    }
     const pillars = data.pillars as BaziPillars;
     const fortune = data.fortune as FortuneReading;
 

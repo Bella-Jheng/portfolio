@@ -28,7 +28,10 @@ export async function POST(
       return NextResponse.json({ error: '找不到此命盤' }, { status: 404 });
     }
 
-    const data = doc.data()!;
+    const data = doc.data();
+    if (!data) {
+      return NextResponse.json({ error: '找不到此命盤' }, { status: 404 });
+    }
     if (data.correctionUsed) {
       return NextResponse.json({ error: '已使用過更改日期功能，每筆命盤僅限一次' }, { status: 400 });
     }

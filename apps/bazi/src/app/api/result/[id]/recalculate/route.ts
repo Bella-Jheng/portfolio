@@ -32,7 +32,10 @@ export async function PUT(
       return NextResponse.json({ error: '找不到此命盤' }, { status: 404 });
     }
 
-    const data = doc.data()!;
+    const data = doc.data();
+    if (!data) {
+      return NextResponse.json({ error: '找不到此命盤' }, { status: 404 });
+    }
     const { birthYear, birthMonth, birthDay, birthHour, name, gender, questions } = data;
 
     const pillars = calculateBaziPillars(birthYear, birthMonth, birthDay, birthHour ?? undefined);

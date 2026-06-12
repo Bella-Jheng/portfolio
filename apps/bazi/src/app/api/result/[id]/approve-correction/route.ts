@@ -39,7 +39,10 @@ export async function POST(
       return NextResponse.json({ error: '找不到此命盤' }, { status: 404 });
     }
 
-    const data = doc.data()!;
+    const data = doc.data();
+    if (!data) {
+      return NextResponse.json({ error: '找不到此命盤' }, { status: 404 });
+    }
     const { correctionRequestedDate, name, gender, questions } = data;
 
     if (!correctionRequestedDate) {

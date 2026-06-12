@@ -43,8 +43,11 @@ export async function PATCH(
       return NextResponse.json({ error: '找不到此命盤' }, { status: 404 });
     }
 
-    const data = doc.data()!;
-    const { name, gender, questions } = data;
+    const data = doc.data();
+    if (!data) {
+      return NextResponse.json({ error: '找不到此命盤' }, { status: 404 });
+    }
+    const { gender, questions } = data;
 
     const pillars = calculateBaziPillars(birthYear, birthMonth, birthDay, birthHour ?? undefined);
     const dominantElements = getDominantElements(pillars);
