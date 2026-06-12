@@ -1,0 +1,2 @@
+npx tsc -p apps/bazi/tsconfig.json
+npx lint-staged

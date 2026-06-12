@@ -2,11 +2,8 @@ import type { Reading } from '../../../types/bazi';
 import type { MagazineTheme } from './theme';
 import { ELEMENT_ENGLISH, STEM_ELEMENT } from './theme';
 import {
-  STEMS,
-  BRANCHES,
   getTenGod,
   getBranchHiddenStems,
-  calculateMajorFortune,
 } from '../../../lib/bazi-calculator';
 
 const FIVE_ELEMENTS = new Set(['木', '火', '土', '金', '水']);
@@ -63,22 +60,6 @@ export function BaziTableSlide({ reading, theme, mobile }: BaziTableSlideProps) 
   const hasHour = !!hourPillar;
   const activePillars = PILLAR_ORDER.filter(({ type }) => !!reading.pillars[type]);
 
-  const yearStemIdx = STEMS.indexOf(reading.pillars.year?.stem ?? '');
-  const monthStemIdx = STEMS.indexOf(reading.pillars.month?.stem ?? '');
-  const monthBranchIdx = BRANCHES.indexOf(reading.pillars.month?.branch ?? '');
-
-  const fortune =
-    yearStemIdx >= 0 && monthStemIdx >= 0 && monthBranchIdx >= 0 && !!reading.gender
-      ? calculateMajorFortune(
-          reading.birthYear, reading.birthMonth, reading.birthDay,
-          reading.gender, yearStemIdx, monthStemIdx, monthBranchIdx,
-        )
-      : null;
-
-  const currentVirtualAge = new Date().getFullYear() - reading.birthYear + 1;
-  const currentCycleIdx = fortune
-    ? fortune.cycles.findLastIndex((cycle) => cycle.startAge <= currentVirtualAge)
-    : -1;
   const HL = theme.accent + '20';
   const tgs = parseTenGodSummary(reading.fortune.tenGodAnalysis);
 

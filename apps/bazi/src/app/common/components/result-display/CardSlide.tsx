@@ -8,7 +8,7 @@ import { DownloadCardButton } from './DownloadCardButton';
 import { TocList } from './TocList';
 
 interface CardSlideProps {
-  reading: Reading;1;
+  reading: Reading;
   theme: MagazineTheme;
   mobile?: boolean;
   onTabSelect?: (tabIdx: number) => void;
