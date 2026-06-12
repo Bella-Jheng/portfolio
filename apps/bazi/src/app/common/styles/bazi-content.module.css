@@ -1,0 +1,55 @@
+/* Styles for AI-generated HTML content and ReactMarkdown output.
+   Descendant selectors are required here because inner elements
+   are rendered by dangerouslySetInnerHTML or ReactMarkdown. */
+
+.htmlContent {
+  font-size: 0.875rem;
+  line-height: 1.75;
+  color: #6B5D57;
+}
+.htmlContent p {
+  margin: 0 0 0.75rem;
+}
+.htmlContent p:last-child {
+  margin-bottom: 0;
+}
+.htmlContent ul,
+.htmlContent ol {
+  margin: 0.5rem 0 0.75rem 1.25rem;
+  padding: 0;
+}
+.htmlContent li {
+  margin-bottom: 0.4rem;
+}
+.htmlContent strong {
+  font-weight: 700;
+  color: #4A4A4A;
+}
+.htmlContent h3,
+.htmlContent h4 {
+  font-weight: 700;
+  color: #4A4A4A;
+  margin: 1rem 0 0.4rem;
+}
+
+.mdAnswer {
+  line-height: 1.7;
+}
+.mdAnswer p {
+  margin: 0 0 0.6rem;
+}
+.mdAnswer p:last-child {
+  margin-bottom: 0;
+}
+.mdAnswer ul,
+.mdAnswer ol {
+  margin: 0.4rem 0 0.6rem 1.2rem;
+  padding: 0;
+}
+.mdAnswer li {
+  margin-bottom: 0.3rem;
+}
+.mdAnswer strong {
+  font-weight: 700;
+  color: #4A4A4A;
+}

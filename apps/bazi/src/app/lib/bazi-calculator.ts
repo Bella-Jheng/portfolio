@@ -23,12 +23,12 @@ function mod(n: number, m: number): number {
 }
 
 function getJulianDayNumber(year: number, month: number, day: number): number {
-  let y = year;
-  let m = month;
-  if (m <= 2) { y -= 1; m += 12; }
-  const A = Math.floor(y / 100);
+  let adjustedYear = year;
+  let adjustedMonth = month;
+  if (adjustedMonth <= 2) { adjustedYear -= 1; adjustedMonth += 12; }
+  const A = Math.floor(adjustedYear / 100);
   const B = 2 - A + Math.floor(A / 4);
-  return Math.floor(365.25 * (y + 4716)) + Math.floor(30.6001 * (m + 1)) + day + B - 1524;
+  return Math.floor(365.25 * (adjustedYear + 4716)) + Math.floor(30.6001 * (adjustedMonth + 1)) + day + B - 1524;
 }
 
 // ─── Reference: 1900/01/01 = 甲戌日 ─────────────────────────────────────────
@@ -147,9 +147,9 @@ function getDayPillar(year: number, month: number, day: number, hour?: number): 
   // 子時 (23:00–01:00) belongs to the next day's pillar
   if (hour === 23 || hour === 0) jdn += 1;
 
-  const d = jdn - JDN_BASE;
-  const stemIndex   = mod(d, 10);
-  const branchIndex = mod(d + 10, 12);
+  const dayOffset = jdn - JDN_BASE;
+  const stemIndex   = mod(dayOffset, 10);
+  const branchIndex = mod(dayOffset + 10, 12);
   const stem   = STEMS[stemIndex];
   const branch = BRANCHES[branchIndex];
   return { stem, branch, element: getPillarElement(stem, branch) };
@@ -192,8 +192,8 @@ export function calculateBaziPillars(
   const dayPillar   = getDayPillar(year, month, day, hour);
 
   const jdn = getJulianDayNumber(year, month, day);
-  const d   = jdn - JDN_BASE + (hour === 23 || hour === 0 ? 1 : 0);
-  const dayStemIndex = mod(d, 10);
+  const dayOffset   = jdn - JDN_BASE + (hour === 23 || hour === 0 ? 1 : 0);
+  const dayStemIndex = mod(dayOffset, 10);
 
   const hourPillar = hour !== undefined
     ? getHourPillar(hour, dayStemIndex)
@@ -210,11 +210,11 @@ export function calculateBaziPillars(
 export function getDominantElements(pillars: BaziPillars): string[] {
   const count: Record<string, number> = {};
   const allPillars = [pillars.year, pillars.month, pillars.day, pillars.hour].filter(Boolean) as Pillar[];
-  for (const p of allPillars) {
-    const s = STEM_ELEMENTS[p.stem];
-    const b = BRANCH_ELEMENTS[p.branch];
-    count[s] = (count[s] ?? 0) + 1;
-    count[b] = (count[b] ?? 0) + 1;
+  for (const pillar of allPillars) {
+    const stemEl = STEM_ELEMENTS[pillar.stem];
+    const branchEl = BRANCH_ELEMENTS[pillar.branch];
+    count[stemEl] = (count[stemEl] ?? 0) + 1;
+    count[branchEl] = (count[branchEl] ?? 0) + 1;
   }
   const dayMaster = STEM_ELEMENTS[pillars.day.stem];
   const sorted = Object.entries(count).sort((entryA, entryB) => entryB[1] - entryA[1]).map(([el]) => el);
@@ -280,6 +280,157 @@ export function getBranchHiddenStems(branch: string, dayStem: string): HiddenSte
     stem,
     tenGod: getTenGod(dayStem, stem),
   }));
+}
+
+// ─── Day master strength (身強/身弱) ─────────────────────────────────────────
+// Rules based on 徐玉蘭八字課程 1-2-1 / 1-2-2 / 1-3
+
+export type DayMasterStrength = '從強' | '身強' | '身弱' | '從弱';
+
+// Exact percentage weights per pillar position (notes 1-3 Step 3)
+const STEM_WEIGHTS:   Record<string, number> = { year: 5,  month: 5,  hour: 5  };
+const BRANCH_WEIGHTS: Record<string, number> = { year: 20, month: 35, day: 20, hour: 10 };
+
+// 庫: triggered only when the stem in the SAME pillar matches (notes 1-3 Step 4 ②)
+const KU_CONFIG: Record<string, { stored: string; triggers: string[] }> = {
+  未: { stored: '木', triggers: ['甲', '乙'] },
+  辰: { stored: '水', triggers: ['壬', '癸'] },
+  戌: { stored: '火', triggers: ['丙', '丁'] },
+  丑: { stored: '金', triggers: ['庚', '辛'] },
+};
+
+// 三合 (長生+帝旺+墓庫) — all 3 present → branches CONVERT to this element
+const SANHE_GROUPS: Array<{ branches: string[]; element: string }> = [
+  { branches: ['申', '子', '辰'], element: '水' },
+  { branches: ['亥', '卯', '未'], element: '木' },
+  { branches: ['寅', '午', '戌'], element: '火' },
+  { branches: ['巳', '酉', '丑'], element: '金' },
+];
+
+// 三會 (same season) — all 3 present → branches CONVERT to this element (stronger than 三合)
+const SANHUI_GROUPS: Array<{ branches: string[]; element: string }> = [
+  { branches: ['亥', '子', '丑'], element: '水' },
+  { branches: ['寅', '卯', '辰'], element: '木' },
+  { branches: ['巳', '午', '未'], element: '火' },
+  { branches: ['申', '酉', '戌'], element: '金' },
+];
+
+// 半合 (peak 旺氣字 + one adjacent) — additive bonus only, no element conversion
+const BANHE_GROUPS: Array<{ peak: string; others: string[]; element: string }> = [
+  { peak: '子', others: ['申', '辰'], element: '水' },
+  { peak: '卯', others: ['亥', '未'], element: '木' },
+  { peak: '午', others: ['寅', '戌'], element: '火' },
+  { peak: '酉', others: ['巳', '丑'], element: '金' },
+];
+
+// 暗拱 (first + last of 三合, peak absent) — weaker additive bonus
+const ANGONG_GROUPS: Array<{ ends: string[]; peak: string; element: string }> = [
+  { ends: ['申', '辰'], peak: '子', element: '水' },
+  { ends: ['亥', '未'], peak: '卯', element: '木' },
+  { ends: ['寅', '戌'], peak: '午', element: '火' },
+  { ends: ['巳', '丑'], peak: '酉', element: '金' },
+];
+
+export function calculateDayMasterStrength(pillars: BaziPillars): DayMasterStrength {
+  const dayEl      = STEM_ELEMENTS[pillars.day.stem];
+  const generatesMe = Object.keys(GENERATES).find(key => GENERATES[key] === dayEl) ?? '';
+  const controlsMe  = Object.keys(CONTROLS).find(key => CONTROLS[key] === dayEl)  ?? '';
+  const iGenerate   = GENERATES[dayEl] ?? '';
+  const iControl    = CONTROLS[dayEl]  ?? '';
+
+  type Entry = { pillar: Pillar; key: string };
+  const entries: Entry[] = [
+    { pillar: pillars.year,  key: 'year'  },
+    { pillar: pillars.month, key: 'month' },
+    { pillar: pillars.day,   key: 'day'   },
+    ...(pillars.hour ? [{ pillar: pillars.hour, key: 'hour' }] : []),
+  ];
+
+  const allBranches = entries.map(entry => entry.pillar.branch);
+
+  // ── 三會 / 三合: full element conversion for those branch characters ───────────
+  // 三會 takes priority over 三合
+  const branchConvert = new Map<string, string>(); // branch char → new element
+  for (const group of SANHUI_GROUPS) {
+    if (group.branches.every(br => allBranches.includes(br)))
+      group.branches.forEach(br => branchConvert.set(br, group.element));
+  }
+  for (const group of SANHE_GROUPS) {
+    if (group.branches.every(br => allBranches.includes(br)))
+      group.branches.forEach(br => { if (!branchConvert.has(br)) branchConvert.set(br, group.element); });
+  }
+
+  // Helper: effective element for a branch (with 庫 trigger and 三合/三會 conversion)
+  const effectiveBranchEl = (branch: string, pillarStem: string): string => {
+    if (branchConvert.has(branch)) return branchConvert.get(branch)!;
+    const ku = KU_CONFIG[branch];
+    if (ku?.triggers.includes(pillarStem)) return ku.stored; // 庫 triggered → converts to stored element
+    return BRANCH_ELEMENTS[branch]; // 本氣
+  };
+
+  // ── 半合 / 暗拱: additive bonus (no conversion) ───────────────────────────────
+  // Skip branches already converted by 三合/三會 or 庫 to avoid double-counting
+  const convertedBranches = new Set<string>(branchConvert.keys());
+  for (const { pillar } of entries) {
+    const ku = KU_CONFIG[pillar.branch];
+    if (ku?.triggers.includes(pillar.stem)) convertedBranches.add(pillar.branch);
+  }
+
+  const bonusMap = new Map<string, number>();
+  const addBonus = (el: string, pts: number) =>
+    bonusMap.set(el, (bonusMap.get(el) ?? 0) + pts);
+
+  for (const group of BANHE_GROUPS) {
+    const peakOk  = allBranches.includes(group.peak)  && !convertedBranches.has(group.peak);
+    const otherOk = group.others.some(br => allBranches.includes(br) && !convertedBranches.has(br));
+    if (peakOk && otherOk) addBonus(group.element, 5);
+  }
+  for (const group of ANGONG_GROUPS) {
+    const endsOk = group.ends.every(br => allBranches.includes(br) && !convertedBranches.has(br));
+    if (endsOk && !allBranches.includes(group.peak)) addBonus(group.element, 3);
+  }
+
+  // ── Score ─────────────────────────────────────────────────────────────────────
+  let support = 0;
+  let drain   = 0;
+
+  const score = (el: string, w: number) => {
+    if (el === dayEl || el === generatesMe)                              support += w;
+    else if (el === controlsMe || el === iGenerate || el === iControl)  drain   += w;
+  };
+
+  // Stems (skip day stem — it IS the day master)
+  for (const { pillar, key } of entries) {
+    if (key === 'day') continue;
+    const weight = STEM_WEIGHTS[key];
+    if (weight) score(STEM_ELEMENTS[pillar.stem], weight);
+  }
+
+  // Branches
+  for (const { pillar, key } of entries) {
+    const weight = BRANCH_WEIGHTS[key];
+    const el = effectiveBranchEl(pillar.branch, pillar.stem);
+
+    // 貪生忘剋 (notes 1-3 Step 4 ①):
+    // Branch 剋s day master, BUT its own same-pillar stem is generated BY the branch
+    // → branch is "busy generating" its stem, forgets to 剋 day master
+    if (el === controlsMe && GENERATES[el] === STEM_ELEMENTS[pillar.stem]) continue;
+
+    score(el, weight);
+  }
+
+  // 半合 / 暗拱 additive bonuses
+  for (const [el, bonus] of bonusMap) score(el, bonus);
+
+  const total = support + drain;
+  if (total === 0) return '身弱';
+  const ratio = support / total;
+
+  // Thresholds from notes 1-3
+  if (ratio > 0.80) return '從強';
+  if (ratio < 0.20) return '從弱';
+  if (ratio >= 0.45) return '身強';
+  return '身弱';
 }
 
 // ─── Major fortune cycles (大運) ──────────────────────────────────────────────

@@ -3,6 +3,7 @@
 node_modules
 dist
 out-tsc
+*.tsbuildinfo
 
 # Firebase service account key - 絕對不能 commit！
 service-account.json

@@ -4,6 +4,7 @@ import { useFetcher } from '../../../lib/use-fetcher';
 import { patchReadings } from '../../../common/api/readings-cache';
 
 export type EditForm = {
+  name?: string | null;
   birthYear: number;
   birthMonth: number;
   birthDay: number;

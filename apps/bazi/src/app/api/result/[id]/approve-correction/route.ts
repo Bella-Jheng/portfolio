@@ -8,6 +8,7 @@ import {
   getAnnualPillar,
   STEMS,
   BRANCHES,
+  calculateDayMasterStrength,
 } from '../../../../lib/bazi-calculator';
 
 const ADMIN_UID = process.env.ADMIN_UID ?? '';
@@ -89,6 +90,7 @@ export async function POST(
       };
     }
 
+    const strength = calculateDayMasterStrength(pillars);
     const fortune = await generateBaziReading({
       name: name ?? undefined,
       gender: gender ?? undefined,
@@ -100,6 +102,7 @@ export async function POST(
       knowledge,
       currentYear,
       majorFortuneInfo,
+      strength,
     });
 
     await db.collection('readings').doc(id).update({

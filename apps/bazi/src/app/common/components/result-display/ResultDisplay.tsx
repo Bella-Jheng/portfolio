@@ -7,41 +7,26 @@ import { useAuth } from '../../../lib/auth-context';
 import { STEM_ELEMENT, ELEMENT_THEME, DEFAULT_THEME } from './theme';
 import { CardSlide } from './CardSlide';
 import { BaziTableSlide } from './BaziTableSlide';
-import { TenGodsSlide } from './TenGodsSlide';
 import { MajorFortuneSlide } from './MajorFortuneSlide';
-import { CycleAnalysisSlide } from './CycleAnalysisSlide';
-import { StandardSlide } from './StandardSlide';
-import { ActionSlide } from './ActionSlide';
+import { TabSection } from './TabSection';
 import { QASection } from './QASection';
+import { AdminQASection } from './AdminQASection';
 
 interface ResultDisplayProps {
   reading: Reading;
   onUpdate: (updated: Reading) => void;
 }
 
-const SLIDE_TITLES = [
-  '精美天生卡', '排盤', '十神 · 命格', '大運 / 流年', '大運 × 流年解析', '命盤總覽', '性格特質',
-  '整體運勢', '財運狀況', '工作事業', '感情桃花', '健康狀況', '補運建議', '年度重點行動建議',
-];
+// Carousel: 3 slides — 天生卡 (0), 基本排盤 (1), 大運流年 (2)
+const SLIDE_TITLES = ['精美天生卡', '排盤', '大運 / 流年'];
 
-// Infinite carousel: 14 slides (0–13), prepend last (13), append first (0)
-const TRACK_ITEMS = [13, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 0];
+// Infinite carousel for 3 slides: prepend last (2), real slides (0,1,2), append first (0)
+const TRACK_ITEMS = [2, 0, 1, 2, 0];
 
-const MOBILE_SECTIONS = (reading: Reading, theme: ReturnType<typeof deriveTheme>) => [
-  <CardSlide key="card" reading={reading} theme={theme} mobile />,
+const MOBILE_SECTIONS = (reading: Reading, theme: ReturnType<typeof deriveTheme>, onTabSelect: (idx: number) => void) => [
+  <CardSlide key="card" reading={reading} theme={theme} mobile onTabSelect={onTabSelect} />,
   <BaziTableSlide key="bazi" reading={reading} theme={theme} mobile />,
-  <TenGodsSlide key="tengods" reading={reading} theme={theme} mobile />,
   <MajorFortuneSlide key="fortune" reading={reading} theme={theme} mobile />,
-  <CycleAnalysisSlide key="cycle" reading={reading} theme={theme} mobile />,
-  <StandardSlide key="overview" title="命盤總覽" emoji="📋" content={reading.fortune.overview} accentColor={theme.accent} mobile />,
-  <StandardSlide key="personality" title="性格特質" emoji="🔮" content={reading.fortune.personality} accentColor={theme.accent} mobile />,
-  <StandardSlide key="fortune" title="整體運勢" emoji="🌟" content={reading.fortune.fortune} accentColor="#FCD060" mobile />,
-  <StandardSlide key="wealth" title="財運狀況" emoji="💰" content={reading.fortune.wealth} accentColor="#D4A017" mobile />,
-  <StandardSlide key="career" title="工作事業" emoji="💼" content={reading.fortune.career} accentColor="#60A8D0" mobile />,
-  <StandardSlide key="romance" title="感情桃花" emoji="🌸" content={reading.fortune.romance} accentColor="#E87878" mobile />,
-  <StandardSlide key="health" title="健康狀況" emoji="🌿" content={reading.fortune.health} accentColor="#7AC97A" mobile />,
-  <StandardSlide key="remedy" title="補運建議" emoji="✨" content={reading.fortune.remedy} accentColor={theme.accent} mobile />,
-  <ActionSlide key="actions" actionsText={reading.fortune.actions} accentColor={theme.accent} mobile />,
 ];
 
 function deriveTheme(reading: Reading) {
@@ -53,23 +38,12 @@ function renderSlide(
   contentIdx: number,
   reading: Reading,
   theme: ReturnType<typeof deriveTheme>,
+  onTabSelect: (idx: number) => void,
 ) {
-  const f = reading.fortune;
   switch (contentIdx) {
-    case 0:  return <CardSlide reading={reading} theme={theme} />;
-    case 1:  return <BaziTableSlide reading={reading} theme={theme} />;
-    case 2:  return <TenGodsSlide reading={reading} theme={theme} />;
-    case 3:  return <MajorFortuneSlide reading={reading} theme={theme} />;
-    case 4:  return <CycleAnalysisSlide reading={reading} theme={theme} />;
-    case 5:  return <StandardSlide title="命盤總覽" emoji="📋" content={f.overview} accentColor={theme.accent} />;
-    case 6:  return <StandardSlide title="性格特質" emoji="🔮" content={f.personality} accentColor={theme.accent} />;
-    case 7:  return <StandardSlide title="整體運勢" emoji="🌟" content={f.fortune} accentColor="#FCD060" />;
-    case 8:  return <StandardSlide title="財運狀況" emoji="💰" content={f.wealth} accentColor="#D4A017" />;
-    case 9:  return <StandardSlide title="工作事業" emoji="💼" content={f.career} accentColor="#60A8D0" />;
-    case 10: return <StandardSlide title="感情桃花" emoji="🌸" content={f.romance} accentColor="#E87878" />;
-    case 11: return <StandardSlide title="健康狀況" emoji="🌿" content={f.health} accentColor="#7AC97A" />;
-    case 12: return <StandardSlide title="補運建議" emoji="✨" content={f.remedy} accentColor={theme.accent} />;
-    case 13: return <ActionSlide actionsText={f.actions} accentColor={theme.accent} />;
+    case 0: return <CardSlide reading={reading} theme={theme} onTabSelect={onTabSelect} />;
+    case 1: return <BaziTableSlide reading={reading} theme={theme} />;
+    case 2: return <MajorFortuneSlide reading={reading} theme={theme} />;
     default: return null;
   }
 }
@@ -77,13 +51,23 @@ function renderSlide(
 export function ResultDisplay({ reading, onUpdate }: ResultDisplayProps) {
   const { isAdmin, getToken } = useAuth();
   const [recalculating, setRecalculating] = useState(false);
+  const [showTopBtn, setShowTopBtn] = useState(false);
   const [trackIndex, setTrackIndex] = useState(1);
   const [transitionConfig, setTransitionConfig] = useState<React.ComponentProps<typeof motion.div>['transition']>({
     type: 'spring', stiffness: 260, damping: 26,
   });
   const [containerWidth, setContainerWidth] = useState(0);
+  const [activeTabIdx, setActiveTabIdx] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
+  const tabSectionRef = useRef<HTMLDivElement>(null);
   const theme = deriveTheme(reading);
+
+  const handleTabSelect = (idx: number) => {
+    setActiveTabIdx(idx);
+    setTimeout(() => {
+      tabSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
+  };
 
   useEffect(() => {
     const el = containerRef.current;
@@ -92,6 +76,12 @@ export function ResultDisplay({ reading, onUpdate }: ResultDisplayProps) {
     update();
     window.addEventListener('resize', update);
     return () => window.removeEventListener('resize', update);
+  }, []);
+
+  useEffect(() => {
+    const onScroll = () => setShowTopBtn(window.scrollY > 400);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   useEffect(() => {
@@ -128,7 +118,7 @@ export function ResultDisplay({ reading, onUpdate }: ResultDisplayProps) {
   const gap = 24;
   const offset = containerWidth ? (containerWidth - cardWidth) / 2 - trackIndex * (cardWidth + gap) : 0;
   const arrowInset = containerWidth ? Math.max(4, Math.round((containerWidth - cardWidth) / 4 - 20)) : 4;
-  const slideIndex = trackIndex === 0 ? 13 : trackIndex === 15 ? 0 : trackIndex - 1;
+  const slideIndex = trackIndex === 0 ? 2 : trackIndex === 4 ? 0 : trackIndex - 1;
 
   return (
     <motion.div
@@ -139,7 +129,7 @@ export function ResultDisplay({ reading, onUpdate }: ResultDisplayProps) {
     >
       {/* Mobile: vertical sections */}
       <div className="md:hidden space-y-4">
-        {MOBILE_SECTIONS(reading, theme).map((section) => (
+        {MOBILE_SECTIONS(reading, theme, handleTabSelect).map((section) => (
           <div key={section.key} className="bg-white border border-[#EAE5DF] rounded-3xl shadow-sm p-5">
             {section}
           </div>
@@ -172,8 +162,8 @@ export function ResultDisplay({ reading, onUpdate }: ResultDisplayProps) {
             animate={{ x: offset }}
             transition={transitionConfig}
             onAnimationComplete={() => {
-              if (trackIndex === 0) { setTransitionConfig({ duration: 0 }); setTrackIndex(14); }
-              else if (trackIndex === 15) { setTransitionConfig({ duration: 0 }); setTrackIndex(1); }
+              if (trackIndex === 0) { setTransitionConfig({ duration: 0 }); setTrackIndex(3); }
+              else if (trackIndex === 4) { setTransitionConfig({ duration: 0 }); setTrackIndex(1); }
             }}
             className="flex items-stretch cursor-grab active:cursor-grabbing"
           >
@@ -187,7 +177,7 @@ export function ResultDisplay({ reading, onUpdate }: ResultDisplayProps) {
               >
                 <div className="w-full bg-white border border-[#EAE5DF] rounded-3xl shadow-md p-6 md:p-8 flex flex-col h-[580px] overflow-hidden">
                   <div className="flex-1 flex items-stretch w-full min-h-0">
-                    {renderSlide(contentIdx, reading, theme)}
+                    {renderSlide(contentIdx, reading, theme, handleTabSelect)}
                   </div>
                 </div>
               </div>
@@ -208,11 +198,11 @@ export function ResultDisplay({ reading, onUpdate }: ResultDisplayProps) {
         <div className="flex flex-col items-center gap-1.5 mt-2">
           <span className="text-xs font-bold tracking-widest text-[#636363] uppercase">{SLIDE_TITLES[slideIndex]}</span>
           <div className="flex items-center gap-3 w-full max-w-[240px]">
-            <span className="text-[10px] font-mono text-[#6B6159] tracking-widest shrink-0">{slideIndex + 1} / 14</span>
+            <span className="text-[10px] font-mono text-[#6B6159] tracking-widest shrink-0">{slideIndex + 1} / 3</span>
             <div className="h-1 flex-1 bg-black/5 rounded-full overflow-hidden">
               <div
                 className="h-full bg-[#4A4A4A] transition-all duration-300 ease-out"
-                style={{ width: `${((slideIndex + 1) / 14) * 100}%` }}
+                style={{ width: `${((slideIndex + 1) / 3) * 100}%` }}
               />
             </div>
           </div>
@@ -233,7 +223,28 @@ export function ResultDisplay({ reading, onUpdate }: ResultDisplayProps) {
         </div>
       )}
 
+      {/* Tab section: all other slides */}
+      <div ref={tabSectionRef}>
+        <TabSection reading={reading} theme={theme} activeTabIdx={activeTabIdx} onActiveTabChange={setActiveTabIdx} />
+      </div>
+
       <QASection reading={reading} theme={theme} onUpdate={onUpdate} />
+
+      {isAdmin && (
+        <AdminQASection reading={reading} onUpdate={onUpdate} />
+      )}
+
+      {showTopBtn && (
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          className="fixed bottom-6 right-6 z-50 w-11 h-11 rounded-full bg-[#4A4A4A]/80 hover:bg-[#2D2420] text-white shadow-lg backdrop-blur-sm transition-all flex items-center justify-center"
+          aria-label="回到頂端"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
+          </svg>
+        </button>
+      )}
     </motion.div>
   );
 }

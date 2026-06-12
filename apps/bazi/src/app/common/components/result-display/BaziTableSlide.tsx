@@ -9,6 +9,39 @@ import {
   calculateMajorFortune,
 } from '../../../lib/bazi-calculator';
 
+const FIVE_ELEMENTS = new Set(['木', '火', '土', '金', '水']);
+
+const ELEMENT_BADGE: Record<string, { pill: string; dot: string }> = {
+  木: { pill: 'bg-bz-element-wood-bg text-bz-element-wood-text', dot: 'bg-bz-element-wood-accent' },
+  火: { pill: 'bg-bz-element-fire-bg text-bz-element-fire-text', dot: 'bg-bz-element-fire-accent' },
+  土: { pill: 'bg-bz-element-earth-bg text-bz-element-earth-text', dot: 'bg-bz-element-earth-accent' },
+  金: { pill: 'bg-bz-element-metal-bg text-bz-element-metal-text', dot: 'bg-bz-element-metal-accent' },
+  水: { pill: 'bg-bz-element-water-bg text-bz-element-water-text', dot: 'bg-bz-element-water-accent' },
+};
+
+function extractElements(text: string): string[] {
+  const seen = new Set<string>();
+  return text.split('').filter((char) => {
+    if (FIVE_ELEMENTS.has(char) && !seen.has(char)) { seen.add(char); return true; }
+    return false;
+  });
+}
+
+function parseTenGodSummary(text?: string | null) {
+  if (!text) return {};
+  const line = text.split('\n')[0];
+  const patternMatch = line.match(/【格局】([^｜\n]+)/);
+  const strengthMatch = line.match(/(身強|身弱)/);
+  const helpfulMatch = line.match(/用神[：:]\s*([^｜\n]+)/);
+  const harmfulMatch = line.match(/忌神[：:]\s*([^｜\n]+)/);
+  return {
+    pattern: patternMatch?.[1]?.trim(),
+    strength: strengthMatch?.[1],
+    helpful: helpfulMatch ? extractElements(helpfulMatch[1]) : [],
+    harmful: harmfulMatch ? extractElements(harmfulMatch[1]) : [],
+  };
+}
+
 const PILLAR_ORDER = [
   { type: 'hour' as const, label: '時' },
   { type: 'day' as const, label: '日' },
@@ -47,6 +80,7 @@ export function BaziTableSlide({ reading, theme, mobile }: BaziTableSlideProps) 
     ? fortune.cycles.findLastIndex((cycle) => cycle.startAge <= currentVirtualAge)
     : -1;
   const HL = theme.accent + '20';
+  const tgs = parseTenGodSummary(reading.fortune.tenGodAnalysis);
 
   return (
     <div className={`w-full h-full flex flex-col gap-4 text-left ${mobile ? '' : 'overflow-y-auto'}`}>
@@ -71,6 +105,68 @@ export function BaziTableSlide({ reading, theme, mobile }: BaziTableSlideProps) 
           )}
         </div>
       </div>
+
+      {/* Summary badges */}
+      {(tgs.pattern || tgs.strength || (tgs.helpful && tgs.helpful.length > 0)) && (
+        <div className="flex flex-col gap-3 shrink-0">
+          {/* Row 1: 日主、身強弱、格局 */}
+          <div className="flex flex-wrap gap-2 items-center">
+            {dayStem && (
+              <span className="px-4 py-1.5 rounded-full border border-[#D5CEC7] text-sm font-bold text-[#4A4A4A] bg-white whitespace-nowrap">
+                日主 {dayStem}（{dayElement}）
+              </span>
+            )}
+            {tgs.strength && (
+              <span className="px-4 py-1.5 rounded-full text-sm font-bold whitespace-nowrap" style={{ backgroundColor: '#FFF8E0', color: '#8B6914' }}>
+                {tgs.strength}
+              </span>
+            )}
+            {tgs.pattern && (
+              <span className="px-4 py-1.5 rounded-full text-sm font-bold text-white whitespace-nowrap" style={{ backgroundColor: theme.accent }}>
+                {tgs.pattern}
+              </span>
+            )}
+          </div>
+
+          {/* Row 2: 用神 / 忌神 element badges */}
+          {((tgs.helpful && tgs.helpful.length > 0) || (tgs.harmful && tgs.harmful.length > 0)) && (
+            <div className="flex flex-wrap gap-x-5 gap-y-2 items-center">
+              {tgs.helpful && tgs.helpful.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-[#6B6159] whitespace-nowrap">用神・喜</span>
+                  <div className="flex gap-1.5">
+                    {tgs.helpful.map((el) => {
+                      const badge = ELEMENT_BADGE[el];
+                      return badge ? (
+                        <span key={el} className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap ${badge.pill}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${badge.dot}`} />
+                          {el}
+                        </span>
+                      ) : null;
+                    })}
+                  </div>
+                </div>
+              )}
+              {tgs.harmful && tgs.harmful.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-[#6B6159] whitespace-nowrap">忌神・避</span>
+                  <div className="flex gap-1.5">
+                    {tgs.harmful.map((el) => {
+                      const badge = ELEMENT_BADGE[el];
+                      return badge ? (
+                        <span key={el} className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap ${badge.pill}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${badge.dot}`} />
+                          {el}
+                        </span>
+                      ) : null;
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Structured Grid Layout for Bazi Chart */}
       <div className="grid grid-cols-5 gap-y-3 gap-x-1 items-center text-center bg-[#FAF8F5] border border-[#EAE5DF]/60 p-4 rounded-2xl shrink-0">
@@ -213,43 +309,6 @@ export function BaziTableSlide({ reading, theme, mobile }: BaziTableSlideProps) 
           );
         })}
       </div>
-
-      {/* Major Fortune Preview */}
-      {fortune && (
-        <div className="shrink-0 space-y-2 pt-1">
-          <p className="text-xs font-bold text-[#4A4A4A] tracking-wider">大運起伏</p>
-          <div className="overflow-x-auto bg-[#FAF8F5] border border-[#EAE5DF]/60 p-3 rounded-2xl">
-            <div className="flex gap-1.5 min-w-max">
-              <div className="flex flex-col text-[10px] font-bold text-[#6E665D] pr-2 justify-around w-10 shrink-0 text-left py-1">
-                <span>起運歲</span>
-                <span>大運柱</span>
-              </div>
-              {fortune.cycles.map((cycle, index) => {
-                const isActive = index === currentCycleIdx;
-                return (
-                  <div
-                    key={index}
-                    className="flex flex-col items-center gap-1.5 px-2 py-2 rounded-xl min-w-[38px] transition-all"
-                    style={isActive ? { backgroundColor: theme.accent } : {}}
-                  >
-                    <span className={`font-mono text-xs ${isActive ? 'font-black text-white' : 'text-[#5C5449]'}`}>
-                      {cycle.startAge}
-                    </span>
-                    <div className="flex flex-col items-center leading-none font-black gap-0.5 mt-0.5">
-                      <span className={`text-sm md:text-base ${isActive ? 'text-white' : 'text-[#3A3A3A]'}`}>{cycle.stem}</span>
-                      <span className={`text-sm md:text-base ${isActive ? 'text-white' : 'text-[#3A3A3A]'}`}>{cycle.branch}</span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-          <p className="text-center text-[10px] text-[#6E665D] font-medium mt-1">
-            出生後 {Math.floor(fortune.startDays / 3)} 年
-            {(fortune.startDays % 3) * 4 > 0 ? ` ${(fortune.startDays % 3) * 4} 個月` : ''}上大運
-          </p>
-        </div>
-      )}
     </div>
   );
 }

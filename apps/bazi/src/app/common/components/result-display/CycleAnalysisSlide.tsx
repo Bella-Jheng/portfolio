@@ -1,3 +1,4 @@
+import styles from '../../styles/bazi-content.module.css';
 import type { Reading } from '../../../types/bazi';
 import type { MagazineTheme } from './theme';
 import {
@@ -13,19 +14,6 @@ interface CycleAnalysisSlideProps {
   mobile?: boolean;
 }
 
-function splitIntoPoints(text: string): string[] {
-  if (!text) return [];
-  const sentences = text
-    .split(/(?<=[。！？])/)
-    .map((sentence) => sentence.trim())
-    .filter((sentence) => sentence.length > 1);
-  if (sentences.length > 1) return sentences;
-  return text
-    .split('，')
-    .map((sentence) => sentence.trim())
-    .filter((sentence) => sentence.length > 3)
-    .slice(0, 8);
-}
 
 export function CycleAnalysisSlide({ reading, theme, mobile }: CycleAnalysisSlideProps) {
   const yearStemIdx = STEMS.indexOf(reading.pillars.year?.stem ?? '');
@@ -57,8 +45,6 @@ export function CycleAnalysisSlide({ reading, theme, mobile }: CycleAnalysisSlid
       </div>
     );
   }
-
-  const points = splitIntoPoints(reading.fortune.cycleAnalysis);
 
   return (
     <div className={`w-full h-full flex flex-col gap-4 text-left ${mobile ? '' : 'overflow-y-auto'}`}>
@@ -95,18 +81,24 @@ export function CycleAnalysisSlide({ reading, theme, mobile }: CycleAnalysisSlid
         </div>
       )}
 
-      {/* Content */}
-      <div className={`space-y-3 pr-1 ${mobile ? '' : 'overflow-y-auto'}`}>
-        {points.map((point, index) => (
-          <p
-            key={index}
-            className="text-sm leading-relaxed text-[#4A4A4A] font-medium pl-3 border-l-2"
-            style={{ borderColor: theme.accent }}
-          >
-            {point}
-          </p>
-        ))}
+      {/* 名詞解釋 */}
+      <div className="flex gap-0 shrink-0 rounded-xl overflow-hidden border border-[#EAE5DF] text-xs">
+        <div className="flex-1 px-3 py-2.5 bg-[#FAF8F5]">
+          <span className="font-black text-[#4A4A4A]">大運</span>
+          <span className="text-[#7A6E65] ml-1">每 10 年一換的人生主題周期，決定這段時間的整體氣場走向，對應上方「大運／流年」卡片</span>
+        </div>
+        <div className="w-px bg-[#EAE5DF] shrink-0" />
+        <div className="flex-1 px-3 py-2.5 bg-[#FAF8F5]">
+          <span className="font-black text-[#4A4A4A]">流年</span>
+          <span className="text-[#7A6E65] ml-1">每年天干地支的能量場，與大運交互影響當年運勢高低起伏</span>
+        </div>
       </div>
+
+      {/* Content */}
+      <div
+        className={`${styles.htmlContent} ${mobile ? '' : 'overflow-y-auto'}`}
+        dangerouslySetInnerHTML={{ __html: reading.fortune.cycleAnalysis ?? '' }}
+      />
     </div>
   );
 }

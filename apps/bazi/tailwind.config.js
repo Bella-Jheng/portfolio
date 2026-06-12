@@ -37,8 +37,8 @@ module.exports = {
           element: {
             wood:  { bg: '#F4FAF4', accent: '#7AC97A', text: '#2E4C2E' },
             fire:  { bg: '#FFF5F5', accent: '#E87878', text: '#5C2D2D' },
-            earth: { bg: '#FFFDF5', accent: '#FCD060', text: '#4A4A4A' },
-            metal: { bg: '#FFFBE0', accent: '#C8900A', text: '#4A3200' },
+            earth: { bg: '#FFFBE0', accent: '#C8900A', text: '#4A3200' },
+            metal: { bg: '#FFFDF5', accent: '#FCD060', text: '#4A4A4A' },
             water: { bg: '#F5EDFF', accent: '#9070C0', text: '#36274D' },
           },
           // Mystic theme (dark/immersive)
@@ -90,11 +90,18 @@ module.exports = {
           '0%, 100%': { opacity: '1' },
           '50%': { opacity: '0.5' },
         },
+        'dot-bounce': {
+          '0%, 80%, 100%': { opacity: '0.2', transform: 'translateY(0)' },
+          '40%':            { opacity: '1',   transform: 'translateY(-3px)' },
+        },
       },
       animation: {
         shimmer: 'shimmer 2s infinite linear',
         fadeIn: 'fadeIn 0.5s ease-out',
         pulse: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        dot1: 'dot-bounce 1.2s infinite ease-in-out 0s',
+        dot2: 'dot-bounce 1.2s infinite ease-in-out 0.2s',
+        dot3: 'dot-bounce 1.2s infinite ease-in-out 0.4s',
       },
     },
   },

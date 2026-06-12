@@ -25,6 +25,7 @@ export interface FortuneReading {
   actions?: string;
   cycleAnalysis?: string;
   tenGodAnalysis?: string;
+  traits?: string;
 }
 
 export interface QuestionAnswer {
@@ -37,6 +38,7 @@ export interface QuestionAnswer {
 export interface Reading {
   id: string;
   name?: string;
+  createdBy?: string | null;
   gender?: Gender;
   birthYear: number;
   birthMonth: number;
@@ -45,6 +47,7 @@ export interface Reading {
   pillars: BaziPillars;
   fortune: FortuneReading;
   questions: QuestionAnswer[];
+  adminQuestions?: QuestionAnswer[];
   createdAt: string;
   remainingToday?: number | null;
   correctionRequested?: boolean;
@@ -80,6 +83,7 @@ export interface CalculateRequest {
 
 export interface AskQuestionRequest {
   question: string;
+  adminQuestion?: boolean;
 }
 
 export const SHICHEN = [

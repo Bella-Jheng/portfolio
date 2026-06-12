@@ -77,8 +77,8 @@ export function MajorFortuneSlide({ reading, theme, mobile }: MajorFortuneSlideP
   const displayMonths = (fortune.startDays % 3) * 4;
 
   const annualLuck = Array.from({ length: 10 }, (_, index) => {
-    const y = currentYear - 4 + index;
-    return { year: y, age: y - reading.birthYear + 1, ...getAnnualPillar(y) };
+    const loopYear = currentYear - 4 + index;
+    return { year: loopYear, age: loopYear - reading.birthYear + 1, ...getAnnualPillar(loopYear) };
   });
 
   return (

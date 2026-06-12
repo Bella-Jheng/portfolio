@@ -19,9 +19,9 @@ function extractVideoId(url: string): string | null {
     /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
     /^([a-zA-Z0-9_-]{11})$/,
   ];
-  for (const p of patterns) {
-    const m = url.match(p);
-    if (m) return m[1];
+  for (const pattern of patterns) {
+    const matchResult = url.match(pattern);
+    if (matchResult) return matchResult[1];
   }
   return null;
 }
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
       .catch(() => YoutubeTranscript.fetchTranscript(videoId, { lang: 'en' }))
       .catch(() => YoutubeTranscript.fetchTranscript(videoId));
 
-    const transcript = items.map(i => i.text).join('\n');
+    const transcript = items.map(item => item.text).join('\n');
 
     // 用影片 ID 當 fallback 標題，讓前端覆蓋
     return NextResponse.json({ title: videoId, transcript, videoId });

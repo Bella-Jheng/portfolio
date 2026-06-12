@@ -1,13 +1,16 @@
+import fs from 'fs';
+import path from 'path';
 import { initializeApp, getApps, cert, type ServiceAccount } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { getAuth as _getAuth } from 'firebase-admin/auth';
 
 function getCredential(): ServiceAccount {
   // 本地開發：直接讀 service-account.json（放在 apps/bazi/ 根目錄，已加入 .gitignore）
+  // 用 fs.readFileSync 而非 require()，避免 webpack 靜態分析時報 module not found
   if (process.env.NODE_ENV !== 'production') {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const serviceAccount = require('../../../service-account.json');
+      const filePath = path.join(process.cwd(), 'service-account.json');
+      const serviceAccount = JSON.parse(fs.readFileSync(filePath, 'utf8'));
       return serviceAccount as ServiceAccount;
     } catch {
       // 找不到 JSON 檔就改用環境變數

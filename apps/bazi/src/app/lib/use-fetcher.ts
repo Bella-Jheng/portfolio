@@ -8,6 +8,7 @@ export function useFetcher() {
       ...init,
       headers: {
         ...init.headers,
+        'X-Timezone': Intl.DateTimeFormat().resolvedOptions().timeZone,
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
     });

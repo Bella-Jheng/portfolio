@@ -1,11 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import type { Reading } from '../../../types/bazi';
 import { useAuth } from '../../../lib/auth-context';
 import type { MagazineTheme } from './theme';
+import styles from '../../styles/bazi-content.module.css';
 
 interface QASectionProps {
   reading: Reading;
@@ -13,12 +16,30 @@ interface QASectionProps {
   onUpdate: (updated: Reading) => void;
 }
 
+const COLLAPSE_THRESHOLD = 150;
+
 export function QASection({ reading, theme, onUpdate }: QASectionProps) {
   const { user, login, getToken } = useAuth();
   const [question, setQuestion] = useState('');
   const [asking, setAsking] = useState(false);
   const [askError, setAskError] = useState('');
   const [remaining, setRemaining] = useState<number>(reading.remainingToday ?? 3);
+  const [expandedSet, setExpandedSet] = useState<Set<number>>(() => {
+    const last = reading.questions.length - 1;
+    return last >= 0 ? new Set([last]) : new Set();
+  });
+
+  useEffect(() => {
+    const last = reading.questions.length - 1;
+    if (last >= 0) setExpandedSet((prev) => new Set([...prev, last]));
+  }, [reading.questions.length]);
+
+  const toggleExpand = (idx: number) =>
+    setExpandedSet((prev) => {
+      const next = new Set(prev);
+      if (next.has(idx)) next.delete(idx); else next.add(idx);
+      return next;
+    });
 
   const limitReached = user ? remaining === 0 : false;
 
@@ -33,12 +54,14 @@ export function QASection({ reading, theme, onUpdate }: QASectionProps) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-Timezone': Intl.DateTimeFormat().resolvedOptions().timeZone,
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({ question }),
       });
       const data = await res.json();
       if (!res.ok) {
+        if (data.aiStatusText) console.error('後端api失敗訊息：', data.aiStatusText);
         setAskError(data.error || '提問失敗');
         return;
       }
@@ -86,11 +109,35 @@ export function QASection({ reading, theme, onUpdate }: QASectionProps) {
                 <div className="relative w-7 h-7 shrink-0 mt-1">
                   <Image src={theme.catSrc} alt="" fill className="object-contain" />
                 </div>
-                <div
-                  className="border rounded-2xl rounded-tl-sm px-4 py-2.5 text-sm max-w-[80%] text-[#6B5D57] leading-relaxed"
-                  style={{ backgroundColor: theme.bg, borderColor: '#EAE5DF' }}
-                >
-                  {qa.answer}
+                <div className="flex flex-col gap-1 max-w-[80%]">
+                  <div
+                    className={`${styles.mdAnswer} border rounded-2xl rounded-tl-sm px-4 py-2.5 text-sm text-[#6B5D57] relative overflow-hidden transition-all ${
+                      qa.answer.length > COLLAPSE_THRESHOLD && !expandedSet.has(idx)
+                        ? 'max-h-[6.5rem]'
+                        : ''
+                    }`}
+                    style={{ backgroundColor: theme.bg, borderColor: '#EAE5DF' }}
+                  >
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{qa.answer}</ReactMarkdown>
+                    {qa.answer.length > COLLAPSE_THRESHOLD && !expandedSet.has(idx) && (
+                      <div
+                        className="absolute bottom-0 left-0 right-0 h-10 pointer-events-none"
+                        style={{ background: `linear-gradient(to top, ${theme.bg}, transparent)` }}
+                      />
+                    )}
+                  </div>
+                  {qa.answer.length > COLLAPSE_THRESHOLD && (
+                    <button
+                      onClick={() => toggleExpand(idx)}
+                      className="self-start text-[11px] text-[#9A9088] hover:text-[#6B5D57] transition-colors flex items-center gap-1 pl-1"
+                    >
+                      {expandedSet.has(idx) ? (
+                        <>收合 <span className="text-[10px]">↑</span></>
+                      ) : (
+                        <>展開全文 <span className="text-[10px]">↓</span></>
+                      )}
+                    </button>
+                  )}
                 </div>
               </div>
             </motion.div>
@@ -135,7 +182,9 @@ export function QASection({ reading, theme, onUpdate }: QASectionProps) {
               disabled={asking || !question.trim()}
               className="bg-[#4A4A4A] text-white px-5 py-3 rounded-xl text-sm hover:bg-black transition-all disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
             >
-              {asking ? '…' : '詢問'}
+              {asking ? (
+                <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin inline-block" />
+              ) : '詢問'}
             </button>
           </form>
         )}

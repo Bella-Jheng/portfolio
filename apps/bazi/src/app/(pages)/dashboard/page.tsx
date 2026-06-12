@@ -67,6 +67,7 @@ export default function DashboardPage() {
   const [selected, setSelected] = useState<Reading | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<EditForm | null>(null);
+  const [copiedUid, setCopiedUid] = useState<string | null>(null);
 
   // ── API hooks ─────────────────────────────────────────────────────────────
   const { data, isLoading: fetching } = useReadings(isAdmin);
@@ -88,7 +89,15 @@ export default function DashboardPage() {
   const startEdit = (reading: Reading, event: React.MouseEvent) => {
     event.stopPropagation();
     setEditingId(reading.id);
-    setEditForm({ birthYear: reading.birthYear, birthMonth: reading.birthMonth, birthDay: reading.birthDay, birthHour: reading.birthHour ?? null });
+    setEditForm({ name: reading.name ?? '', birthYear: reading.birthYear, birthMonth: reading.birthMonth, birthDay: reading.birthDay, birthHour: reading.birthHour ?? null });
+  };
+
+  const copyUid = (uid: string, readingId: string, event: React.MouseEvent) => {
+    event.stopPropagation();
+    navigator.clipboard.writeText(uid).then(() => {
+      setCopiedUid(readingId);
+      setTimeout(() => setCopiedUid(null), 2000);
+    });
   };
 
   const cancelEdit = () => { setEditingId(null); setEditForm(null); };
@@ -142,7 +151,7 @@ export default function DashboardPage() {
 
   if (selected) {
     return (
-      <div className="max-w-4xl mx-auto px-5 py-10">
+      <div className="py-10 px-8">
         <button
           onClick={() => setSelected(null)}
           className="flex items-center gap-1.5 text-bz-muted text-sm mb-8 hover:text-bz-parchment transition-colors"
@@ -250,6 +259,28 @@ export default function DashboardPage() {
                         {reading.birthHour !== undefined && reading.birthHour !== null ? ` ${reading.birthHour}時` : ''}
                         {reading.gender === 'male' ? ' · 男' : reading.gender === 'female' ? ' · 女' : ''}
                       </p>
+                      {reading.createdBy && (
+                        <div className="flex items-center gap-1" onClick={(event) => event.stopPropagation()}>
+                          <span className="font-mono text-[10px] text-bz-muted/50 tracking-tight">
+                            {reading.createdBy.slice(0, 12)}…
+                          </span>
+                          <button
+                            onClick={(event) => copyUid(reading.createdBy!, reading.id, event)}
+                            className="p-0.5 rounded text-bz-muted/40 hover:text-bz-gold transition-colors"
+                            title={reading.createdBy}
+                          >
+                            {copiedUid === reading.id ? (
+                              <svg className="w-3 h-3 text-green-500" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                              </svg>
+                            ) : (
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                              </svg>
+                            )}
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
@@ -306,6 +337,18 @@ export default function DashboardPage() {
                 {/* Inline edit form */}
                 {isEditing && editForm && (
                   <div className="border-t border-bz-gold/20 px-6 py-4 bg-white/[0.01] flex flex-wrap items-end gap-3">
+                    <label className="flex flex-col gap-1">
+                      <span className="text-bz-muted text-[10px]">姓名</span>
+                      <input
+                        type="text"
+                        value={editForm.name ?? ''}
+                        onChange={(event) =>
+                          setEditForm((prevForm) => prevForm && ({ ...prevForm, name: event.target.value }))
+                        }
+                        placeholder="（未提供）"
+                        className="w-28 bg-transparent border border-bz-gold/30 rounded-lg px-2 py-1.5 text-bz-parchment text-xs focus:outline-none focus:border-bz-gold/60 placeholder:text-bz-muted/40"
+                      />
+                    </label>
                     {(
                       [
                         { label: '年', field: 'birthYear', min: 1900, max: 2100 },

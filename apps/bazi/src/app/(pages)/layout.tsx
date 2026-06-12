@@ -3,6 +3,7 @@ import { Header } from '../common/components/layout/Header';
 import { Footer } from '../common/components/layout/Footer';
 import { Providers } from '../common/components/layout/Providers';
 import { Modal } from '../common/components/modal/Modal';
+import { WaterRipple } from '../common/components/water-ripple/WaterRipple';
 
 export const metadata = {
   title: '八字命理',
@@ -18,9 +19,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <Providers>
           <Header />
-          <main className="min-h-screen pt-16">{children}</main>
+          <main>{children}</main>
           <Footer />
           <Modal />
+          <WaterRipple />
         </Providers>
       </body>
     </html>

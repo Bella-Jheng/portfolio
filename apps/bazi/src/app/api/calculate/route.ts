@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db, getAdminAuth } from '../../lib/firebase';
 
 import { generateBaziReading } from '../../lib/anthropic';
-import { calculateBaziPillars, getDominantElements, calculateMajorFortune, getAnnualPillar, STEMS, BRANCHES } from '../../lib/bazi-calculator';
+import { calculateBaziPillars, getDominantElements, calculateMajorFortune, getAnnualPillar, STEMS, BRANCHES, calculateDayMasterStrength } from '../../lib/bazi-calculator';
 import type { CalculateRequest } from '../../types/bazi';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -72,8 +72,8 @@ export async function POST(request: NextRequest) {
 
     const knowledge = knowledgeDocs
       .map((doc) => {
-        const d = doc.data();
-        return `【${d.title}】\n${d.content}`;
+        const docData = doc.data();
+        return `【${docData.title}】\n${docData.content}`;
       })
       .join('\n\n');
 
@@ -94,6 +94,7 @@ export async function POST(request: NextRequest) {
       };
     }
 
+    const strength = calculateDayMasterStrength(pillars);
     const fortune = await generateBaziReading({
       name,
       gender,
@@ -105,6 +106,7 @@ export async function POST(request: NextRequest) {
       knowledge,
       currentYear,
       majorFortuneInfo,
+      strength,
     });
 
     const id = uuidv4();

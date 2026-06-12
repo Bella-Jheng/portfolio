@@ -34,7 +34,7 @@ async function withRetry<T>(fn: () => Promise<T>, retries = 3, delayMs = 2000): 
       const isRetryable = status === 503 || status === 429 || status === 500 ||
         (err instanceof Error && (err.message.includes('503') || err.message.includes('overloaded')));
       if (!isRetryable || i === retries - 1) throw err;
-      await new Promise(r => setTimeout(r, delayMs * (i + 1)));
+      await new Promise(resolve => setTimeout(resolve, delayMs * (i + 1)));
     }
   }
   throw new Error('Max retries reached');
@@ -51,8 +51,9 @@ export async function generateBaziReading(params: {
   knowledge: string;
   currentYear: number;
   majorFortuneInfo?: { currentCycle: string; currentAnnual: string };
+  strength: string;
 }): Promise<FortuneReading> {
-  const { name, gender, birthYear, birthMonth, birthDay, birthHour, pillars, knowledge, currentYear, majorFortuneInfo } = params;
+  const { name, gender, birthYear, birthMonth, birthDay, birthHour, pillars, knowledge, currentYear, majorFortuneInfo, strength } = params;
 
   const genderText = gender === 'male' ? '男' : gender === 'female' ? '女' : '未提供';
   const birthTimeText = birthHour !== undefined ? `${birthHour}時` : '（未提供時辰）';
@@ -83,25 +84,8 @@ ${formatPillarsForPrompt(pillars)}
 ### Step 1：確認日主五行
 日柱天干即為日主。天干五行：甲乙=木、丙丁=火、戊己=土、庚辛=金、壬癸=水。
 
-### Step 2：計算格局（身強 / 身弱）
-
-各柱權重：年干5%、年支20%、月干5%、月支35%、日支20%、時干5%、時支10%
-
-地支藏干五行比例（用於地支加分計算）：
-子=水100%；丑=土33%金33%水33%；寅=木50%火40%土10%；卯=木100%；辰=水33%木33%土33%；
-巳=火50%土40%金10%；午=火50%土50%；未=火40%木20%土40%；申=金50%水40%土10%；
-酉=金100%；戌=火45%土45%金10%；亥=水60%木40%
-
-計算「同我（同五行）+ 生我（生日主）」的加分合計：
-- 同五行 = 全部權重加分
-- 生日主的五行 = 全部權重加分（⚠️ 水生木，所以日主為木時，水也計入加分）
-- 地支含多種五行，按比例計算
-
-判斷標準：
-- 加分 ≥ 45% → 身強
-- 加分 < 45% → 身弱
-- 加分 > 80% → 疑似從強格
-- 加分 < 20% → 疑似從弱格
+### Step 2：格局（身強 / 身弱）— 已由系統預算
+此命主格局：**${strength}**（由命盤邏輯預先計算完成，請直接採用此結果，勿自行重新判斷）。
 
 ### Step 3：用神 / 忌神判斷
 
@@ -130,22 +114,24 @@ ${formatPillarsForPrompt(pillars)}
 
 ## 輸出要求
 
-請分析以下九個面向（繁體中文），每個面向都要有具體說明，不要只給結論：
+請分析以下七個面向（繁體中文），每個面向都要有具體說明，不要只給結論。
+⚠️ HTML 格式說明：標註「HTML 格式」的欄位請使用 <p>、<ul>/<ol>、<li>、<strong> 等標籤，不要使用 Markdown。字數計算不含 HTML 標籤本身。
+⚠️ 引用命盤：每個面向都要具體點名命盤干支（如「日主${pillars.day.stem}、月支${pillars.month.branch}、大運…」），讓命主能對照上方排盤理解，不要只說「你的命盤顯示」等模糊語。
 
-1. **命盤總覽**（200-500字）：格局判斷（附加分合計%）、用神忌神、命格（月令主氣十神決定，例：傷官格、正財格）、目前走的大運（請根據出生資料與性別推算起運歲數與大運方向）
-2. **性格特質**（200-500字）：日主五行 + 最突出的 2~3 個十神組合特質，語氣親切像對本人說話
-3. **${currentYear} 年整體運勢**（200-500字）：大運 × 流年組合評級，說明邏輯
-4. **${currentYear} 年財運**（200-500字）：用神忌神判斷 + 具體建議
-5. **${currentYear} 年工作事業**（200-500字）：十神角度 + 今年適合的行動
-6. **${currentYear} 年感情桃花**（200-500字）：夫妻星 + 桃花時機 + 夫妻宮狀態
-7. **${currentYear} 年健康**（200-500字）：命盤弱點五行 + 今年需注意部位
-8. **補運建議**（200-500字）：用神顏色、方向、生肖、飾品
-9. **年度重點行動建議**：具體可操作的 3~5 個建議（每條一句話，以「1. 2. 3.」格式列出）
-10. **大運 × 流年解析**（200-500字）：${majorFortuneInfo
-  ? `根據目前大運「${majorFortuneInfo.currentCycle}」與今年流年「${majorFortuneInfo.currentAnnual}」，解析此大運的核心氣場與五行特質對命主的影響，再說明今年流年干支與大運的交互作用（相生、相剋、沖合），點出今年整體的有利方向與需要注意的風險。`
+1. **性格特質**（200-500字）：日主五行 + 最突出的 2~3 個十神組合特質，語氣親切像對本人說話，直接點明是哪個柱的哪個十神帶出這個特質
+2. **${currentYear} 年財運**（HTML 格式，200-500字）：用神忌神判斷 + 結合流年干支說明財星狀況 + 具體建議
+3. **${currentYear} 年工作事業**（HTML 格式，200-500字）：十神角度 + 點明官殺/食傷在哪個柱 + 今年適合的行動
+4. **${currentYear} 年感情桃花**（HTML 格式，200-500字）：夫妻星（男看財星、女看官殺）在哪個柱 + 桃花時機 + 夫妻宮狀態
+5. **${currentYear} 年健康**（HTML 格式，200-500字）：命盤弱點五行（哪個柱過旺或過弱）+ 今年需注意部位
+6. **補運建議**（HTML 格式，200-500字）：根據用神五行給出顏色、方向、生肖、飾品建議
+7. **年度重點行動建議**（純文字，禁止使用 HTML 或 Markdown）：具體可操作的 3~5 個建議，每條一句話，嚴格以「1. 2. 3.」數字加句點格式列出，每條以 \n 換行，例如：1. 建議一\n2. 建議二\n3. 建議三
+0. **命格關鍵詞**：3 個最能代表此命主個性的短詞，每個 2~4 字，以「・」分隔，例如「精緻・原則・執行力」
+8. **大運 × 流年解析**（HTML 格式，200-500字）：${majorFortuneInfo
+  ? `先用一句話分別說明「大運」（每10年一個人生主題周期）與「流年」（當年天干地支的能量場）的概念，再根據目前大運「${majorFortuneInfo.currentCycle}」與今年流年「${majorFortuneInfo.currentAnnual}」，解析此大運的核心氣場與五行特質對命主的影響，說明今年流年干支與大運的交互作用（相生、相剋、沖合），點出今年整體的有利方向與需要注意的風險。`
   : '（未提供大運資訊，請略過此項，輸出空字串）'}
 
-11. **十神命格格局深度解析**（遵循徐玉蘭老師體系）：
+9. **十神命格格局深度解析**（遵循徐玉蘭老師體系）：
+    - 先標明「主星」（格局十神，即月柱透出或月支本氣的十神）與「副星」（命盤中其他主要出現的十神）
     - 判定身強身弱（得令/得地/得助三項各別說明）
     - 確認格局（月柱透出十神優先，再看月支本氣）
     - 說明複合格局（若有制化關係需標注）
@@ -155,17 +141,16 @@ ${formatPillarsForPrompt(pillars)}
 
 請以以下 JSON 格式回覆，不要加入其他文字：
 {
-  "overview": "命盤總覽（含格局與大運）...",
-  "personality": "性格特質...",
-  "fortune": "整體運勢...",
-  "wealth": "財運...",
-  "career": "工作事業...",
-  "romance": "感情桃花...",
-  "health": "健康...",
-  "remedy": "補運建議...",
+  "personality": "性格特質（純文字）...",
+  "wealth": "<p>財運 HTML...</p>",
+  "career": "<p>工作事業 HTML...</p>",
+  "romance": "<p>感情桃花 HTML...</p>",
+  "health": "<p>健康 HTML...</p>",
+  "remedy": "<p>補運建議 HTML...</p>",
   "actions": "1. 具體建議一\n2. 具體建議二\n3. 具體建議三",
-  "cycleAnalysis": "大運 × 流年解析...",
-  "tenGodAnalysis": "【格局】格局名稱｜身強/弱｜用神：XX｜忌神：XX\n【核心性格】...\n【優勢能力】...\n【潛在風險】...\n【事業方向】...\n【感情特質】...\n【格局影響】..."
+  "cycleAnalysis": "<p>大運 × 流年解析 HTML...</p>",
+  "tenGodAnalysis": "【格局】格局名稱｜身強/弱｜用神：XX｜忌神：XX\n【核心性格】...\n【優勢能力】...\n【潛在風險】...\n【事業方向】...\n【感情特質】...\n【格局影響】...",
+  "traits": "關鍵詞一・關鍵詞二・關鍵詞三"
 }`;
 
   const result = await withRetry(() => model.generateContent(prompt));
@@ -184,16 +169,21 @@ export async function answerCustomQuestion(params: {
   knowledge: string;
   name?: string;
   gender?: Gender;
+  majorFortuneInfo?: { currentCycle: string; currentAnnual: string };
 }): Promise<string> {
-  const { question, pillars, fortune, knowledge, name, gender } = params;
+  const { question, pillars, fortune, knowledge, name, gender, majorFortuneInfo } = params;
 
   const genderText = gender === 'male' ? '男' : gender === 'female' ? '女' : '未提供';
   const knowledgeSection = knowledge
     ? `\n命理知識庫：\n---\n${knowledge}\n---\n`
     : '';
 
+  const cycleSection = majorFortuneInfo
+    ? `\n【當前大運 / 流年】（以此為準，忽略既有分析中的大運流年資訊）\n目前大運：${majorFortuneInfo.currentCycle}\n今年流年：${majorFortuneInfo.currentAnnual}\n`
+    : '';
+
   const prompt = `你是一位精通子平八字的命理師。請根據以下資料回答問題。
-${knowledgeSection}
+${knowledgeSection}${cycleSection}
 【命主資料】
 姓名：${name || '（未提供）'}  性別：${genderText}
 
@@ -202,15 +192,16 @@ ${formatPillarsForPrompt(pillars)}
 
 【既有分析摘要】
 個性格局：${fortune.personality ?? '（未提供）'}
-整體運勢：${fortune.fortune}
-桃花感情：${fortune.romance}
-健康：${fortune.health}
-工作事業：${fortune.career}
+命格關鍵詞：${fortune.traits ?? '（未提供）'}
+十神格局分析：${fortune.tenGodAnalysis ?? '（未提供）'}
+桃花感情：${fortune.romance ?? '（未提供）'}
+健康：${fortune.health ?? '（未提供）'}
+工作事業：${fortune.career ?? '（未提供）'}
 
 【問題】
 ${question}
 
-請用繁體中文回答（200-500字），結合命盤格局（身強/身弱）、用神忌神與十神關係作答，直接回答問題，不需要重複問題或加入額外說明。`;
+請用繁體中文回答（200-500字），結合命盤格局（身強/身弱）、用神忌神與十神關係作答，直接回答問題，不需要重複問題或加入額外說明。請使用 Markdown 格式：段落用空行分隔，重點用 **粗體**，條列用 \`-\`，不要使用 HTML 標籤。`;
 
   const result = await withRetry(() => model.generateContent(prompt));
   return result.response.text();

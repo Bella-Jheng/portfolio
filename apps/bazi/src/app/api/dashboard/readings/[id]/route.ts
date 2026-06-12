@@ -8,6 +8,7 @@ import {
   getAnnualPillar,
   STEMS,
   BRANCHES,
+  calculateDayMasterStrength,
 } from '../../../../lib/bazi-calculator';
 
 const ADMIN_UID = process.env.ADMIN_UID ?? '';
@@ -35,7 +36,7 @@ export async function PATCH(
 
   try {
     const { id } = await params;
-    const { birthYear, birthMonth, birthDay, birthHour } = await request.json();
+    const { name, birthYear, birthMonth, birthDay, birthHour } = await request.json();
 
     const doc = await db.collection('readings').doc(id).get();
     if (!doc.exists) {
@@ -83,6 +84,7 @@ export async function PATCH(
       };
     }
 
+    const strength = calculateDayMasterStrength(pillars);
     const fortune = await generateBaziReading({
       name: name ?? undefined,
       gender: gender ?? undefined,
@@ -94,10 +96,12 @@ export async function PATCH(
       knowledge,
       currentYear,
       majorFortuneInfo,
+      strength,
     });
 
     const now = new Date().toISOString();
     await db.collection('readings').doc(id).update({
+      ...(name !== undefined && { name: name ?? null }),
       birthYear,
       birthMonth,
       birthDay,
@@ -115,6 +119,7 @@ export async function PATCH(
     return NextResponse.json({
       id,
       ...data,
+      ...(name !== undefined && { name: name ?? null }),
       birthYear,
       birthMonth,
       birthDay,

@@ -42,7 +42,7 @@ function CorrectionButton({ reading }: { reading: Reading }) {
         onClick={() => setModalStep('confirm')}
         className="text-xs text-bz-muted border border-bz-gold/20 px-5 py-2 rounded-full hover:border-bz-gold/50 hover:text-[#4A4A4A] transition-all"
       >
-        ✏️ 通知管理員更改日期
+        ✏️ 八字輸入錯誤，通知管理員更改日期
       </button>
 
       {modalStep && (
@@ -133,7 +133,7 @@ export default function ResultPage() {
 
   return (
     <div className="w-full min-h-[calc(100vh-4rem)] bg-gradient-to-b from-[#F7E5BD] via-[#FFFDF6] to-white py-12">
-      <div className="max-w-5xl mx-auto px-2 md:px-6">
+      <div className="px-2 md:px-6">
         <ResultDisplay
           reading={reading}
           onUpdate={(updated) => queryClient.setQueryData(['reading', id], updated)}
