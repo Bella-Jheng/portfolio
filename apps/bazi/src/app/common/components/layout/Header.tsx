@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '../../../lib/auth-context';
+import { isInAppBrowser, openInExternalBrowser } from '../../../lib/detect-browser';
 import { motion, AnimatePresence } from 'framer-motion';
 import { NavLink } from '../nav-link/NavLink';
 import { UserAvatar } from '../user-avatar/UserAvatar';
@@ -24,6 +25,15 @@ export function Header() {
   };
 
   const close = () => setIsOpen(false);
+
+  const handleLogin = () => {
+    close();
+    if (isInAppBrowser()) {
+      openInExternalBrowser();
+      return;
+    }
+    login();
+  };
 
   return (
     <>
@@ -119,7 +129,7 @@ export function Header() {
                   </div>
                 ) : (
                   <button
-                    onClick={() => { login(); close(); }}
+                    onClick={handleLogin}
                     className="bg-bz-brown text-white text-sm font-medium py-3 rounded-full hover:opacity-80 transition-all tracking-wide w-full text-center"
                   >
                     Google 登入
@@ -130,6 +140,7 @@ export function Header() {
           </>
         )}
       </AnimatePresence>
+
     </>
   );
 }
