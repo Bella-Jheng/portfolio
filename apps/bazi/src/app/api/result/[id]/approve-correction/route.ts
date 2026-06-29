@@ -136,6 +136,15 @@ export async function POST(
     });
   } catch (error) {
     console.error('Approve correction error:', error);
-    return NextResponse.json({ error: '同意更改失敗，請稍後再試' }, { status: 500 });
+    const aiStatus = (error as { status?: number })?.status;
+    const aiStatusText = (error as { statusText?: string })?.statusText;
+    const isAiOverload = aiStatus === 503 || aiStatus === 429;
+    return NextResponse.json(
+      {
+        error: isAiOverload ? 'AI 服務暫時繁忙，請稍後再試' : '同意更改失敗，請稍後再試',
+        ...(aiStatusText && { aiStatusText }),
+      },
+      { status: isAiOverload ? 503 : 500 },
+    );
   }
 }

@@ -135,7 +135,11 @@ export async function PATCH(
     });
   } catch (error) {
     console.error('Edit reading error:', error);
-    return NextResponse.json({ error: '更新失敗，請稍後再試' }, { status: 500 });
+    const aiStatusText = (error as { statusText?: string })?.statusText;
+    return NextResponse.json(
+      { error: '更新失敗，請稍後再試', ...(aiStatusText && { aiStatusText }) },
+      { status: 500 },
+    );
   }
 }
 

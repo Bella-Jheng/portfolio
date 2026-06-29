@@ -37,7 +37,7 @@ function parseSrt(raw: string): string {
       const t = line.trim();
       return t &&
         !/^\d+$/.test(t) &&
-        !/\d{2}:\d{2}:\d{2}[,\.]\d{3}\s*-->\s*\d{2}:\d{2}:\d{2}[,\.]\d{3}/.test(t) &&
+        !/\d{2}:\d{2}:\d{2}[,.]\d{3}\s*-->\s*\d{2}:\d{2}:\d{2}[,.]\d{3}/.test(t) &&
         !/^WEBVTT/.test(t) &&
         !/^NOTE/.test(t) &&
         !/^STYLE/.test(t);
@@ -78,7 +78,12 @@ export function KnowledgeForm() {
       const res = await fetch('/api/knowledge', {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
-      if (!res.ok) { setError('無法載入知識庫'); return; }
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        console.error('後端api失敗訊息', body.error);
+        setError('無法載入知識庫');
+        return;
+      }
       const data = await res.json();
       setEntries(Array.isArray(data) ? data : []);
     } catch {
@@ -168,7 +173,7 @@ export function KnowledgeForm() {
         body: JSON.stringify({ url: ytUrl.trim() }),
       });
       const data = await res.json();
-      if (!res.ok) { setError(data.error ?? '解析失敗'); return; }
+      if (!res.ok) { console.error('後端api失敗訊息', data.error); setError(data.error ?? '解析失敗'); return; }
       await addPendingWithTags([{
         filename: `youtube:${data.videoId}`,
         title: data.title,
@@ -205,7 +210,11 @@ export function KnowledgeForm() {
       },
       body: JSON.stringify({ title: t, content: c, category: cat, tags }),
     });
-    if (!res.ok) throw new Error((await res.json()).error ?? '新增失敗');
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      console.error('後端api失敗訊息', body.error);
+      throw new Error(body.error ?? '新增失敗');
+    }
   };
 
   const handleUploadSubmit = async () => {

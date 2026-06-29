@@ -103,6 +103,15 @@ export async function PUT(
     return NextResponse.json({ pillars, fortune, questions: sanitizedQuestions });
   } catch (error) {
     console.error('Recalculate error:', error);
-    return NextResponse.json({ error: '重新計算失敗，請稍後再試' }, { status: 500 });
+    const aiStatus = (error as { status?: number })?.status;
+    const aiStatusText = (error as { statusText?: string })?.statusText;
+    const isAiOverload = aiStatus === 503 || aiStatus === 429;
+    return NextResponse.json(
+      {
+        error: isAiOverload ? 'AI 服務暫時繁忙，請稍後再試' : '重新計算失敗，請稍後再試',
+        ...(aiStatusText && { aiStatusText }),
+      },
+      { status: isAiOverload ? 503 : 500 },
+    );
   }
 }

@@ -14,7 +14,10 @@ export function useFetcher() {
     });
     if (!res.ok) {
       const body = await res.json().catch(() => ({}));
-      throw new Error(body.error ?? '請求失敗');
+      if (body.aiStatusText) console.error('後端api失敗訊息', body.aiStatusText);
+      const err = new Error(body.error ?? '請求失敗') as Error & { status: number };
+      err.status = res.status;
+      throw err;
     }
     return (await res.json()) as T;
   };

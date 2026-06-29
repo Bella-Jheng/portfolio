@@ -105,7 +105,7 @@ export function ResultDisplay({ reading, onUpdate }: ResultDisplayProps) {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       const data = await res.json();
-      if (!res.ok) { alert(data.error || '重新計算失敗'); return; }
+      if (!res.ok) { if (data.aiStatusText) console.error('後端api失敗訊息', data.aiStatusText); alert(data.error || '重新計算失敗'); return; }
       onUpdate({ ...reading, pillars: data.pillars, fortune: data.fortune, questions: data.questions });
     } catch {
       alert('網路錯誤，請稍後再試');
