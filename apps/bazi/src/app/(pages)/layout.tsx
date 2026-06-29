@@ -6,10 +6,24 @@ import { Modal } from '../common/components/modal/Modal';
 import { WaterRipple } from '../common/components/water-ripple/WaterRipple';
 
 export const metadata = {
-  title: '八字命理',
-  description: '輸入出生年月日，透過 AI 解析您的八字命盤',
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'),
+  title: '八字命理 | 命格貓',
+  description: '輸入出生年月日，透過 AI 解析你的八字命盤，了解天生個性與命格。',
   icons: {
     icon: '/favicon.png',
+  },
+  openGraph: {
+    title: '八字命理 | 命格貓',
+    description: '輸入出生年月日，透過 AI 解析你的八字命盤，了解天生個性與命格。',
+    images: [{ url: '/og-image.png', width: 1200, height: 630 }],
+    locale: 'zh_TW',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: '八字命理 | 命格貓',
+    description: '輸入出生年月日，透過 AI 解析你的八字命盤，了解天生個性與命格。',
+    images: ['/og-image.png'],
   },
 };
 

@@ -114,11 +114,12 @@ export default function LandingPage() {
             style={{ borderRadius: '40% 60% 70% 30% / 40% 50% 60% 50%' }}
           />
           <Image
-            src="/cats/bazi-cat-default.png"
+            src="/cats/bazi-cat-default.webp"
             alt="命格貓"
             width={320}
             height={320}
             priority
+            sizes="(max-width: 768px) 140px, 340px"
             className="relative z-10 w-[140px] h-[140px] md:w-[340px] md:h-[340px]"
           />
         </motion.div>

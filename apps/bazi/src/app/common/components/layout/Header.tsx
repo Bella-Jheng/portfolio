@@ -43,7 +43,7 @@ export function Header() {
           {/* Logo — px-8 aligns with homepage top-left text */}
           <Link href="/" className="flex items-center gap-3 group">
             <Image
-              src="/cats/bazi-cat-default.png"
+              src="/cats/bazi-cat-default.webp"
               alt="Bazi Cat Logo"
               width={30}
               height={30}
