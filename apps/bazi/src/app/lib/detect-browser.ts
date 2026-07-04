@@ -38,5 +38,6 @@ export function openInExternalBrowser(): void {
     return;
   }
 
-  window.open(url, '_blank');
+  // iOS non-LINE WebView (Instagram, Facebook…): WKWebView blocks all external navigation.
+  // No programmatic redirect is possible; caller must show a UI prompt instead.
 }
