@@ -2,9 +2,10 @@
 
 import { useAuth } from '../../lib/auth-context';
 import { KnowledgeForm } from '../../common/components/knowledge-form/KnowledgeForm';
+import { GoogleLoginButton } from '../../common/components/google-login-button/GoogleLoginButton';
 
 export default function KnowledgePage() {
-  const { user, loading, isAdmin, login } = useAuth();
+  const { user, loading, isAdmin } = useAuth();
 
   if (loading) {
     return (
@@ -18,12 +19,7 @@ export default function KnowledgePage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] gap-6 px-5">
         <p className="text-bz-muted text-center">請先登入</p>
-        <button
-          onClick={login}
-          className="border border-bz-gold/40 text-bz-gold px-6 py-3 rounded-full text-sm tracking-wider hover:bg-bz-gold/10 transition-all"
-        >
-          Google 登入
-        </button>
+        <GoogleLoginButton variant="outline" className="px-6 py-3" />
       </div>
     );
   }

@@ -7,6 +7,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import type { Reading } from '../../../types/bazi';
 import { useAuth } from '../../../lib/auth-context';
+import { GoogleLoginButton } from '../google-login-button/GoogleLoginButton';
 import type { MagazineTheme } from './theme';
 import styles from '../../styles/bazi-content.module.css';
 
@@ -19,7 +20,7 @@ interface QASectionProps {
 const COLLAPSE_THRESHOLD = 150;
 
 export function QASection({ reading, theme, onUpdate }: QASectionProps) {
-  const { user, login, getToken } = useAuth();
+  const { user, getToken } = useAuth();
   const [question, setQuestion] = useState('');
   const [asking, setAsking] = useState(false);
   const [askError, setAskError] = useState('');
@@ -158,12 +159,7 @@ export function QASection({ reading, theme, onUpdate }: QASectionProps) {
         {!user ? (
           <div className="text-center py-2 space-y-3">
             <p className="text-[#6B6159] text-sm">登入後才能追加提問</p>
-            <button
-              onClick={login}
-              className="bg-[#4A4A4A] text-white text-sm px-6 py-2 rounded-full hover:bg-black transition-all"
-            >
-              Google 登入
-            </button>
+            <GoogleLoginButton variant="dark" className="px-6 py-2" />
           </div>
         ) : limitReached ? (
           <p className="text-[#6B6159] text-sm text-center py-2">今日提問已達上限，明天再來吧</p>

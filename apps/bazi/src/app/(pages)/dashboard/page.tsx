@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import clsx from 'clsx';
 import { useAuth } from '../../lib/auth-context';
+import { GoogleLoginButton } from '../../common/components/google-login-button/GoogleLoginButton';
 import type { Reading } from '../../types/bazi';
 import { STEM_ELEMENT } from '../../common/components/result-display/theme';
 import { ResultDisplay } from '../../common/components/result-display/ResultDisplay';
@@ -60,7 +61,7 @@ function getDayElement(reading: Reading): string {
 }
 
 export default function DashboardPage() {
-  const { user, loading, isAdmin, login } = useAuth();
+  const { user, loading, isAdmin } = useAuth();
 
   const [error, setError] = useState('');
   const [filter, setFilter] = useState<ElementFilter>('全部');
@@ -131,12 +132,7 @@ export default function DashboardPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] gap-6 px-5">
         <p className="text-bz-muted text-center">請先登入</p>
-        <button
-          onClick={login}
-          className="border border-bz-gold/40 text-bz-gold px-6 py-3 rounded-full text-sm tracking-wider hover:bg-bz-gold/10 transition-all"
-        >
-          Google 登入
-        </button>
+        <GoogleLoginButton variant="outline" className="px-6 py-3" />
       </div>
     );
   }
@@ -265,7 +261,7 @@ export default function DashboardPage() {
                             {reading.createdBy.slice(0, 12)}…
                           </span>
                           <button
-                            onClick={(event) => copyUid(reading.createdBy!, reading.id, event)}
+                            onClick={(event) => copyUid(reading.createdBy ?? '', reading.id, event)}
                             className="p-0.5 rounded text-bz-muted/40 hover:text-bz-gold transition-colors"
                             title={reading.createdBy}
                           >

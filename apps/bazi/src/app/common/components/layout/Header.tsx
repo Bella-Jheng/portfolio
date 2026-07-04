@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '../../../lib/auth-context';
+import { GoogleLoginButton } from '../google-login-button/GoogleLoginButton';
 import { motion, AnimatePresence } from 'framer-motion';
 import { NavLink } from '../nav-link/NavLink';
 import { UserAvatar } from '../user-avatar/UserAvatar';
@@ -12,7 +13,7 @@ import { UserAvatar } from '../user-avatar/UserAvatar';
 export function Header() {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, loading, isAdmin, readingId, login, logout } = useAuth();
+  const { user, loading, isAdmin, readingId, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
 
   const isPaiPanActive = pathname === '/' || pathname.startsWith('/result/');
@@ -25,10 +26,6 @@ export function Header() {
 
   const close = () => setIsOpen(false);
 
-  const handleLogin = () => {
-    close();
-    login();
-  };
 
   return (
     <>
@@ -123,12 +120,11 @@ export function Header() {
                     </button>
                   </div>
                 ) : (
-                  <button
-                    onClick={handleLogin}
-                    className="bg-bz-brown text-white text-sm font-medium py-3 rounded-full hover:opacity-80 transition-all tracking-wide w-full text-center"
-                  >
-                    Google 登入
-                  </button>
+                  <GoogleLoginButton
+                    variant="primary"
+                    className="w-full py-3 font-medium text-center"
+                    onBeforeLogin={close}
+                  />
                 ))}
               </div>
             </motion.nav>
