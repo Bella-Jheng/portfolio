@@ -4,7 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useState } from 'rea
 import type { User } from 'firebase/auth';
 import { onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth';
 import { auth, googleProvider } from './firebase-client';
-import { isInAppBrowser, openInExternalBrowser } from './detect-browser';
+import { isLineBrowser, openInExternalBrowser } from './detect-browser';
 
 const ADMIN_UID = process.env.NEXT_PUBLIC_ADMIN_UID ?? '';
 
@@ -57,7 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [fetchReading]);
 
   const login = async () => {
-    if (isInAppBrowser()) {
+    if (isLineBrowser()) {
       openInExternalBrowser();
       return;
     }

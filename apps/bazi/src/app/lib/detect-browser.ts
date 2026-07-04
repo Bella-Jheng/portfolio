@@ -22,6 +22,11 @@ export function isInAppBrowser(): boolean {
   return MOBILE_RE.test(ua) && !CLEAN_MOBILE_BROWSER_RE.test(ua);
 }
 
+export function isLineBrowser(): boolean {
+  if (typeof navigator === 'undefined') return false;
+  return /Line\//i.test(navigator.userAgent);
+}
+
 export function openInExternalBrowser(): void {
   const url = window.location.href;
   const ua = navigator.userAgent;
@@ -32,11 +37,4 @@ export function openInExternalBrowser(): void {
     return;
   }
 
-  if (/android/i.test(ua)) {
-    window.location.href = `intent://${url.replace(/^https?:\/\//, '')}#Intent;scheme=https;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;S.browser_fallback_url=${encodeURIComponent(url)};end`;
-    return;
-  }
-
-  // iOS non-LINE WebView (Instagram, Facebook…): WKWebView blocks all external navigation.
-  return;
 }
