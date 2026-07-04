@@ -594,6 +594,80 @@ return NextResponse.json(
 
 ---
 
+### 16. Google OAuth 403：LINE 內建瀏覽器封鎖登入
+
+**問題發現：** 把網站連結貼到 LINE 傳給朋友，朋友點開後嘗試 Google 登入，直接出現 403 Forbidden，完全無法登入。換成一般瀏覽器（Safari / Chrome）開同一個連結，登入完全正常。
+
+確認根因：Google OAuth 明確封鎖在 **WebView（in-app browser）** 環境中發起的登入請求。LINE、Facebook、Instagram 等社群 App 的內建瀏覽器都是 WebView，Google 偵測到 User-Agent 後直接回 403，`signInWithPopup` 不會彈出視窗就直接報錯。
+
+**額外發現的坑：** 偵測邏輯一開始只加在 `Header.tsx` 的登入按鈕，但 `page.tsx`（首頁 Modal）、`QASection.tsx`、`dashboard/page.tsx`、`knowledge/page.tsx` 都直接呼叫 `login()`，完全繞過偵測。Instagram 的 in-app browser 因為 WebView 限制較寬鬆所以能登入，進一步確認問題確實出在 LINE 的 WebView 環境。
+
+**解法：**
+
+**Step 1** — 建立 `lib/detect-browser.ts`，兩層偵測：
+
+```ts
+// Layer 1：比對已知社群 App 的 UA token（LINE / FB / IG / WeChat / TikTok 等）
+const IN_APP_TOKEN_RE = /Line\/|FBAN|FBAV|Instagram|.../i;
+
+// Layer 2：mobile 裝置但 UA 結尾不像乾淨的 Chrome / Safari / Firefox
+// → 捕捉未來出現的新 in-app browser，不需要逐一加到 blocklist
+const CLEAN_MOBILE_BROWSER_RE = /(?:Chrome|CriOS)\/[\d.]+ (?:Mobile )?Safari\/[\d.]+$/;
+
+export function isInAppBrowser(): boolean {
+  if (IN_APP_TOKEN_RE.test(ua)) return true;
+  return MOBILE_RE.test(ua) && !CLEAN_MOBILE_BROWSER_RE.test(ua);
+}
+```
+
+Layer 2 的原理：所有 in-app browser 都是拿 Chrome / Safari 的 UA 再**往後追加**自己的 identifier（例如 `Line/14.6.0`）。乾淨的標準瀏覽器 UA 結尾是固定格式，有多餘字串幾乎確定是 WebView。
+
+**Step 2** — 針對不同環境的跳轉策略：
+
+```ts
+export function openInExternalBrowser(): void {
+  const url = window.location.href;
+
+  // LINE iOS 原生支援 openExternalBrowser=1，偵測到此參數會開啟 Safari
+  if (/Line\//i.test(ua)) {
+    const sep = url.includes('?') ? '&' : '?';
+    window.location.href = `${url}${sep}openExternalBrowser=1`;
+    return;
+  }
+
+  // Android：intent:// scheme 讓系統選擇瀏覽器開啟
+  if (/android/i.test(ua)) {
+    window.location.href = `intent://${...}#Intent;scheme=https;...;end`;
+    return;
+  }
+
+  // 其他 iOS in-app browser
+  window.open(url, '_blank');
+}
+```
+
+**Step 3** — 把偵測邏輯移進 `auth-context.tsx` 的 `login()` 本身，而非個別 UI 元件：
+
+```ts
+const login = async () => {
+  if (isInAppBrowser()) {
+    openInExternalBrowser();
+    return;
+  }
+  await signInWithPopup(auth, googleProvider);
+};
+```
+
+這樣不管哪個頁面、哪個按鈕呼叫 `login()`，偵測自動生效，不需要各處重複處理。
+
+**學到的事：**
+
+- 「只修 UI 按鈕」是常見的漏洞：邏輯保護要放在最底層（service / context），而不是每個呼叫點各自加 guard。
+- User-Agent 的 blocklist 永遠追不完，**allowlist（正向判斷是否為標準瀏覽器）** 作為第二層是更健壯的做法。
+- `openExternalBrowser=1` 是 LINE 官方支援的參數，不是 hack，有文件依據。iOS 上 `window.open` 會被 LINE 封鎖，必須靠這個參數才能真正跳到 Safari。
+
+---
+
 ## 待辦事項
 
 - [ ] 啟用 Firestore API（`bazi-4b8f0` 專案）
