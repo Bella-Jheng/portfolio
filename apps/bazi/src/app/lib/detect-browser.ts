@@ -24,9 +24,19 @@ export function isInAppBrowser(): boolean {
 
 export function openInExternalBrowser(): void {
   const url = window.location.href;
-  if (/android/i.test(navigator.userAgent)) {
+  const ua = navigator.userAgent;
+
+  // LINE supports a proprietary parameter to force opening in the system browser
+  if (/Line\//i.test(ua)) {
+    const sep = url.includes('?') ? '&' : '?';
+    window.location.href = `${url}${sep}openExternalBrowser=1`;
+    return;
+  }
+
+  if (/android/i.test(ua)) {
     window.location.href = `intent://${url.replace(/^https?:\/\//, '')}#Intent;scheme=https;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;S.browser_fallback_url=${encodeURIComponent(url)};end`;
     return;
   }
+
   window.open(url, '_blank');
 }
