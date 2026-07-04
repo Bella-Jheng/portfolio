@@ -3,7 +3,6 @@ import { Header } from '../common/components/layout/Header';
 import { Footer } from '../common/components/layout/Footer';
 import { Providers } from '../common/components/layout/Providers';
 import { Modal } from '../common/components/modal/Modal';
-import { WaterRipple } from '../common/components/water-ripple/WaterRipple';
 
 export const metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'),
@@ -36,7 +35,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <main>{children}</main>
           <Footer />
           <Modal />
-          <WaterRipple />
         </Providers>
       </body>
     </html>
