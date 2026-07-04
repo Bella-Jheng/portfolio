@@ -640,9 +640,6 @@ export function openInExternalBrowser(): void {
     window.location.href = `intent://${...}#Intent;scheme=https;...;end`;
     return;
   }
-
-  // 其他 iOS in-app browser
-  window.open(url, '_blank');
 }
 ```
 

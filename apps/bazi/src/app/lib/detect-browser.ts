@@ -26,7 +26,6 @@ export function openInExternalBrowser(): void {
   const url = window.location.href;
   const ua = navigator.userAgent;
 
-  // LINE supports a proprietary parameter to force opening in the system browser
   if (/Line\//i.test(ua)) {
     const sep = url.includes('?') ? '&' : '?';
     window.location.href = `${url}${sep}openExternalBrowser=1`;
@@ -39,5 +38,5 @@ export function openInExternalBrowser(): void {
   }
 
   // iOS non-LINE WebView (Instagram, Facebook…): WKWebView blocks all external navigation.
-  // No programmatic redirect is possible; caller must show a UI prompt instead.
+  return;
 }
