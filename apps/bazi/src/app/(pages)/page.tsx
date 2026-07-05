@@ -18,12 +18,6 @@ export default function LandingPage() {
 
   useEffect(() => {
     if (loading || readingLoading || !user || isAdmin) return;
-    const redirect = sessionStorage.getItem('loginRedirect');
-    if (redirect) {
-      sessionStorage.removeItem('loginRedirect');
-      router.replace(redirect);
-      return;
-    }
     if (readingId) router.replace(`/result/${readingId}`);
   }, [user, loading, isAdmin, readingId, readingLoading, router]);
 
@@ -36,10 +30,7 @@ export default function LandingPage() {
           '需要登入 Google 帳號才能開始排盤，系統會將你的命盤與帳號綁定，方便下次直接查看。',
         confirmLabel: 'Google 登入',
         cancelLabel: '取消',
-        onConfirm: () => {
-          sessionStorage.setItem('loginRedirect', '/form');
-          login();
-        },
+        onConfirm: () => login('/form'),
       });
       return;
     }

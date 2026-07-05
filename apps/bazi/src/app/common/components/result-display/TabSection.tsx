@@ -49,6 +49,9 @@ export function TabSection({ reading, theme, activeTabIdx, onActiveTabChange }: 
     if (activeEl) activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
   }, [activeIdx]);
 
+  const scrollToTabBar = () =>
+    tabBarRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
   const renderContent = () => {
     const tab = tabs[activeIdx];
     const accent = tab.accentColor ?? theme.accent;
@@ -130,7 +133,7 @@ export function TabSection({ reading, theme, activeTabIdx, onActiveTabChange }: 
       <div className="flex items-center justify-between px-4 md:px-6 py-4">
         {activeIdx > 0 ? (
           <button
-            onClick={() => setActiveIdx(activeIdx - 1)}
+            onClick={() => { setActiveIdx(activeIdx - 1); scrollToTabBar(); }}
             className="flex items-center gap-2 text-sm font-medium text-[#4A4A4A] border border-[#EAE5DF] bg-white px-5 py-2.5 rounded-full hover:bg-[#FAF7F4] transition-all shadow-sm"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -141,7 +144,7 @@ export function TabSection({ reading, theme, activeTabIdx, onActiveTabChange }: 
         ) : <div />}
         {activeIdx < tabs.length - 1 ? (
           <button
-            onClick={() => setActiveIdx(activeIdx + 1)}
+            onClick={() => { setActiveIdx(activeIdx + 1); scrollToTabBar(); }}
             className="flex items-center gap-2 text-sm font-medium text-[#4A4A4A] border border-[#EAE5DF] bg-white px-5 py-2.5 rounded-full hover:bg-[#FAF7F4] transition-all shadow-sm"
           >
             {tabs[activeIdx + 1].label}

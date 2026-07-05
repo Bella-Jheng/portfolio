@@ -1,12 +1,14 @@
 'use client';
 
-import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import type { User } from 'firebase/auth';
 import { onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth';
+import { useRouter } from 'next/navigation';
 import { auth, googleProvider } from './firebase-client';
 import { isLineBrowser, openInExternalBrowser } from './detect-browser';
 
 const ADMIN_UID = process.env.NEXT_PUBLIC_ADMIN_UID ?? '';
+const REDIRECT_KEY = 'loginRedirect';
 
 interface AuthContextValue {
   user: User | null;
@@ -14,7 +16,7 @@ interface AuthContextValue {
   isAdmin: boolean;
   readingId: string | null;
   readingLoading: boolean;
-  login: () => Promise<void>;
+  login: (redirectTo?: string) => Promise<void>;
   logout: () => Promise<void>;
   getToken: () => Promise<string | null>;
 }
@@ -22,10 +24,12 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [readingId, setReadingId] = useState<string | null>(null);
   const [readingLoading, setReadingLoading] = useState(false);
+  const prevUserRef = useRef<User | null | undefined>(undefined);
 
   const fetchReading = useCallback(async (currentUser: User) => {
     setReadingLoading(true);
@@ -56,7 +60,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return unsub;
   }, [fetchReading]);
 
-  const login = async () => {
+  // After a fresh login (null → User), consume the pending redirect if any.
+  useEffect(() => {
+    const wasLoggedOut = prevUserRef.current === null;
+    prevUserRef.current = user;
+    if (!wasLoggedOut || !user) return;
+
+    const path = sessionStorage.getItem(REDIRECT_KEY);
+    if (!path) return;
+    sessionStorage.removeItem(REDIRECT_KEY);
+    router.replace(path);
+  }, [user, router]);
+
+  const login = async (redirectTo?: string) => {
+    if (redirectTo) sessionStorage.setItem(REDIRECT_KEY, redirectTo);
     if (isLineBrowser()) {
       openInExternalBrowser();
       return;
