@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { toPng } from 'html-to-image';
-import { jsPDF } from 'jspdf';
+import { isMobileDevice } from '../../../lib/detect-browser';
 
 interface DownloadCardButtonProps {
   cardRef: React.RefObject<HTMLDivElement | null>;
@@ -31,14 +31,25 @@ export function DownloadCardButton({ cardRef, name }: DownloadCardButtonProps) {
         style: { margin: '0', transform: 'scale(1)', boxShadow: 'none' },
       });
 
-      const pdf = new jsPDF({ orientation: 'portrait', unit: 'px', format: [cardWidth, cardHeight] });
-      pdf.addImage(dataUrl, 'PNG', 0, 0, cardWidth, cardHeight);
-
       const today = new Date();
       const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-      pdf.save(`bazi-card-${name || 'card'}-${dateStr}.pdf`);
-    } catch {
-      alert('生成圖卡失敗，請稍後再試');
+      const fileName = `bazi-card-${name || 'card'}-${dateStr}.png`;
+
+      const blob = await (await fetch(dataUrl)).blob();
+      const file = new File([blob], fileName, { type: 'image/png' });
+
+      if (isMobileDevice() && navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file], title: '我的天生卡', text: '快來看看我的八字天生卡！' });
+      } else {
+        const link = document.createElement('a');
+        link.href = dataUrl;
+        link.download = fileName;
+        link.click();
+      }
+    } catch (err) {
+      if ((err as Error)?.name !== 'AbortError') {
+        alert('生成圖卡失敗，請稍後再試');
+      }
     } finally {
       setDownloading(false);
     }

@@ -39,19 +39,22 @@ export function TabSection({ reading, theme, activeTabIdx, onActiveTabChange }: 
   const activeIdx = activeTabIdx;
   const setActiveIdx = onActiveTabChange;
   const tabBarRef = useRef<HTMLDivElement>(null);
+  const sectionTopRef = useRef<HTMLDivElement>(null);
   const fortune = reading.fortune;
   const tabs = buildTabs(theme.accent);
 
+  
+  // 要讓頁面真正往回捲，必須以非 sticky 的區塊根節點為目標
+  const scrollToTabBar = () =>
+    sectionTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  
   useEffect(() => {
     const bar = tabBarRef.current;
     if (!bar) return;
     const activeEl = bar.querySelector(`[data-tab="${activeIdx}"]`) as HTMLElement | null;
     if (activeEl) activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
   }, [activeIdx]);
-
-  const scrollToTabBar = () =>
-    tabBarRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
+  
   const renderContent = () => {
     const tab = tabs[activeIdx];
     const accent = tab.accentColor ?? theme.accent;
@@ -96,7 +99,7 @@ export function TabSection({ reading, theme, activeTabIdx, onActiveTabChange }: 
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full" ref={sectionTopRef}>
       {/* Tab bar */}
       <div className="sticky top-0 z-30 bg-[#F5F1EB] border-b border-[#EAE5DF]">
         <div
@@ -108,7 +111,7 @@ export function TabSection({ reading, theme, activeTabIdx, onActiveTabChange }: 
             <button
               key={tab.id}
               data-tab={idx}
-              onClick={() => setActiveIdx(idx)}
+              onClick={() => { setActiveIdx(idx); scrollToTabBar(); }}
               className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
                 activeIdx === idx
                   ? 'bg-[#1A1A1A] text-white'

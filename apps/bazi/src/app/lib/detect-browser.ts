@@ -22,6 +22,11 @@ export function isInAppBrowser(): boolean {
   return MOBILE_RE.test(ua) && !CLEAN_MOBILE_BROWSER_RE.test(ua);
 }
 
+export function isMobileDevice(): boolean {
+  if (typeof navigator === 'undefined') return false;
+  return MOBILE_RE.test(navigator.userAgent);
+}
+
 export function isLineBrowser(): boolean {
   if (typeof navigator === 'undefined') return false;
   return /Line\//i.test(navigator.userAgent);
