@@ -22,6 +22,13 @@ export function DownloadCardButton({ cardRef, name }: DownloadCardButtonProps) {
       const cardWidth = Math.round(width);
       const cardHeight = Math.round(height);
 
+      const images = Array.from(el.querySelectorAll('img'));
+      await Promise.all(
+        images.map((img) =>
+          img.complete ? Promise.resolve() : new Promise((res) => { img.onload = res; img.onerror = res; })
+        )
+      );
+
       const dataUrl = await toPng(el, {
         cacheBust: true,
         pixelRatio: 3,
@@ -72,7 +79,7 @@ export function DownloadCardButton({ cardRef, name }: DownloadCardButtonProps) {
         </>
       ) : (
         <>
-          下載天生卡
+          分享天生卡
           <span className="text-base leading-none">→</span>
         </>
       )}
