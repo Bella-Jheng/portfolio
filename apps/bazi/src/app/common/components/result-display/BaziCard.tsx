@@ -85,7 +85,7 @@ export const BaziCard = forwardRef<HTMLDivElement, BaziCardProps>(
               className="absolute inset-0 opacity-80 mix-blend-multiply"
               style={{ backgroundColor: theme.accent, borderRadius: '40% 60% 70% 30% / 40% 50% 60% 50%', transform: 'scale(1.2)' }}
             />
-            <Image src={theme.catSrc} alt="Result Cat" width={155} height={195} priority unoptimized className="relative z-10 drop-shadow-lg -rotate-6" />
+            <Image src={theme.catSrc} alt="Result Cat" width={155} height={195} priority unoptimized crossOrigin='anonymous' className="relative z-10 drop-shadow-lg -rotate-6" />
           </div>
         </div>
 
