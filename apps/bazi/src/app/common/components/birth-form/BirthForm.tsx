@@ -32,6 +32,7 @@ export function BirthForm({ onSubmit, isPending = false, apiError }: BirthFormPr
     event.preventDefault();
     if (!form.name?.trim()) { setError('請填寫姓名'); return; }
     if (!form.gender) { setError('請選擇性別'); return; }
+    if (!form.birthYear || !form.birthMonth || !form.birthDay) { setError('請填寫正確的出生年月日'); return; }
     setError('');
     onSubmit(form);
   };

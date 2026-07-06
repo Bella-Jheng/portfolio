@@ -60,11 +60,27 @@ function getDayElement(reading: Reading): string {
   return STEM_ELEMENT[reading.pillars?.day?.stem ?? ''] ?? '';
 }
 
+function matchesSearch(reading: Reading, query: string): boolean {
+  const q = query.trim().toLowerCase();
+  if (!q) return true;
+  const { birthYear: y, birthMonth: m, birthDay: d } = reading;
+  const haystack = [
+    reading.name ?? '',
+    `${y}年${m}月${d}日`,
+    `${y}-${m}-${d}`,
+    `${y}/${m}/${d}`,
+    `${m}/${d}`,
+    `${m}月${d}日`,
+  ].join(' ').toLowerCase();
+  return haystack.includes(q);
+}
+
 export default function DashboardPage() {
   const { user, loading, isAdmin } = useAuth();
 
   const [error, setError] = useState('');
   const [filter, setFilter] = useState<ElementFilter>('全部');
+  const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<Reading | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<EditForm | null>(null);
@@ -79,8 +95,9 @@ export default function DashboardPage() {
   const readings = data?.readings ?? [];
 
   // ── Helpers ───────────────────────────────────────────────────────────────
-  const filteredReadings =
-    filter === '全部' ? readings : readings.filter((reading) => getDayElement(reading) === filter);
+  const filteredReadings = readings
+    .filter((reading) => filter === '全部' || getDayElement(reading) === filter)
+    .filter((reading) => matchesSearch(reading, search));
 
   const handleUpdate = (updated: Reading) => {
     // saveMutation's onSuccess already patches the cache; update the detail view too
@@ -187,6 +204,26 @@ export default function DashboardPage() {
       <div className="space-y-2 mb-8">
         <h1 className="text-bz-parchment font-serif text-3xl tracking-wider">命盤列表</h1>
         <p className="text-bz-muted text-sm">所有已排命盤</p>
+      </div>
+
+      {/* Search box */}
+      <div className="relative mb-4">
+        <svg
+          className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-bz-muted/50"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 10a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <input
+          type="text"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          placeholder="搜尋姓名或生日（例如：小明、1990、3月15日）"
+          className="w-full bg-transparent border border-bz-gold/20 rounded-full pl-10 pr-4 py-2.5 text-bz-parchment text-sm placeholder:text-bz-muted/40 focus:outline-none focus:border-bz-gold/50 transition-all"
+        />
       </div>
 
       {/* Element filter */}

@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { SHICHEN } from '../../../types/bazi';
 
 export type BirthDateValue = {
@@ -28,7 +29,31 @@ const dateFields = [
   { label: '日', key: 'day' as const, min: 1, max: 31 },
 ];
 
+type DateFieldKey = 'year' | 'month' | 'day';
+
 export function BirthDateInput({ value, onChange }: Props) {
+  const [draft, setDraft] = useState<Record<DateFieldKey, string>>({
+    year: value.year ? String(value.year) : '',
+    month: value.month ? String(value.month) : '',
+    day: value.day ? String(value.day) : '',
+  });
+
+  // 若外部（例如重置表單）改動了 value，同步 draft，但不要蓋掉使用者正在輸入的內容
+  useEffect(() => {
+    setDraft({
+      year: value.year ? String(value.year) : '',
+      month: value.month ? String(value.month) : '',
+      day: value.day ? String(value.day) : '',
+    });
+  }, [value.year, value.month, value.day]);
+
+  const handleFieldChange = (key: DateFieldKey, raw: string) => {
+    setDraft((prevDraft) => ({ ...prevDraft, [key]: raw }));
+    if (raw === '') return;
+    const num = Number(raw);
+    if (!Number.isNaN(num)) onChange({ ...value, [key]: num });
+  };
+
   return (
     <div className="space-y-3">
       <div className="grid grid-cols-3 gap-3">
@@ -37,12 +62,11 @@ export function BirthDateInput({ value, onChange }: Props) {
             <span className={labelClass}>{label}</span>
             <input
               type="number"
+              inputMode="numeric"
               min={min}
               max={max}
-              value={value[key]}
-              onChange={(event) =>
-                onChange({ ...value, [key]: event.target.value === '' ? 0 : Number(event.target.value) })
-              }
+              value={draft[key]}
+              onChange={(event) => handleFieldChange(key, event.target.value)}
               className={fieldClass}
             />
           </label>
