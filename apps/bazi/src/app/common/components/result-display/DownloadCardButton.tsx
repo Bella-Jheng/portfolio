@@ -38,8 +38,14 @@ async function inlineImages(container: HTMLElement): Promise<() => void> {
       const dataUrl = await toDataUrl(img.src);
       if (!dataUrl) return;
       img.src = dataUrl;
-      if (!img.complete) {
-        await new Promise((res) => { img.onload = res; img.onerror = res; });
+      try {
+        // decode() 保證圖片真正解碼完成才 resolve，onload 在 data URI 上會提早觸發，
+        // 手機 Safari 上會導致擷取當下圖片其實還沒畫出來
+        await img.decode();
+      } catch {
+        if (!img.complete) {
+          await new Promise<void>((res) => { img.onload = () => res(); img.onerror = () => res(); });
+        }
       }
     })
   );
