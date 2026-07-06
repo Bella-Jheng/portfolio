@@ -16,6 +16,16 @@ const nextConfig = {
   images: {
     remotePatterns: [{ protocol: 'https', hostname: 'lh3.googleusercontent.com' }],
   },
+  async headers() {
+    return [
+      {
+        source: '/cats/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+        ],
+      },
+    ];
+  },
   turbopack: {
     rules: {
       '*.svg': {

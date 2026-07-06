@@ -19,16 +19,16 @@ export const ELEMENT_ENGLISH: Record<string, string> = {
 };
 
 export const ELEMENT_THEME: Record<string, MagazineTheme> = {
-  木: { bg: '#F4FAF4', accent: '#7AC97A', text: '#2E4C2E', catSrc: '/cats/bazi-cat-wood.png' },
-  火: { bg: '#FFF5F5', accent: '#E87878', text: '#5C2D2D', catSrc: '/cats/bazi-cat-fire.png' },
-  土: { bg: '#FFFDF5', accent: '#FCD060', text: '#4A4A4A', catSrc: '/cats/bazi-cat-earth.png' },
-  金: { bg: '#FFFBE0', accent: '#C8900A', text: '#4A3200', catSrc: '/cats/bazi-cat-gold.png' },
-  水: { bg: '#F5EDFF', accent: '#9070C0', text: '#36274D', catSrc: '/cats/bazi-cat-water.png' },
+  木: { bg: '#F4FAF4', accent: '#7AC97A', text: '#2E4C2E', catSrc: '/cats/bazi-cat-wood.webp' },
+  火: { bg: '#FFF5F5', accent: '#E87878', text: '#5C2D2D', catSrc: '/cats/bazi-cat-fire.webp' },
+  土: { bg: '#FFFDF5', accent: '#FCD060', text: '#4A4A4A', catSrc: '/cats/bazi-cat-earth.webp' },
+  金: { bg: '#FFFBE0', accent: '#C8900A', text: '#4A3200', catSrc: '/cats/bazi-cat-gold.webp' },
+  水: { bg: '#F5EDFF', accent: '#9070C0', text: '#36274D', catSrc: '/cats/bazi-cat-water.webp' },
 };
 
 export const DEFAULT_THEME: MagazineTheme = {
   bg: '#FFFDF5',
   accent: '#FCD060',
   text: '#4A4A4A',
-  catSrc: '/cats/bazi-cat-default.png',
+  catSrc: '/cats/bazi-cat-default.webp',
 };

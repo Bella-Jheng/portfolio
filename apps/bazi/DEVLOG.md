@@ -665,6 +665,32 @@ const login = async () => {
 
 ---
 
+### 17. 天生卡貓咪圖片：轉 WebP + 長效快取，減少重複下載
+
+**問題：** 結果頁與分享卡共用的 5 張五行貓咪圖（`bazi-cat-wood/fire/earth/gold/water.png`）沒有設定任何 Cache-Control，每次進站、每次點「分享天生卡」都可能重新下載，浪費流量也拖慢載入速度。
+
+**解法：**
+
+1. 用 `sharp` 把 5 張 png 轉成 webp，體積省 64~82%（例如 water 282KB → 50KB）。
+2. `next.config.js` 加 `headers()`，對 `/cats/:path*` 設 `Cache-Control: public, max-age=31536000, immutable`：
+
+```js
+async headers() {
+  return [
+    { source: '/cats/:path*', headers: [
+      { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+    ]},
+  ];
+},
+```
+
+3. 這個 header 同時讓走 `/_next/image` optimizer 的用法（`QASection.tsx`、`Header.tsx` 等）在正式環境自動繼承長效快取（Next 內部以 `Math.max(minimumCacheTTL, 上游 Cache-Control)` 決定 maxAge），不需要額外改動這些元件。開發模式下 Next 官方刻意強制 optimizer 走 `max-age=0`，方便本機隨時看到最新圖，屬預期行為。
+4. 順手清掉 `public/cats/` 下 7 張沒被任何程式碼引用的舊圖，省約 4MB。
+
+**學到的事：** 靜態圖片放在 `public/` 不會自動有長效快取；`next/image` 的 optimizer 快取只是 4 小時預設值（`minimumCacheTTL`），真正決定快取時間的還是原始檔案的 HTTP Cache-Control——在 `next.config.js` 用 `headers()` 統一設定，比逐一元件加 `unoptimized` 更省事也更一致。
+
+---
+
 ## 待辦事項
 
 - [ ] 啟用 Firestore API（`bazi-4b8f0` 專案）

@@ -9,33 +9,78 @@ interface DownloadCardButtonProps {
   name?: string;
 }
 
+async function toDataUrl(src: string): Promise<string | null> {
+  try {
+    const res = await fetch(src);
+    if (!res.ok) return null;
+    const blob = await res.blob();
+    return await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
+}
+
+// html-to-image 擷取時會自己對每個 <img src> 重新 fetch 一次轉成 base64 內嵌，
+// 這次「重新 fetch」跟畫面上圖片是否已顯示完全無關，手機網路不穩時常靜默失敗導致圖片消失。
+// 這裡改成擷取前就先把圖片轉好 data URI 塞進 <img>，讓 html-to-image 不用再自己重新請求。
+async function inlineImages(container: HTMLElement): Promise<() => void> {
+  const images = Array.from(container.querySelectorAll('img'));
+  const originalSrcs = images.map((img) => img.src);
+
+  await Promise.all(
+    images.map(async (img) => {
+      if (img.src.startsWith('data:')) return;
+      const dataUrl = await toDataUrl(img.src);
+      if (!dataUrl) return;
+      img.src = dataUrl;
+      if (!img.complete) {
+        await new Promise((res) => { img.onload = res; img.onerror = res; });
+      }
+    })
+  );
+
+  return () => {
+    images.forEach((img, i) => { img.src = originalSrcs[i]; });
+  };
+}
+
 export function DownloadCardButton({ cardRef, name }: DownloadCardButtonProps) {
   const [downloading, setDownloading] = useState(false);
 
   const handleDownload = async () => {
     if (!cardRef.current) return;
     setDownloading(true);
+    
+    // 1. 給 UI 反應時間
     await new Promise((resolve) => setTimeout(resolve, 300));
+    
+    const el = cardRef.current;
+    let restoreImages: (() => void) | null = null;
+
     try {
-      const el = cardRef.current;
       const { width, height } = el.getBoundingClientRect();
       const cardWidth = Math.round(width);
       const cardHeight = Math.round(height);
 
-      const images = Array.from(el.querySelectorAll('img'));
-      await Promise.all(
-        images.map((img) =>
-          img.complete ? Promise.resolve() : new Promise((res) => { img.onload = res; img.onerror = res; })
-        )
-      );
+      // 2. 先把圖片轉成 data URI，避免 html-to-image 擷取當下重新 fetch 偶發失敗
+      restoreImages = await inlineImages(el);
 
+      // 3. 呼叫 toPng
       const dataUrl = await toPng(el, {
-        cacheBust: true,
+        // 關閉 cacheBust，避免它產生隨機參數干擾已載入的圖片
+        cacheBust: false, 
         pixelRatio: 3,
         backgroundColor: '#fffdf5',
         width: cardWidth,
         height: cardHeight,
         style: { margin: '0', transform: 'scale(1)', boxShadow: 'none' },
+        // 額外加入 html-to-image 推薦的防白邊/防失效參數
+        skipFonts: true, // 如果字體不是關鍵，開啟這個可以大幅提升圖片生成成功率與速度
       });
 
       const today = new Date();
@@ -55,12 +100,15 @@ export function DownloadCardButton({ cardRef, name }: DownloadCardButtonProps) {
       }
     } catch (err) {
       if ((err as Error)?.name !== 'AbortError') {
+        console.error(err); // 建議開發時 log 出來看看具體錯誤
         alert('生成圖卡失敗，請稍後再試');
       }
     } finally {
+      restoreImages?.();
       setDownloading(false);
     }
   };
+
 
   return (
     <button
