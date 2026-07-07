@@ -24,10 +24,6 @@ async function toDataUrl(src: string): Promise<string | null> {
     return null;
   }
 }
-
-// html-to-image 擷取時會自己對每個 <img src> 重新 fetch 一次轉成 base64 內嵌，
-// 這次「重新 fetch」跟畫面上圖片是否已顯示完全無關，手機網路不穩時常靜默失敗導致圖片消失。
-// 這裡改成擷取前就先把圖片轉好 data URI 塞進 <img>，讓 html-to-image 不用再自己重新請求。
 async function inlineImages(container: HTMLElement): Promise<() => void> {
   const images = Array.from(container.querySelectorAll('img'));
   const originalSrcs = images.map((img) => img.src);
@@ -55,6 +51,27 @@ async function inlineImages(container: HTMLElement): Promise<() => void> {
   };
 }
 
+async function capturePng(el: HTMLElement, width: number, height: number): Promise<string> {
+  const toPngOptions = {
+    // 關閉 cacheBust，避免它產生隨機參數干擾已載入的圖片
+    cacheBust: false,
+    pixelRatio: 3,
+    backgroundColor: '#fffdf5',
+    width,
+    height,
+    style: { margin: '0', transform: 'scale(1)', boxShadow: 'none' },
+    // 額外加入 html-to-image 推薦的防白邊/防失效參數
+    skipFonts: true, // 如果字體不是關鍵，開啟這個可以大幅提升圖片生成成功率與速度
+  };
+
+  const dataUrl = await toPng(el, toPngOptions);
+  if (dataUrl.length === 0) {
+    // 偶發擷取失敗會回傳空字串，重試一次
+    return toPng(el, toPngOptions);
+  }
+  return dataUrl;
+}
+
 export function DownloadCardButton({ cardRef, name }: DownloadCardButtonProps) {
   const [downloading, setDownloading] = useState(false);
 
@@ -77,17 +94,7 @@ export function DownloadCardButton({ cardRef, name }: DownloadCardButtonProps) {
       restoreImages = await inlineImages(el);
 
       // 3. 呼叫 toPng
-      const dataUrl = await toPng(el, {
-        // 關閉 cacheBust，避免它產生隨機參數干擾已載入的圖片
-        cacheBust: false, 
-        pixelRatio: 3,
-        backgroundColor: '#fffdf5',
-        width: cardWidth,
-        height: cardHeight,
-        style: { margin: '0', transform: 'scale(1)', boxShadow: 'none' },
-        // 額外加入 html-to-image 推薦的防白邊/防失效參數
-        skipFonts: true, // 如果字體不是關鍵，開啟這個可以大幅提升圖片生成成功率與速度
-      });
+      const dataUrl = await capturePng(el, cardWidth, cardHeight);
 
       const today = new Date();
       const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
