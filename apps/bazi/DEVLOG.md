@@ -691,6 +691,62 @@ async headers() {
 
 ---
 
+### 18. 一人一次命盤限制忽略修正資料，導致填錯重填後仍看到舊結果
+
+**問題發現：** 使用者回報流程：開始測算 → 登入 → 進入表單頁 → **填錯**生日送出 → 上一頁 → 改對日期 → **再送出一次** → `/result/[id]` 顯示的卻是**第一次填錯**的結果。
+
+**根因：** `POST /api/calculate` 的「一般使用者限一次命盤」邏輯（防止重複呼叫 Gemini/Anthropic 增加成本）在查到 `createdBy` 已有既有 reading 時，直接 `return { id: doc.id }`，完全跳過驗證與重算——不管這次送出的表單資料是否跟舊的不同：
+
+```ts
+// 修前
+if (createdBy && !isAdmin) {
+  const existing = await db.collection('readings')
+    .where('createdBy', '==', createdBy).orderBy('createdAt', 'desc').limit(1).get();
+  if (!existing.empty) {
+    const doc = existing.docs[0];
+    return NextResponse.json({ id: doc.id }, { ... }); // 新資料整包被丟掉
+  }
+}
+```
+
+專案裡已經有「查看結果後想改日期」的正規流程（`request-correction` 使用者申請 → `approve-correction` admin 審核），但那是給**已經看過結果**之後的修正走的，跟這個「送出當下就填錯、根本還沒看到結果」的情境不是同一件事，不應該也要求 admin 審核。
+
+**解法：** 用一個 session cookie（`bazi_viewed_reading`，httpOnly、無 maxAge，關瀏覽器即失效，不另外加資料庫欄位）標記「使用者本人已經打開過 `/result/[id]` 看過結果」，`GET /api/result/[id]` 在確認是本人（非 admin）造訪時寫入：
+
+```ts
+// result/[id]/route.ts
+if (userId && !isAdmin && userId === createdBy) {
+  response.cookies.set(VIEWED_READING_COOKIE, doc.id, { httpOnly: true, sameSite: 'lax', path: '/' });
+}
+```
+
+`POST /api/calculate` 送出時，依「是否已查看」＋「這次資料是否跟舊的相同」決定要不要覆蓋重算，邏輯抽成獨立純函式 `resolveResubmitAction`（方便脫離 Firestore/AI API 單獨測試）：
+
+```ts
+// lib/reading-resubmit.ts
+export function resolveResubmitAction(existing, incoming, hasBeenViewed) {
+  const isSameInput = /* 逐欄位比對 name/gender/birthYear/Month/Day/Hour */;
+  return hasBeenViewed || isSameInput ? 'reuse' : 'overwrite';
+}
+```
+
+| 已查看？ | 資料是否相同 | 行為 |
+|---|---|---|
+| 否 | 不同 | **覆蓋既有 reading 重新計算**（填錯重填的情境） |
+| 否 | 相同 | 沿用既有 id，不重算（避免重複點擊浪費 API 成本） |
+| 是 | 不同 | 鎖住，沿用既有 id（要改請走 `request-correction` 給 admin 審核） |
+| 是 | 相同 | 沿用既有 id |
+
+**驗證方式：** 因為正式環境接的是真實 Firebase 專案（`bazi-4b8f0`）與真實付費 AI API，沒有 emulator，選擇不打真實 API/DB，改用 `tsx` 直接對 `resolveResubmitAction` 跑純邏輯測試，涵蓋上表四種組合，全數通過。
+
+**學到的事：**
+
+- 「一人限一次」這類防濫用規則，容易忽略「使用者根本還沒消費到這次額度、只是手滑填錯」的邊界情況——判斷條件不能只看「有沒有既有紀錄」，還要看「使用者是否已經真正拿到過這次的結果」。
+- 「當下這次操作」的狀態（例如是否看過某個結果）優先用 session cookie 標記，不需要為此加一個永久資料庫欄位；資料庫欄位該留給真的需要跨裝置、跨 session 持久的資料。
+- 沒有 emulator 的正式環境專案，驗證 bug fix 時把「會不會被鎖住/覆蓋」的決策邏輯抽成純函式獨立測試，是不牽動真實 API 費用與正式資料庫、又能實際跑過程式碼（而非用眼睛看 code review）的折衷做法。
+
+---
+
 ## 待辦事項
 
 - [ ] 啟用 Firestore API（`bazi-4b8f0` 專案）

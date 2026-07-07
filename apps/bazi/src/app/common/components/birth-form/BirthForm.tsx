@@ -5,8 +5,6 @@ import { type Gender, type CalculateRequest } from '../../../types/bazi';
 import { BirthDateInput } from '../birth-date-input/BirthDateInput';
 import { Loading } from '../loading/Loading';
 
-const currentYear = new Date().getFullYear();
-
 const inputClass =
   'w-full bg-[#FAF7F4] border border-[#EAE5DF] rounded-xl px-4 py-3 text-[#4A4A4A] placeholder:text-[#636363] focus:outline-none focus:border-[#FCD060] transition-colors text-sm';
 
@@ -22,9 +20,9 @@ export function BirthForm({ onSubmit, isPending = false, apiError }: BirthFormPr
   const [form, setForm] = useState<CalculateRequest>({
     name: '',
     gender: undefined,
-    birthYear: currentYear - 30,
-    birthMonth: 1,
-    birthDay: 1,
+    birthYear: 0,
+    birthMonth: 0,
+    birthDay: 0,
     birthHour: undefined,
   });
 

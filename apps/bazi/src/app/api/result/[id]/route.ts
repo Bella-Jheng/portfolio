@@ -3,6 +3,7 @@ import { db, getAdminAuth } from '../../../lib/firebase';
 
 import { answerCustomQuestion } from '../../../lib/anthropic';
 import { getDominantElements, calculateMajorFortune, getAnnualPillar, STEMS, BRANCHES } from '../../../lib/bazi-calculator';
+import { VIEWED_READING_COOKIE } from '../../../lib/cookies';
 import type { AskQuestionRequest, BaziPillars, FortuneReading, QuestionAnswer } from '../../../types/bazi';
 
 const ADMIN_UID = process.env.ADMIN_UID ?? '';
@@ -64,7 +65,7 @@ export async function GET(
     if (!docData) {
       return NextResponse.json({ error: '找不到此命盤' }, { status: 404 });
     }
-    const { createdBy: _createdBy, adminQuestions: rawAdminQs, ...data } = docData;
+    const { createdBy, adminQuestions: rawAdminQs, ...data } = docData;
     const sanitizedQuestions = (data.questions ?? []).map(
       ({ userId: _uid, ...q }: { userId?: string; [k: string]: unknown }) => q,
     );
@@ -80,10 +81,21 @@ export async function GET(
       ? (rawAdminQs ?? []).map(({ userId: _uid, ...q }: { userId?: string; [k: string]: unknown }) => q)
       : undefined;
 
-    return NextResponse.json(
+    const response = NextResponse.json(
       { id: doc.id, ...data, questions: sanitizedQuestions, ...(adminQuestions !== undefined && { adminQuestions }), remainingToday },
       { headers: { 'Cache-Control': 'no-store, private' } },
     );
+
+    // 本人看過結果後才鎖定「一人一次」限制；session cookie 隨瀏覽器關閉失效，不需另外查資料庫欄位
+    if (userId && !isAdmin && userId === createdBy) {
+      response.cookies.set(VIEWED_READING_COOKIE, doc.id, {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+      });
+    }
+
+    return response;
   } catch (error) {
     console.error('Get result error:', error);
     return NextResponse.json({ error: '讀取命盤失敗' }, { status: 500 });
