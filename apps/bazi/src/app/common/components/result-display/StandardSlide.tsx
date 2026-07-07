@@ -1,31 +1,17 @@
 import styles from '../../styles/bazi-content.module.css';
 
-function splitIntoPoints(text: string): string[] {
-  if (!text) return [];
-  const sentences = text
-    .split(/(?<=[。！？])/)
-    .map((sentence) => sentence.trim())
-    .filter((sentence) => sentence.length > 1);
-  if (sentences.length > 1) return sentences;
-  return text
-    .split('，')
-    .map((sentence) => sentence.trim())
-    .filter((sentence) => sentence.length > 3)
-    .slice(0, 6);
-}
-
 interface StandardSlideProps {
   title: string;
   emoji: string;
   content?: string;
+  detail?: string;
   accentColor: string;
   mobile?: boolean;
   tabNum?: string;
   subtitle?: string;
-  renderAsHtml?: boolean;
 }
 
-export function StandardSlide({ title, emoji, content, accentColor, mobile, tabNum, subtitle, renderAsHtml }: StandardSlideProps) {
+export function StandardSlide({ title, emoji, content, detail, accentColor, tabNum, subtitle }: StandardSlideProps) {
   if (!content) {
     return (
       <div className="flex flex-col items-center justify-center w-full h-full py-12 text-[#636363]">
@@ -51,34 +37,24 @@ export function StandardSlide({ title, emoji, content, accentColor, mobile, tabN
     </div>
   );
 
-  if (renderAsHtml) {
-    return (
-      <div className="flex flex-col w-full h-full text-left gap-5">
-        {header}
-        <div
-          className={`${styles.htmlContent} ${mobile ? '' : 'flex-1 overflow-y-auto'}`}
-          dangerouslySetInnerHTML={{ __html: content }}
-        />
-      </div>
-    );
-  }
-
-  const points = splitIntoPoints(content);
-
   return (
     <div className="flex flex-col w-full h-full text-left gap-5">
       {header}
-      <div className={`space-y-4 pr-2 ${mobile ? '' : 'flex-1 overflow-y-auto'}`}>
-        {points.map((point, index) => (
-          <p
-            key={index}
-            className="text-sm leading-relaxed text-[#6B5D57] font-medium pl-3 border-l-2"
-            style={{ borderColor: accentColor }}
-          >
-            {point}
-          </p>
-        ))}
-      </div>
+      <div
+        className={`${styles.htmlContent} pl-3 border-l-2`}
+        style={{ borderColor: accentColor }}
+        dangerouslySetInnerHTML={{ __html: content }}
+      />
+      {detail && (
+        <div className="flex flex-col gap-3 pt-2">
+          <div className="flex items-center gap-3">
+            <div className="flex-1 border-t border-[#EAE5DF]" />
+            <span className="text-[10px] font-mono tracking-widest text-[#B0A898] uppercase shrink-0">完整分析</span>
+            <div className="flex-1 border-t border-[#EAE5DF]" />
+          </div>
+          <div className={styles.htmlContent} dangerouslySetInnerHTML={{ __html: detail }} />
+        </div>
+      )}
     </div>
   );
 }

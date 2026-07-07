@@ -1,12 +1,24 @@
 'use client';
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import type { Reading } from '../../../types/bazi';
 import type { MagazineTheme } from './theme';
 import { TenGodsSlide } from './TenGodsSlide';
 import { CycleAnalysisSlide } from './CycleAnalysisSlide';
 import { StandardSlide } from './StandardSlide';
 import { ActionSlide } from './ActionSlide';
+
+type DetailSection = 'wealth' | 'career' | 'romance' | 'health' | 'remedy' | 'cycleAnalysis' | 'tenGodAnalysis';
+
+const TAB_TO_SECTION: Record<string, DetailSection | undefined> = {
+  cycle: 'cycleAnalysis',
+  tengods: 'tenGodAnalysis',
+  wealth: 'wealth',
+  career: 'career',
+  romance: 'romance',
+  health: 'health',
+  remedy: 'remedy',
+};
 
 interface TabDef {
   id: string;
@@ -17,8 +29,8 @@ interface TabDef {
   accentColor: string | null;
 }
 
-const buildTabs = (accent: string): TabDef[] => [
-  { id: 'cycle',    num: '01', label: '大運×流年解析', subtitle: '當前大運流年交互影響分析',              emoji: '🌊', accentColor: null },
+const buildTabs = (accent: string, currentYear: number): TabDef[] => [
+  { id: 'cycle',    num: '01', label: `${currentYear}年運勢`, subtitle: '當前大運流年交互影響分析',              emoji: '🌊', accentColor: null },
   { id: 'tengods',  num: '02', label: '個性特質',      subtitle: '命格解讀、十神分析與內外在性格全觀',    emoji: '🔮', accentColor: accent },
   { id: 'wealth',   num: '03', label: '財運狀況',      subtitle: '財富能量與正偏財運解析',               emoji: '💰', accentColor: '#D4A017' },
   { id: 'career',   num: '04', label: '工作事業',      subtitle: '職場發展方向與機遇分析',               emoji: '💼', accentColor: '#60A8D0' },
@@ -33,21 +45,42 @@ interface TabSectionProps {
   theme: MagazineTheme;
   activeTabIdx: number;
   onActiveTabChange: (idx: number) => void;
+  onUpdate: (updated: Reading) => void;
 }
 
-export function TabSection({ reading, theme, activeTabIdx, onActiveTabChange }: TabSectionProps) {
+export function TabSection({ reading, theme, activeTabIdx, onActiveTabChange, onUpdate }: TabSectionProps) {
   const activeIdx = activeTabIdx;
   const setActiveIdx = onActiveTabChange;
   const tabBarRef = useRef<HTMLDivElement>(null);
   const sectionTopRef = useRef<HTMLDivElement>(null);
   const fortune = reading.fortune;
-  const tabs = buildTabs(theme.accent);
+  const tabs = buildTabs(theme.accent, new Date().getFullYear());
+  const activeSection = TAB_TO_SECTION[tabs[activeIdx].id];
+  const [generating, setGenerating] = useState(false);
 
-  
+  // 暫時的測試按鈕邏輯：正式版要換成訂閱/選項解鎖後才觸發，這裡先不做配額檢查
+  const handleGenerateDetail = async (section: DetailSection) => {
+    setGenerating(true);
+    try {
+      const res = await fetch(`/api/result/${reading.id}/generate-detail`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ section }),
+      });
+      const data = await res.json();
+      if (!res.ok) { alert(data.error || '生成完整分析失敗'); return; }
+      onUpdate({ ...reading, fortune: data.fortune });
+    } catch {
+      alert('網路錯誤，請稍後再試');
+    } finally {
+      setGenerating(false);
+    }
+  };
+
   // 要讓頁面真正往回捲，必須以非 sticky 的區塊根節點為目標
   const scrollToTabBar = () =>
     sectionTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  
+
   useEffect(() => {
     const bar = tabBarRef.current;
     if (!bar) return;
@@ -63,36 +96,17 @@ export function TabSection({ reading, theme, activeTabIdx, onActiveTabChange }: 
       case 'tengods':
         return (
           <div className="flex flex-col gap-6">
-            {/* Intro：personality 摘要卡 */}
-            {fortune.personality && (
-              <div
-                className="rounded-2xl p-4 flex flex-col gap-2"
-                style={{ backgroundColor: `${accent}12`, borderLeft: `3px solid ${accent}` }}
-              >
-                <p className="text-[11px] font-black tracking-widest uppercase" style={{ color: accent }}>
-                  命主特質速覽
-                </p>
-                <p className="text-sm leading-relaxed text-[#4A4A4A]">{fortune.personality}</p>
-              </div>
-            )}
             {/* Deep dive：十神分析 */}
             <div className="flex flex-col gap-5">
-              <div className="flex items-center gap-3">
-                <div className="flex-1 border-t border-[#EAE5DF]" />
-                <span className="text-[10px] font-mono tracking-widest text-[#B0A898] uppercase shrink-0">
-                  十神命格深度解析
-                </span>
-                <div className="flex-1 border-t border-[#EAE5DF]" />
-              </div>
               <TenGodsSlide reading={reading} theme={theme} mobile />
             </div>
           </div>
         );
-      case 'wealth':   return <StandardSlide title="財運狀況"    emoji="💰" content={fortune.wealth}   accentColor={accent} mobile tabNum={tab.num} subtitle={tab.subtitle} renderAsHtml />;
-      case 'career':   return <StandardSlide title="工作事業"    emoji="💼" content={fortune.career}   accentColor={accent} mobile tabNum={tab.num} subtitle={tab.subtitle} renderAsHtml />;
-      case 'romance':  return <StandardSlide title="感情桃花"    emoji="🌸" content={fortune.romance}  accentColor={accent} mobile tabNum={tab.num} subtitle={tab.subtitle} renderAsHtml />;
-      case 'health':   return <StandardSlide title="健康狀況"    emoji="🌿" content={fortune.health}   accentColor={accent} mobile tabNum={tab.num} subtitle={tab.subtitle} renderAsHtml />;
-      case 'remedy':   return <StandardSlide title="補運建議"    emoji="✨" content={fortune.remedy}   accentColor={accent} mobile tabNum={tab.num} subtitle={tab.subtitle} renderAsHtml />;
+      case 'wealth':   return <StandardSlide title="財運狀況"    emoji="💰" content={fortune.wealth}   detail={fortune.wealthDetail}   accentColor={accent} mobile tabNum={tab.num} subtitle={tab.subtitle} />;
+      case 'career':   return <StandardSlide title="工作事業"    emoji="💼" content={fortune.career}   detail={fortune.careerDetail}   accentColor={accent} mobile tabNum={tab.num} subtitle={tab.subtitle} />;
+      case 'romance':  return <StandardSlide title="感情桃花"    emoji="🌸" content={fortune.romance}  detail={fortune.romanceDetail}  accentColor={accent} mobile tabNum={tab.num} subtitle={tab.subtitle} />;
+      case 'health':   return <StandardSlide title="健康狀況"    emoji="🌿" content={fortune.health}   detail={fortune.healthDetail}   accentColor={accent} mobile tabNum={tab.num} subtitle={tab.subtitle} />;
+      case 'remedy':   return <StandardSlide title="補運建議"    emoji="✨" content={fortune.remedy}   detail={fortune.remedyDetail}   accentColor={accent} mobile tabNum={tab.num} subtitle={tab.subtitle} />;
       case 'actions':  return <ActionSlide actionsText={fortune.actions} accentColor={accent} mobile />;
       default:         return null;
     }
@@ -130,6 +144,17 @@ export function TabSection({ reading, theme, activeTabIdx, onActiveTabChange }: 
         <div className="bg-white border border-[#EAE5DF] rounded-3xl shadow-sm p-6 md:p-8 min-h-[300px]">
           {renderContent()}
         </div>
+        {activeSection && (
+          <div className="flex justify-center mt-4">
+            <button
+              onClick={() => handleGenerateDetail(activeSection)}
+              disabled={generating}
+              className="text-xs text-[#6B6159] border border-[#EAE5DF] bg-white px-5 py-2 rounded-full hover:border-[#E87878] hover:text-[#E87878] transition-all disabled:opacity-40 shadow-sm"
+            >
+              {generating ? '生成中…' : '🔧 產生完整分析（測試）'}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Prev / Next navigation */}

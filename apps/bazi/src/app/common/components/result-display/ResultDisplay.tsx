@@ -8,6 +8,7 @@ import { STEM_ELEMENT, ELEMENT_THEME, DEFAULT_THEME } from './theme';
 import { CardSlide } from './CardSlide';
 import { BaziTableSlide } from './BaziTableSlide';
 import { MajorFortuneSlide } from './MajorFortuneSlide';
+import { MobileCardCarousel } from './MobileCardCarousel';
 import { TabSection } from './TabSection';
 import { QASection } from './QASection';
 import { AdminQASection } from './AdminQASection';
@@ -23,12 +24,6 @@ const SLIDE_TITLES = ['精美天生卡', '排盤', '大運 / 流年'];
 // Infinite carousel for 3 slides: prepend last (2), real slides (0,1,2), append first (0)
 const TRACK_ITEMS = [2, 0, 1, 2, 0];
 
-const MOBILE_SECTIONS = (reading: Reading, theme: ReturnType<typeof deriveTheme>, onTabSelect: (idx: number) => void) => [
-  <CardSlide key="card" reading={reading} theme={theme} mobile onTabSelect={onTabSelect} />,
-  <BaziTableSlide key="bazi" reading={reading} theme={theme} mobile />,
-  <MajorFortuneSlide key="fortune" reading={reading} theme={theme} mobile />,
-];
-
 function deriveTheme(reading: Reading) {
   const dayElement = STEM_ELEMENT[reading.pillars?.day?.stem ?? ''] ?? '';
   return ELEMENT_THEME[dayElement] ?? DEFAULT_THEME;
@@ -38,10 +33,9 @@ function renderSlide(
   contentIdx: number,
   reading: Reading,
   theme: ReturnType<typeof deriveTheme>,
-  onTabSelect: (idx: number) => void,
 ) {
   switch (contentIdx) {
-    case 0: return <CardSlide reading={reading} theme={theme} onTabSelect={onTabSelect} />;
+    case 0: return <CardSlide reading={reading} theme={theme} />;
     case 1: return <BaziTableSlide reading={reading} theme={theme} />;
     case 2: return <MajorFortuneSlide reading={reading} theme={theme} />;
     default: return null;
@@ -59,15 +53,7 @@ export function ResultDisplay({ reading, onUpdate }: ResultDisplayProps) {
   const [containerWidth, setContainerWidth] = useState(0);
   const [activeTabIdx, setActiveTabIdx] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
-  const tabSectionRef = useRef<HTMLDivElement>(null);
   const theme = deriveTheme(reading);
-
-  const handleTabSelect = (idx: number) => {
-    setActiveTabIdx(idx);
-    setTimeout(() => {
-      tabSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 50);
-  };
 
   useEffect(() => {
     const el = containerRef.current;
@@ -127,14 +113,8 @@ export function ResultDisplay({ reading, onUpdate }: ResultDisplayProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
     >
-      {/* Mobile: vertical sections */}
-      <div className="md:hidden space-y-4">
-        {MOBILE_SECTIONS(reading, theme, handleTabSelect).map((section) => (
-          <div key={section.key} className="bg-white border border-[#EAE5DF] rounded-3xl shadow-sm p-5">
-            {section}
-          </div>
-        ))}
-      </div>
+      {/* Mobile: swiper carousel */}
+      <MobileCardCarousel reading={reading} theme={theme} />
 
       {/* Desktop: horizontal carousel */}
       <div className="hidden md:block relative">
@@ -177,7 +157,7 @@ export function ResultDisplay({ reading, onUpdate }: ResultDisplayProps) {
               >
                 <div className="w-full bg-white border border-[#EAE5DF] rounded-3xl shadow-md p-6 md:p-8 flex flex-col h-[580px] overflow-hidden">
                   <div className="flex-1 flex items-stretch w-full min-h-0">
-                    {renderSlide(contentIdx, reading, theme, handleTabSelect)}
+                    {renderSlide(contentIdx, reading, theme)}
                   </div>
                 </div>
               </div>
@@ -224,8 +204,8 @@ export function ResultDisplay({ reading, onUpdate }: ResultDisplayProps) {
       )}
 
       {/* Tab section: all other slides */}
-      <div ref={tabSectionRef}>
-        <TabSection reading={reading} theme={theme} activeTabIdx={activeTabIdx} onActiveTabChange={setActiveTabIdx} />
+      <div>
+        <TabSection reading={reading} theme={theme} activeTabIdx={activeTabIdx} onActiveTabChange={setActiveTabIdx} onUpdate={onUpdate} />
       </div>
 
       <QASection reading={reading} theme={theme} onUpdate={onUpdate} />

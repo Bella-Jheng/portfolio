@@ -60,12 +60,10 @@ export function TenGodsSlide({ reading, theme, mobile }: TenGodsSlideProps) {
   const monthBranch = reading.pillars.month?.branch ?? '';
   const pattern = monthBranch && monthStem && dayStem ? getFortunePattern(monthBranch, monthStem, dayStem) : '';
   const tenGods = collectTenGods(reading);
-  const analysis = reading.fortune.tenGodAnalysis;
-  const sections = analysis ? parseAnalysisSections(analysis) : [];
-
-  // Extract header section (格局 line) from sections
-  const headerSection = sections.find(section => section.label === '格局');
-  const bodySections = sections.filter(section => section.label !== '格局');
+  const summary = reading.fortune.tenGodAnalysis;
+  const summarySections = summary ? parseAnalysisSections(summary) : [];
+  const detail = reading.fortune.tenGodAnalysisDetail;
+  const detailSections = detail ? parseAnalysisSections(detail) : [];
 
   return (
     <div className={`w-full h-full flex flex-col gap-4 text-left ${mobile ? '' : 'overflow-y-auto'}`}>
@@ -83,37 +81,22 @@ export function TenGodsSlide({ reading, theme, mobile }: TenGodsSlideProps) {
         >
           {pattern}
         </div>
-        {headerSection && (
-          <p className="text-[10px] text-[#6B6159] leading-relaxed flex-1">{headerSection.content}</p>
-        )}
       </div>
-
-      {/* 搭配排盤提示 */}
-      <div className="flex items-start gap-2 rounded-xl bg-[#FAF8F5] border border-[#EAE5DF]/80 px-3 py-2.5 shrink-0 text-[10px] text-[#7A6E65] leading-relaxed">
-        <svg className="w-3.5 h-3.5 shrink-0 mt-0.5 opacity-50" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <span>
-          <span className="font-black text-[#4A4A4A]">主星</span>即上方格局名稱（{pattern || '見排盤'}），代表你最核心的十神特質。
-          <span className="font-black text-[#4A4A4A] ml-1">副星</span>為命盤中其他十神，可對照上方「基本排盤」卡片中的天干地支逐一查看。
-        </span>
-      </div>
-
-      {/* AI analysis sections */}
-      {bodySections.length > 0 ? (
-        <div className="space-y-3 flex-1">
-          {bodySections.map(({ label, content }) => (
-            <div key={label} className="bg-[#FAF8F5] border border-[#EAE5DF]/60 rounded-xl px-3 py-2.5">
-              <p
-                className="text-[10px] font-black tracking-wider mb-1"
-                style={{ color: theme.accent }}
-              >
-                {label}
-              </p>
-              <p className="text-xs text-[#4A4A4A] leading-relaxed">{content}</p>
-            </div>
-          ))}
-        </div>
+      
+      {/* AI summary */}
+      {summary ? (
+        summarySections.length > 0 ? (
+          <div className="space-y-3 flex-1">
+            {summarySections.map(({ label, content }) => (
+              <div key={label} className="bg-[#FAF8F5] border border-[#EAE5DF]/60 rounded-xl px-3 py-2.5">
+                <p className="text-[10px] font-black tracking-wider mb-1" style={{ color: theme.accent }}>{label}</p>
+                <p className="text-xs text-[#4A4A4A] leading-relaxed">{content}</p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-xs text-[#4A4A4A] leading-relaxed flex-1">{summary}</p>
+        )
       ) : (
         /* Fallback: static ten gods grid when no AI analysis yet */
         <div className="grid grid-cols-2 gap-1.5 flex-1">
@@ -134,7 +117,7 @@ export function TenGodsSlide({ reading, theme, mobile }: TenGodsSlideProps) {
       )}
 
       {/* Ten gods quick reference chips (when AI analysis is showing) */}
-      {bodySections.length > 0 && (
+      {summary && (
         <div className="flex flex-wrap gap-1.5 shrink-0 pt-1 border-t border-[#EAE5DF]/60">
           {tenGods.map((tg) => {
             const info = TEN_GOD_INFO[tg];
@@ -147,6 +130,24 @@ export function TenGodsSlide({ reading, theme, mobile }: TenGodsSlideProps) {
               </span>
             ) : null;
           })}
+        </div>
+      )}
+
+      {detailSections.length > 0 && (
+        <div className="flex flex-col gap-3 pt-2">
+          <div className="flex items-center gap-3">
+            <div className="flex-1 border-t border-[#EAE5DF]" />
+            <span className="text-[10px] font-mono tracking-widest text-[#B0A898] uppercase shrink-0">完整分析</span>
+            <div className="flex-1 border-t border-[#EAE5DF]" />
+          </div>
+          <div className="space-y-3">
+            {detailSections.map(({ label, content }) => (
+              <div key={label} className="bg-[#FAF8F5] border border-[#EAE5DF]/60 rounded-xl px-3 py-2.5">
+                <p className="text-[10px] font-black tracking-wider mb-1" style={{ color: theme.accent }}>{label}</p>
+                <p className="text-xs text-[#4A4A4A] leading-relaxed">{content}</p>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>

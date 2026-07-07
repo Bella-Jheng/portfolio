@@ -5,16 +5,15 @@ import type { Reading } from '../../../types/bazi';
 import type { MagazineTheme } from './theme';
 import { BaziCard } from './BaziCard';
 import { DownloadCardButton } from './DownloadCardButton';
-import { TocList } from './TocList';
+import { PersonalitySummaryCard } from './PersonalitySummaryCard';
 
 interface CardSlideProps {
   reading: Reading;
   theme: MagazineTheme;
   mobile?: boolean;
-  onTabSelect?: (tabIdx: number) => void;
 }
 
-export function CardSlide({ reading, theme, onTabSelect }: CardSlideProps) {
+export function CardSlide({ reading, theme, mobile }: CardSlideProps) {
   const cardRef = useRef<HTMLDivElement>(null);
 
   return (
@@ -23,7 +22,8 @@ export function CardSlide({ reading, theme, onTabSelect }: CardSlideProps) {
         <BaziCard ref={cardRef} reading={reading} theme={theme} />
         <DownloadCardButton cardRef={cardRef} name={reading.name} />
       </div>
-      <TocList onTabSelect={onTabSelect} />
+      {/* 手機版把命主特質速覽抽出去放在 swiper 下方（見 MobileCardCarousel），這裡只給桌機版顯示 */}
+      {!mobile && <PersonalitySummaryCard reading={reading} theme={theme} />}
     </div>
   );
 }

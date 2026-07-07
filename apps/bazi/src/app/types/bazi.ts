@@ -14,17 +14,23 @@ export interface BaziPillars {
 }
 
 export interface FortuneReading {
-  overview?: string;
   personality?: string;
   fortune: string;
   wealth?: string;
+  wealthDetail?: string;
   career: string;
+  careerDetail?: string;
   romance: string;
+  romanceDetail?: string;
   health: string;
+  healthDetail?: string;
   remedy?: string;
+  remedyDetail?: string;
   actions?: string;
   cycleAnalysis?: string;
+  cycleAnalysisDetail?: string;
   tenGodAnalysis?: string;
+  tenGodAnalysisDetail?: string;
   traits?: string;
 }
 
