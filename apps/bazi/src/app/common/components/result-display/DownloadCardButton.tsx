@@ -64,6 +64,11 @@ async function capturePng(el: HTMLElement, width: number, height: number): Promi
     skipFonts: true, // 如果字體不是關鍵，開啟這個可以大幅提升圖片生成成功率與速度
   };
 
+  // Safari 首次把內嵌大量 base64 圖片的 SVG 轉成 Image 時，onload 會在圖片真正解碼完成前
+  // 提早觸發，導致擷取到的畫面缺圖（但不是空字串，抓不到下面的重試判斷）。
+  // 先熱身渲染一次丟棄結果，讓圖片解碼進瀏覽器快取，再正式渲染一次。
+  await toPng(el, toPngOptions);
+
   const dataUrl = await toPng(el, toPngOptions);
   if (dataUrl.length === 0) {
     // 偶發擷取失敗會回傳空字串，重試一次
