@@ -2,6 +2,9 @@
   "name": "@trg/bazi",
   "version": "0.0.1",
   "private": true,
+  "scripts": {
+    "test": "vitest run"
+  },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.37.0",
     "@google/generative-ai": "^0.24.1",
@@ -24,6 +27,7 @@
     "zustand": "^5.0.13"
   },
   "devDependencies": {
-    "@types/uuid": "^10.0.0"
+    "@types/uuid": "^10.0.0",
+    "vitest": "^3.2.7"
   }
 }
