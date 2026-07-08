@@ -1,9 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { SHICHEN } from '../../types/bazi';
-import { useAuth } from '../../lib/auth-context';
+import { useRequireAdmin } from '../../lib/use-require-admin';
 import {
   calculateBaziPillars,
   calculateMajorFortune,
@@ -66,13 +65,7 @@ function PillarCard({ label, stem, branch, isDay }: { label: string; stem: strin
 }
 
 export default function TestPage() {
-  const { isAdmin, loading } = useAuth();
-  const router = useRouter();
-
-  if (!loading && !isAdmin) {
-    router.replace('/');
-    return null;
-  }
+  const { authorized, checking } = useRequireAdmin();
 
   const [year, setYear] = useState(1996);
   const [month, setMonth] = useState(3);
@@ -82,6 +75,8 @@ export default function TestPage() {
   const [result, setResult] = useState<BaziPillars | null>(null);
 
   const selectClass = 'bg-[#FAF7F4] border border-[#EAE5DF] rounded-xl px-3 py-2.5 text-[#4A4A4A] focus:outline-none focus:border-[#FCD060] transition-colors text-sm w-full';
+
+  if (checking || !authorized) return null;
 
   const calculate = () => {
     try {

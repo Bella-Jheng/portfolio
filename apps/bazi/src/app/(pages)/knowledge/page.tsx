@@ -1,33 +1,15 @@
 'use client';
 
-import { useAuth } from '../../lib/auth-context';
+import { useRequireAdmin } from '../../lib/use-require-admin';
 import { KnowledgeForm } from '../../common/components/knowledge-form/KnowledgeForm';
-import { GoogleLoginButton } from '../../common/components/google-login-button/GoogleLoginButton';
 
 export default function KnowledgePage() {
-  const { user, loading, isAdmin } = useAuth();
+  const { authorized, checking } = useRequireAdmin();
 
-  if (loading) {
+  if (checking || !authorized) {
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
         <p className="text-bz-muted text-sm">載入中…</p>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] gap-6 px-5">
-        <p className="text-bz-muted text-center">請先登入</p>
-        <GoogleLoginButton variant="outline" className="px-6 py-3" />
-      </div>
-    );
-  }
-
-  if (!isAdmin) {
-    return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] px-5">
-        <p className="text-bz-muted text-center">此頁面僅限管理員使用</p>
       </div>
     );
   }
