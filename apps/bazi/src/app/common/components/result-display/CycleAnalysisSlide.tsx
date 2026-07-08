@@ -63,20 +63,16 @@ export function CycleAnalysisSlide({ reading, theme, mobile }: CycleAnalysisSlid
       </div>
       
       {/* Content */}
-      <div
-        className={`${styles.htmlContent} ${mobile ? '' : 'overflow-y-auto'}`}
-        dangerouslySetInnerHTML={{ __html: reading.fortune.cycleAnalysis ?? '' }}
-      />
-
-      {reading.fortune.cycleAnalysisDetail && (
-        <div className="flex flex-col gap-3 pt-2">
-          <div className="flex items-center gap-3">
-            <div className="flex-1 border-t border-[#EAE5DF]" />
-            <span className="text-[10px] font-mono tracking-widest text-[#B0A898] uppercase shrink-0">完整分析</span>
-            <div className="flex-1 border-t border-[#EAE5DF]" />
-          </div>
-          <div className={styles.htmlContent} dangerouslySetInnerHTML={{ __html: reading.fortune.cycleAnalysisDetail }} />
-        </div>
+      {reading.fortune.cycleAnalysisDetail ? (
+        <div
+          className={`${styles.htmlContent} ${mobile ? '' : 'overflow-y-auto'}`}
+          dangerouslySetInnerHTML={{ __html: reading.fortune.cycleAnalysisDetail }}
+        />
+      ) : (
+        <div
+          className={`${styles.htmlContent} ${mobile ? '' : 'overflow-y-auto'}`}
+          dangerouslySetInnerHTML={{ __html: reading.fortune.cycleAnalysis ?? '' }}
+        />
       )}
     </div>
   );
