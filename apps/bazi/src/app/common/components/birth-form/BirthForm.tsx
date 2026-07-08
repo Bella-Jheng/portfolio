@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { type Gender, type CalculateRequest } from '../../../types/bazi';
 import { BirthDateInput } from '../birth-date-input/BirthDateInput';
 import { Loading } from '../loading/Loading';
+import { useModalStore } from '../../../lib/modal-store';
 
 const inputClass =
   'w-full bg-[#FAF7F4] border border-[#EAE5DF] rounded-xl px-4 py-3 text-[#4A4A4A] placeholder:text-[#636363] focus:outline-none focus:border-[#FCD060] transition-colors text-sm';
@@ -16,6 +17,7 @@ interface BirthFormProps {
 
 export function BirthForm({ onSubmit, isPending = false, apiError }: BirthFormProps) {
   const [error, setError] = useState('');
+  const { show } = useModalStore();
 
   const [form, setForm] = useState<CalculateRequest>({
     name: '',
@@ -32,7 +34,34 @@ export function BirthForm({ onSubmit, isPending = false, apiError }: BirthFormPr
     if (!form.gender) { setError('請選擇性別'); return; }
     if (!form.birthYear || !form.birthMonth || !form.birthDay) { setError('請填寫正確的出生年月日'); return; }
     setError('');
-    onSubmit(form);
+
+    show({
+      title: '請確認您的資料',
+      confirmLabel: '確認送出',
+      cancelLabel: '返回修改',
+      content: (
+        <div className="space-y-2 text-sm">
+          <div className="flex justify-between border-b border-bz-border/60 pb-2">
+            <span className="text-bz-mid">姓名</span>
+            <span className="text-bz-brown font-medium">{form.name}</span>
+          </div>
+          <div className="flex justify-between border-b border-bz-border/60 pb-2">
+            <span className="text-bz-mid">性別</span>
+            <span className="text-bz-brown font-medium">{form.gender === 'male' ? '男' : '女'}</span>
+          </div>
+          <div className="flex justify-between border-b border-bz-border/60 pb-2">
+            <span className="text-bz-mid">出生日期</span>
+            <span className="text-bz-brown font-medium">{form.birthYear} 年 {form.birthMonth} 月 {form.birthDay} 日</span>
+          </div>
+          <div className="flex justify-between pb-1">
+            <span className="text-bz-mid">出生時辰</span>
+            <span className="text-bz-brown font-medium">{form.birthHour !== undefined ? `${form.birthHour} 時` : '未提供'}</span>
+          </div>
+          <p className="text-red-500 text-xs pt-1">⚠ 送出後即無法更改，請確認以上資料正確無誤。</p>
+        </div>
+      ),
+      onConfirm: () => onSubmit(form),
+    });
   };
 
   if (isPending) return <Loading />;

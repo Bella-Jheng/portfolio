@@ -3,7 +3,7 @@
 import { useModalStore } from '../../../lib/modal-store';
 
 export function Modal() {
-  const { open, title, message, confirmLabel, cancelLabel, onConfirm, close } = useModalStore();
+  const { open, title, message, content, confirmLabel, cancelLabel, onConfirm, close } = useModalStore();
 
   if (!open) return null;
 
@@ -17,7 +17,7 @@ export function Modal() {
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={close} />
       <div className="relative bg-white border border-bz-border rounded-2xl p-7 max-w-sm w-full space-y-5 shadow-xl">
         <h3 className="text-bz-brown font-serif text-lg tracking-wide">{title}</h3>
-        <p className="text-bz-mid text-sm leading-relaxed">{message}</p>
+        {content ?? <p className="text-bz-mid text-sm leading-relaxed">{message}</p>}
         <div className="flex gap-3 pt-1">
           <button
             onClick={close}
