@@ -50,15 +50,53 @@ export const PROJECTS_DATA_EN: FullProject[] = [
     ],
     sections: [
       {
+        type: 'decision',
         title: 'Technical Validation & PoC',
-        content: 'The biggest challenge was not choosing NX, but how to decouple highly coupled legacy projects. We conducted PoC tests to verify concurrent rendering impact, shared library extraction feasibility, and TypeScript conversion costs, providing data-driven reports for team decision-making.',
+        tabLabel: 'Validation',
+        problem:
+          'The hard question was not "should we use NX," but how to decouple two highly coupled legacy projects, whether the React 18 upgrade would introduce unpredictable issues, and how Tailwind and Bootstrap could coexist.',
+        options: [
+          {
+            label: 'Full rewrite',
+            detail:
+              'Highest risk — business logic for both brands could not be validated in time without risking a production outage.',
+          },
+          {
+            label: 'Keep two separate projects, upgrade independently',
+            detail:
+              'Does not solve the root problem of scattered shared logic and inconsistent React versions — just delays the architectural debt.',
+          },
+          {
+            label: 'PoC first, then adopt NX Monorepo (chosen)',
+            detail:
+              'Worked with a senior engineer to test concurrent rendering impact, shared-lib extraction feasibility, and TypeScript conversion cost, then used the results to drive the decision.',
+          },
+        ],
+        decision:
+          'Adopted NX Monorepo + React 18 upgrade, backed by PoC data rather than gut feeling.',
+        why: [
+          'Reduced uncertainty on a transformation this consequential before committing',
+          'This decision would shape the technical direction for the next 3-5 years — not something to guess on',
+        ],
       },
       {
-        title: 'Implementation & Development',
-        content: 'After the architecture was finalized, I was responsible for data flow integration and API connections, rethinking module boundaries and type designs to ensure the architecture could support long-term business needs.',
+        type: 'comparison',
+        title: 'Architecture: Before & After',
+        tabLabel: 'Architecture',
+        content:
+          'Once the direction was set, the abstract "architecture upgrade" broke down into concrete, comparable changes.',
+        columns: ['Aspect', 'Before', 'After'],
+        rows: [
+          ['Project management', 'HOLA / TLW in separate repos, shared logic copy-pasted', 'NX Monorepo with extracted shared libraries'],
+          ['React version', 'Inconsistent across the two brands', 'Unified upgrade to React 18'],
+          ['Styling', 'Bootstrap + per-brand custom CSS, hard to share', 'Unified Tailwind CSS system'],
+          ['Type safety', 'No or partial TypeScript', 'Fully typed with TypeScript'],
+          ['API logic', 'Scattered across pages, unclear module boundaries', 'Redesigned data flow and module boundaries'],
+        ],
       },
       {
         title: 'Knowledge Transfer',
+        tabLabel: 'Team Impact',
         content: 'After senior engineers left, I became the primary architect contact, assisting newcomers in understanding project structures and development standards. This experience taught me to build systems that can be passed on, not just write features.',
       },
     ],

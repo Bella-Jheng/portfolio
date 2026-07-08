@@ -7,7 +7,10 @@ import { Tag } from '../../../components/Atom/Tag';
 import { Heart, HeartFilled, Share, ExternalLink } from '@/public/icon';
 import { ShareModal } from '../../../components/Common/share-modal';
 import { RevealOnScroll } from '../../../components/Common/reveal-on-scroll';
+import { ProjectDetailTabs } from '../../../components/Common/project-sections/ProjectDetailTabs';
+import { ProjectSlider } from '../../../components/Common/project-slider';
 import { useProjectDetail } from '../../../api/project-detail-api';
+import { useProjects } from '../../../api/project-list-api';
 import { useLanguage } from '../../../hooks/use-language';
 
 export default function ProjectDetailPage({
@@ -21,6 +24,8 @@ export default function ProjectDetailPage({
   const [isLiked, setIsLiked] = useState(false);
 
   const { data: project, isLoading, error } = useProjectDetail(slug);
+  const { data: allProjects = [] } = useProjects();
+  const otherProjects = allProjects.filter((item) => item.id !== project?.id);
   const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
   if (isLoading) {
     return null;
@@ -120,20 +125,6 @@ export default function ProjectDetailPage({
                   <p>{project.description}</p>
                 </div>
 
-                {/* Additional Sections */}
-                {project.sections &&
-                  project.sections.map((section, idx) => (
-                    <div
-                      key={idx}
-                      className="prose prose-sm max-w-none text-txt-darkBrown leading-relaxed"
-                    >
-                      <h3 className="text-xl font-bold text-txt-darkBrown mb-2">
-                        {section.title}
-                      </h3>
-                      <p className="whitespace-pre-line">{section.content}</p>
-                    </div>
-                  ))}
-
                 {/* Action Buttons */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-8">
                   {project.links && project.links.length > 0 ? (
@@ -175,7 +166,28 @@ export default function ProjectDetailPage({
             </RevealOnScroll>
           </div>
         </div>
+
+        {/* Detailed Sections (Tabbed) */}
+        {project.sections && project.sections.length > 0 && (
+          <RevealOnScroll delay={500}>
+            <div className="mt-16 md:mt-20">
+              <ProjectDetailTabs sections={project.sections} />
+            </div>
+          </RevealOnScroll>
+        )}
       </div>
+
+      {/* Featured Projects */}
+      {otherProjects.length > 0 && (
+        <RevealOnScroll delay={600}>
+          <div className="mt-16 md:mt-24">
+            <ProjectSlider
+              title={isEn ? 'Featured Projects' : '精選作品'}
+              projects={otherProjects}
+            />
+          </div>
+        </RevealOnScroll>
+      )}
 
       <ShareModal
         isOpen={isShareModalOpen}

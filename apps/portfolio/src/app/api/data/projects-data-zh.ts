@@ -62,17 +62,49 @@ export const PROJECTS_DATA_ZH: FullProject[] = [
     ],
     sections: [
       {
+        type: 'decision',
         title: '技術驗證與導入測試',
-        content:
-          '最大的難題不是「要不要用 NX」，而是舊專案高度耦合該怎麼拆？React 18 升級會不會出現不可預期問題？Tailwind 與 Bootstrap 如何共存？我與資深工程師一起進行 PoC 測試，實際驗證並行渲染影響範圍、共用 lib 抽離可行性與 TypeScript 轉換成本，整理實測結果提供團隊決策依據。',
+        tabLabel: '技術驗證',
+        problem:
+          '最大的難題不是「要不要用 NX」，而是舊專案高度耦合該怎麼拆？React 18 升級會不會出現不可預期問題？Tailwind 與 Bootstrap 如何共存？',
+        options: [
+          {
+            label: '直接重寫',
+            detail: '風險最高，雙品牌商業邏輯來不及驗證就可能中斷正式站上線。',
+          },
+          {
+            label: '維持雙專案各自升級',
+            detail: '無法解決共用邏輯分散、React 版本不一致的根本問題，只是拖延架構債。',
+          },
+          {
+            label: 'PoC 驗證後導入 NX Monorepo（採用）',
+            detail:
+              '先與資深工程師實測並行渲染影響範圍、共用 lib 抽離可行性與 TypeScript 轉換成本，整理實測結果提供團隊決策依據。',
+          },
+        ],
+        decision: '採用 NX Monorepo + React 18 升級，以 PoC 實測數據作為決策依據，而非主觀判斷。',
+        why: [
+          '降低架構轉型的不確定性，先驗證再落地',
+          '這是決定未來 3–5 年技術走向的轉型，經不起憑感覺決定',
+        ],
       },
       {
-        title: '架構落地與實際開發',
-        content:
-          '架構定案後真正的挑戰才開始。API 邏輯分散、模組邊界模糊、舊頁面需要邊跑邊改。我負責資料流整合與 API 串接，在實務中重新思考模組切分與型別設計，確保架構能長期支撐商業需求。',
+        type: 'comparison',
+        title: '架構轉型前後對照',
+        tabLabel: '架構對照',
+        content: '定案後的實際落地，把抽象的「架構升級」拆解成可比較的具體改動。',
+        columns: ['面向', 'Before', 'After'],
+        rows: [
+          ['專案管理', 'HOLA / TLW 各自獨立 repo，共用邏輯複製貼上', 'NX Monorepo，共用 lib 統一抽離'],
+          ['React 版本', '兩品牌版本不一致，各自維護', '統一升級至 React 18'],
+          ['樣式架構', 'Bootstrap + 各自客製 CSS，難以共用', 'Tailwind CSS 統一樣式系統'],
+          ['型別安全', '無 TypeScript 或部分導入', '全面 TypeScript 化'],
+          ['API 邏輯', '分散在各頁面，模組邊界模糊', '重新設計資料流整合與模組切分'],
+        ],
       },
       {
         title: '技術傳承與團隊影響',
+        tabLabel: '團隊影響',
         content:
           '資深工程師離職後，我成為最熟悉整體架構的人，開始協助新人理解專案結構與開發規範。這段經驗讓我不只是寫功能，而是開始思考如何建立一個能被傳承的系統。',
       },
