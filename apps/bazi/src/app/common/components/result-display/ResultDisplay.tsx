@@ -12,6 +12,7 @@ import { MobileCardCarousel } from './MobileCardCarousel';
 import { TabSection } from './TabSection';
 import { QASection } from './QASection';
 import { AdminQASection } from './AdminQASection';
+import { FeedbackWidget } from '../feedback/FeedbackWidget';
 
 interface ResultDisplayProps {
   reading: Reading;
@@ -213,6 +214,8 @@ export function ResultDisplay({ reading, onUpdate }: ResultDisplayProps) {
       {isAdmin && (
         <AdminQASection reading={reading} onUpdate={onUpdate} />
       )}
+
+      <FeedbackWidget />
 
       {showTopBtn && (
         <button

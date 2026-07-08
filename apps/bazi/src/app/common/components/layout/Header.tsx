@@ -98,6 +98,7 @@ export function Header() {
                     <NavLink mobile href="/dashboard" active={pathname === '/dashboard'} onClick={close}>命盤列表</NavLink>
                     <NavLink mobile href="/knowledge" active={pathname === '/knowledge'} onClick={close}>知識庫</NavLink>
                     <NavLink mobile href="/test" active={pathname === '/test'} onClick={close}>排盤測試</NavLink>
+                    <NavLink mobile href="/feedback" active={pathname === '/feedback'} onClick={close}>意見回饋</NavLink>
                   </>
                 )}
               </div>
