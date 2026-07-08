@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db, getAdminAuth } from '../../lib/firebase';
+import { getAdminAuth } from '../../lib/firebase';
+import { knowledgeRepository } from '../../lib/repositories/knowledge-repository';
 
 import { v4 as uuidv4 } from 'uuid';
 
@@ -11,7 +12,8 @@ async function verifyAdmin(request: NextRequest): Promise<boolean> {
   try {
     const decoded = await getAdminAuth().verifyIdToken(token);
     return decoded.uid === ADMIN_UID;
-  } catch {
+  } catch (error) {
+    console.error('[verifyAdmin] failed:', error);
     return false;
   }
 }
@@ -22,8 +24,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const snap = await db.collection('knowledge').orderBy('createdAt', 'desc').get();
-    const entries = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    const entries = await knowledgeRepository.listAll();
     return NextResponse.json(entries);
   } catch (error) {
     console.error('Get knowledge error:', error);
@@ -52,7 +53,7 @@ export async function POST(request: NextRequest) {
     const id = uuidv4();
     const now = new Date().toISOString();
 
-    await db.collection('knowledge').doc(id).set({
+    await knowledgeRepository.create(id, {
       title: title.trim(),
       content: content.trim(),
       category,

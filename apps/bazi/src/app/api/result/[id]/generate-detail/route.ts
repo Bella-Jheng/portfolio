@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '../../../../lib/firebase';
-import { buildReadingGenerationContext } from '../../../../lib/reading-context';
-import { generateDetailedAnalysis, type DetailSection } from '../../../../lib/anthropic';
+import { readingService, ServiceError } from '../../../../lib/services/reading-service';
+import type { DetailSection } from '../../../../lib/anthropic';
 
 const VALID_SECTIONS: DetailSection[] = ['wealth', 'career', 'romance', 'health', 'remedy', 'cycleAnalysis', 'tenGodAnalysis'];
 
@@ -19,45 +18,13 @@ export async function POST(
       return NextResponse.json({ error: '無效的項目' }, { status: 400 });
     }
 
-    const doc = await db.collection('readings').doc(id).get();
-    if (!doc.exists) {
-      return NextResponse.json({ error: '找不到此命盤' }, { status: 404 });
-    }
-    const data = doc.data();
-    if (!data) {
-      return NextResponse.json({ error: '找不到此命盤' }, { status: 404 });
-    }
+    const { fortune } = await readingService.generateDetail({ id, section });
 
-    const { birthYear, birthMonth, birthDay, birthHour, name, gender, pillars, fortune } = data;
-
-    const { knowledge, currentYear, majorFortuneInfo, strength } = await buildReadingGenerationContext(
-      pillars, birthYear, birthMonth, birthDay, gender ?? undefined,
-    );
-
-    const detail = await generateDetailedAnalysis({
-      name: name ?? undefined,
-      gender: gender ?? undefined,
-      birthYear,
-      birthMonth,
-      birthDay,
-      birthHour: birthHour ?? undefined,
-      pillars,
-      knowledge,
-      currentYear,
-      majorFortuneInfo,
-      strength,
-      sections: [section],
-      existingSummary: fortune,
-    });
-
-    const updatedFortune = { ...fortune, ...detail };
-    await db.collection('readings').doc(id).update({
-      fortune: updatedFortune,
-      updatedAt: new Date().toISOString(),
-    });
-
-    return NextResponse.json({ fortune: updatedFortune });
+    return NextResponse.json({ fortune });
   } catch (error) {
+    if (error instanceof ServiceError) {
+      return NextResponse.json({ error: error.message, ...error.payload }, { status: error.status });
+    }
     console.error('Generate detail error:', error);
     const aiStatus = (error as { status?: number })?.status;
     const isAiOverload = aiStatus === 503 || aiStatus === 429;

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db, getAdminAuth } from '../../../lib/firebase';
+import { getAdminAuth } from '../../../lib/firebase';
+import { readingsRepository } from '../../../lib/repositories/readings-repository';
 
 const ADMIN_UID = process.env.ADMIN_UID ?? '';
 
@@ -21,13 +22,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const snapshot = await db
-      .collection('readings')
-      .orderBy('createdAt', 'desc')
-      .limit(100)
-      .get();
-
-    const readings = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    const readings = await readingsRepository.listForDashboard(100);
     return NextResponse.json(
       { readings },
       { headers: { 'Cache-Control': 'no-store, private' } },

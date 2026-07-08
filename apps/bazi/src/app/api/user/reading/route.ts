@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db, getAdminAuth } from '../../../lib/firebase';
-
+import { getAdminAuth } from '../../../lib/firebase';
+import { readingsRepository } from '../../../lib/repositories/readings-repository';
 
 async function extractUid(request: NextRequest): Promise<string | null> {
   const token = request.headers.get('Authorization')?.replace('Bearer ', '');
@@ -20,19 +20,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ readingId: null });
     }
 
-    const snapshot = await db
-      .collection('readings')
-      .where('createdBy', '==', uid)
-      .orderBy('createdAt', 'desc')
-      .limit(1)
-      .get();
-
-    if (snapshot.empty) {
-      return NextResponse.json({ readingId: null });
-    }
-
-    const doc = snapshot.docs[0];
-    return NextResponse.json({ readingId: doc.id });
+    const reading = await readingsRepository.findLatestByUser(uid);
+    return NextResponse.json({ readingId: reading?.id ?? null });
   } catch (error) {
     console.error('Get user reading error:', error);
     return NextResponse.json({ readingId: null });

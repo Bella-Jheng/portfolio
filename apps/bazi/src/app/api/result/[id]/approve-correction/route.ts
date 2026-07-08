@@ -1,15 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db, getAdminAuth } from '../../../../lib/firebase';
-import { generateBaziReading } from '../../../../lib/anthropic';
-import {
-  calculateBaziPillars,
-  getDominantElements,
-  calculateMajorFortune,
-  getAnnualPillar,
-  STEMS,
-  BRANCHES,
-  calculateDayMasterStrength,
-} from '../../../../lib/bazi-calculator';
+import { getAdminAuth } from '../../../../lib/firebase';
+import { readingsRepository } from '../../../../lib/repositories/readings-repository';
+import { readingService, ServiceError } from '../../../../lib/services/reading-service';
+import type { QuestionAnswer } from '../../../../types/bazi';
 
 const ADMIN_UID = process.env.ADMIN_UID ?? '';
 
@@ -19,7 +12,8 @@ async function verifyAdmin(request: NextRequest): Promise<boolean> {
   try {
     const decoded = await getAdminAuth().verifyIdToken(token);
     return decoded.uid === ADMIN_UID;
-  } catch {
+  } catch (error) {
+    console.error('[verifyAdmin] failed:', error);
     return false;
   }
 }
@@ -34,96 +28,36 @@ export async function POST(
 
   try {
     const { id } = await params;
-    const doc = await db.collection('readings').doc(id).get();
-    if (!doc.exists) {
+    const existing = await readingsRepository.getById(id);
+    if (!existing) {
       return NextResponse.json({ error: '找不到此命盤' }, { status: 404 });
     }
 
-    const data = doc.data();
-    if (!data) {
-      return NextResponse.json({ error: '找不到此命盤' }, { status: 404 });
-    }
-    const { correctionRequestedDate, name, gender, questions } = data;
+    const { correctionRequestedDate, questions } = existing as {
+      correctionRequestedDate?: { year: number; month: number; day: number; hour: number | null };
+      questions?: QuestionAnswer[];
+    };
 
     if (!correctionRequestedDate) {
       return NextResponse.json({ error: '找不到申請的日期資料' }, { status: 400 });
     }
 
-    const { year: birthYear, month: birthMonth, day: birthDay, hour: birthHour } =
-      correctionRequestedDate as { year: number; month: number; day: number; hour: number | null };
+    const { year: birthYear, month: birthMonth, day: birthDay, hour: birthHour } = correctionRequestedDate;
 
-    const pillars = calculateBaziPillars(birthYear, birthMonth, birthDay, birthHour ?? undefined);
-    const dominantElements = getDominantElements(pillars);
-    const queryTags = [...dominantElements, '桃花', '財運', '健康', '事業', '運勢', '通用'];
-
-    let knowledgeDocs = (
-      await db.collection('knowledge').where('tags', 'array-contains-any', queryTags).get()
-    ).docs;
-
-    if (knowledgeDocs.length < 3) {
-      const all = await db.collection('knowledge').orderBy('createdAt', 'asc').limit(20).get();
-      const existing = new Set(knowledgeDocs.map((doc) => doc.id));
-      knowledgeDocs = [...knowledgeDocs, ...all.docs.filter((doc) => !existing.has(doc.id))];
-    }
-
-    const knowledge = knowledgeDocs
-      .map((doc) => doc.data())
-      .map((kd) => `【${kd['title']}】\n${kd['content']}`)
-      .join('\n\n');
-
-    const currentYear = new Date().getFullYear();
-    const yearStemIdx = STEMS.indexOf(pillars.year.stem);
-    const monthStemIdx = STEMS.indexOf(pillars.month.stem);
-    const monthBranchIdx = BRANCHES.indexOf(pillars.month.branch);
-    let majorFortuneInfo: { currentCycle: string; currentAnnual: string } | undefined;
-    if (gender && yearStemIdx >= 0 && monthStemIdx >= 0 && monthBranchIdx >= 0) {
-      const mf = calculateMajorFortune(
-        birthYear, birthMonth, birthDay, gender,
-        yearStemIdx, monthStemIdx, monthBranchIdx,
-      );
-      const virtualAge = currentYear - birthYear + 1;
-      const cycleIdx = mf.cycles.findLastIndex((cycle) => cycle.startAge <= virtualAge);
-      const cycle = cycleIdx >= 0 ? mf.cycles[cycleIdx] : null;
-      const annual = getAnnualPillar(currentYear);
-      majorFortuneInfo = {
-        currentCycle: cycle
-          ? `${cycle.stem}${cycle.branch}（起運歲 ${cycle.startAge}，${cycle.startYear} 年起）`
-          : '尚未入大運',
-        currentAnnual: `${annual.stem}${annual.branch}（${currentYear} 年）`,
-      };
-    }
-
-    const strength = calculateDayMasterStrength(pillars);
-    const fortune = await generateBaziReading({
-      name: name ?? undefined,
-      gender: gender ?? undefined,
+    const { pillars, fortune } = await readingService.regenerateFortune({
+      existing,
       birthYear,
       birthMonth,
       birthDay,
-      birthHour: birthHour ?? undefined,
-      pillars,
-      knowledge,
-      currentYear,
-      majorFortuneInfo,
-      strength,
+      birthHour,
+      extraFields: {
+        correctionRequested: false,
+        correctionApproved: true,
+        correctionApprovedAt: new Date().toISOString(),
+      },
     });
 
-    await db.collection('readings').doc(id).update({
-      birthYear,
-      birthMonth,
-      birthDay,
-      birthHour: birthHour ?? null,
-      pillars,
-      fortune,
-      correctionRequested: false,
-      correctionApproved: true,
-      correctionApprovedAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    });
-
-    const sanitizedQuestions = (questions ?? []).map(
-      ({ userId: _uid, ...q }: { userId?: string; [k: string]: unknown }) => q,
-    );
+    const sanitizedQuestions = (questions ?? []).map(({ userId: _uid, ...q }) => q);
 
     return NextResponse.json({
       pillars,
@@ -135,6 +69,9 @@ export async function POST(
       birthHour: birthHour ?? null,
     });
   } catch (error) {
+    if (error instanceof ServiceError) {
+      return NextResponse.json({ error: error.message, ...error.payload }, { status: error.status });
+    }
     console.error('Approve correction error:', error);
     const aiStatus = (error as { status?: number })?.status;
     const aiStatusText = (error as { statusText?: string })?.statusText;

@@ -747,6 +747,34 @@ export function resolveResubmitAction(existing, incoming, hasBeenViewed) {
 
 ---
 
+### 19. Firestore 讀寫散落在 9 個 route.ts，改成 Repository + Service 分層
+
+**問題發現：** `db.collection('readings')` / `db.collection('knowledge')` 直接寫死在 `calculate`、`result/[id]`、`recalculate`、`approve-correction`、`request-correction`、`generate-detail`、`user/reading`、`dashboard/readings`、`dashboard/readings/[id]`、`knowledge`、`knowledge/[id]` 共 11 個 route 檔案裡。除了 DB 呼叫本身散落，還有**業務流程重複**：`recalculate`、`approve-correction`、`dashboard/readings/[id]` PATCH 這 3 個 route 都各自貼了一份幾乎一樣的「重算 pillars → 查 knowledge → 算大運 → 呼叫 AI 生成 fortune → 存回 Firestore」流程；查 `knowledge` collection 的 tags 篩選邏輯甚至被複製貼上了 5 次（其中已有共用函式 `lib/reading-context.ts` 的 `buildReadingGenerationContext`，但有 4 處沒被呼叫，各自重寫了一份）。
+
+**解法：** 比照後端 MVC 概念分三層，route.ts 只剩 thin controller：
+
+```
+route.ts (Controller)          — 驗證身份、解析 request、呼叫 service/repo、組裝 response
+  ↓
+reading-service.ts (Service)   — 業務邏輯：組 knowledge context、呼叫 AI、決定寫入欄位
+  ↓
+readings-repository.ts /
+knowledge-repository.ts (Model) — 純 Firestore CRUD，不含任何業務邏輯
+```
+
+- `lib/repositories/readings-repository.ts`：`getById`、`create`、`update`、`delete`、`findLatestByUser`、`listForDashboard`、`countTodayQuestionsForUser`
+- `lib/repositories/knowledge-repository.ts`：`listAll`、`create`、`update`、`delete`、`queryByTags`（取代 5 處重複的 tags 查詢 + fallback 邏輯）
+- `lib/services/reading-service.ts`：`buildGenerationContext`（吃 `knowledgeRepository`，取代 `reading-context.ts`）、`createOrReuse`（首頁送出生日）、`regenerateFortune`（`recalculate` / `approve-correction` / `dashboard` 編輯三處共用，用 `extraFields` 參數帶入各自要多寫的欄位如 `correctionApproved`）、`askQuestion`、`generateDetail`、`requestCorrection`
+- 業務層的預期錯誤（找不到資料、權限不足、超過提問額度）改用 `ServiceError`（帶 `status` + `payload`）拋出，route.ts 統一 `catch` 轉成對應 HTTP status，不用每個 route 各自判斷
+
+`lib/reading-context.ts` 整個刪除，邏輯併入 `reading-service.ts`。`verifyAdmin`/`extractUid` 這類身份驗證邏輯這次沒有動，範圍只限 DB 操作與其直接相關的業務流程。
+
+**驗證：** `npx tsc --noEmit` 與 `eslint` 全數通過；`grep -rn "db.collection(" src/app` 確認全專案只剩兩個 repository 檔案會碰 Firestore。
+
+**學到的事：** 「重複的 DB 呼叫」和「重複的業務流程」是兩種不同層次的重複，只抽 Repository 只解決前者；`recalculate`/`approve-correction`/`dashboard 編輯` 三個 route 表面上是三個功能，本質上是同一段「重算命盤」邏輯配不同觸發來源與附加欄位，用一個 Service 方法 + 參數化的 `extraFields` 統一起來，之後要調整生成邏輯只需要改一個地方。
+
+---
+
 ## 待辦事項
 
 - [ ] 啟用 Firestore API（`bazi-4b8f0` 專案）

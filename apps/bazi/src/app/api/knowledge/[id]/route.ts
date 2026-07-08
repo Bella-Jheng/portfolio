@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db, getAdminAuth } from '../../../lib/firebase';
-
+import { getAdminAuth } from '../../../lib/firebase';
+import { knowledgeRepository } from '../../../lib/repositories/knowledge-repository';
 
 const ADMIN_UID = process.env.ADMIN_UID ?? '';
 
@@ -25,7 +25,7 @@ export async function DELETE(
 
   try {
     const { id } = await params;
-    await db.collection('knowledge').doc(id).delete();
+    await knowledgeRepository.delete(id);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Delete knowledge error:', error);
@@ -50,7 +50,7 @@ export async function PUT(
       category?: string;
     };
 
-    await db.collection('knowledge').doc(id).update({
+    await knowledgeRepository.update(id, {
       ...(title && { title: title.trim() }),
       ...(content && { content: content.trim() }),
       ...(category && { category }),
