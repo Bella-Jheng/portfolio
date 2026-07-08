@@ -3,6 +3,7 @@
 import { useRef, useEffect, useState } from 'react';
 import type { Reading } from '../../../types/bazi';
 import type { MagazineTheme } from './theme';
+import { useAuth } from '../../../lib/auth-context';
 import { TenGodsSlide } from './TenGodsSlide';
 import { CycleAnalysisSlide } from './CycleAnalysisSlide';
 import { StandardSlide } from './StandardSlide';
@@ -49,6 +50,7 @@ interface TabSectionProps {
 }
 
 export function TabSection({ reading, theme, activeTabIdx, onActiveTabChange, onUpdate }: TabSectionProps) {
+  const { isAdmin } = useAuth();
   const activeIdx = activeTabIdx;
   const setActiveIdx = onActiveTabChange;
   const tabBarRef = useRef<HTMLDivElement>(null);
@@ -144,7 +146,7 @@ export function TabSection({ reading, theme, activeTabIdx, onActiveTabChange, on
         <div className="bg-white border border-[#EAE5DF] rounded-3xl shadow-sm p-6 md:p-8 min-h-[300px]">
           {renderContent()}
         </div>
-        {activeSection && (
+        {activeSection && isAdmin && (
           <div className="flex justify-center mt-4">
             <button
               onClick={() => handleGenerateDetail(activeSection)}
