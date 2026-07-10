@@ -35,7 +35,13 @@ export const PROJECTS_DATA_ZH: FullProject[] = [
     imageUrl: Testrite1.src,
     link: '/projects/testrite-refactor',
     tags: ['Monorepo Migration', 'React 18 Upgrade', 'Architecture Design'],
-    technologies: ['Next.js', 'React 18', 'NX Monorepo', 'Tailwind CSS', 'TypeScript'],
+    technologies: [
+      'Next.js',
+      'React 18',
+      'NX Monorepo',
+      'Tailwind CSS',
+      'TypeScript',
+    ],
     media: [
       { type: 'image', url: Testrite1.src },
       { type: 'image', url: Testrite2.src },
@@ -44,6 +50,11 @@ export const PROJECTS_DATA_ZH: FullProject[] = [
       { type: 'image', url: Testrite5.src },
     ],
     links: [
+      {
+        label: 'HOLA 專案簡報',
+        url: 'https://docs.google.com/presentation/d/1qkb68aICPlDcfbuCWM9oc-d-gkMQBuno/edit?usp=sharing&ouid=114070508472121616155&rtpof=true&sd=true',
+        type: 'presentation',
+      },
       {
         label: 'HOLA 官網',
         url: 'https://www.hola.com.tw/',
@@ -54,59 +65,73 @@ export const PROJECTS_DATA_ZH: FullProject[] = [
         url: 'https://www.trplus.com.tw/',
         type: 'website',
       },
-      {
-        label: 'HOLA 專案簡報',
-        url: 'https://docs.google.com/presentation/d/1qkb68aICPlDcfbuCWM9oc-d-gkMQBuno/edit?usp=sharing&ouid=114070508472121616155&rtpof=true&sd=true',
-        type: 'presentation',
-      },
     ],
     sections: [
       {
-        type: 'decision',
-        title: '技術驗證與導入測試',
-        tabLabel: '技術驗證',
-        problem:
-          '最大的難題不是「要不要用 NX」，而是舊專案高度耦合該怎麼拆？React 18 升級會不會出現不可預期問題？Tailwind 與 Bootstrap 如何共存？',
-        options: [
-          {
-            label: '直接重寫',
-            detail: '風險最高，雙品牌商業邏輯來不及驗證就可能中斷正式站上線。',
-          },
-          {
-            label: '維持雙專案各自升級',
-            detail: '無法解決共用邏輯分散、React 版本不一致的根本問題，只是拖延架構債。',
-          },
-          {
-            label: 'PoC 驗證後導入 NX Monorepo（採用）',
-            detail:
-              '先與資深工程師實測並行渲染影響範圍、共用 lib 抽離可行性與 TypeScript 轉換成本，整理實測結果提供團隊決策依據。',
-          },
+        title: 'HOLA 前端架構重構：從 Single-repo 到 NX Mono-repo',
+        tabLabel: '架構重構',
+        whatIDid: [
+          '參與 HOLA 前端從 single-repo 到 NX mono-repo 的架構重構規劃與落地，範圍涵蓋目錄結構、React 版本、元件寫法、樣式框架、測試框架的全面實測與轉換。',
+          '2022/12/13：提出架構需求，開始規劃',
+          '2023/7/24：進入首頁、商品頁、館分類頁、大中分類頁、搜尋結果頁的新頁面開發',
+          '2023/10/23：進入新頁面整合測試',
+          '2023/11/29：正式上線（前後歷時約 365 天）',
         ],
-        decision: '採用 NX Monorepo + React 18 升級，以 PoC 實測數據作為決策依據，而非主觀判斷。',
-        why: [
-          '降低架構轉型的不確定性，先驗證再落地',
-          '這是決定未來 3–5 年技術走向的轉型，經不起憑感覺決定',
-        ],
+        techUsed: ['NX Monorepo', 'React 18', 'TypeScript', 'Tailwind CSS', 'Jest'],
+        challenges:
+          '現象：舊架構為了因應反覆變更的需求，舊的元件及樣式不敢棄用，只能直接疊加開發新的，導致程式不斷龐大；新舊元件因部分流程共用，舊流程也無法完整移除，遺留大量無用程式碼；最終打包（上版）時間拉長到約 20 分鐘。\n\n除錯過程：盤點整個 single-repo 的目錄結構後發現，Utilities、Components 底下都是「hola」跟「others」混雜在一起，沒有清楚的模組邊界——這才是複用性低、程式碼持續膨脹的根本原因，不是元件本身寫得不好。同時也重新檢視了 React 17、Class-based 元件、Bootstrap 各自造成的限制：Bootstrap 需要注入在全站最外層，header 與 body 版本有差時頁面會直接跑版；Class-based 元件在複雜情境下 this 指向容易出錯。\n\n解法：以 NX 建立 mono-repo 的目錄需求，把 Utilities/Apis/Components 從「hola/tlw 混雜」改成 Apps 底下依品牌（hola/tlw）獨立分工、各自管理自己的 Utility/Apis/Components，並把常用小工具、元件（header/footer/商品卡）提升到最外層共用；同步升級 React 18（拿到 automatic batching 全面套用到所有狀態更新，而非僅限 event listener，並可用 Suspense/Transition）、改用 Functional 元件、樣式框架換成 Tailwind（scoped 樣式解決感染問題、支援 tree-shaking），並新增 Jest 測試框架。',
+        comparisonTable: {
+          columns: ['項目', '原架構', '新架構'],
+          rows: [
+            ['目錄架構', 'single-repo', 'mono-repo'],
+            ['開發工具', '無', 'NX'],
+            ['React 版本', '17 版', '18 版'],
+            ['元件寫法', 'Class-based', 'Functional'],
+            ['樣式框架', 'Bootstrap', 'Tailwind'],
+            ['測試框架', '無', 'Jest'],
+          ],
+        },
+        learnings:
+          '打包時間從 17m2s 降到 7m45s，減少超過一半；也學到架構轉型不是每項技術都非黑即白（例如 Class-based 在複雜狀態批次操作與生命週期控制上其實仍有優勢），取捨要基於實際情境的限制與代價，而不是單純追新。這麼大的轉型也需要拆成規劃→開發→整合測試→上線分階段推進，才不會失控。',
       },
       {
-        type: 'comparison',
-        title: '架構轉型前後對照',
-        tabLabel: '架構對照',
-        content: '定案後的實際落地，把抽象的「架構升級」拆解成可比較的具體改動。',
-        columns: ['面向', 'Before', 'After'],
-        rows: [
-          ['專案管理', 'HOLA / TLW 各自獨立 repo，共用邏輯複製貼上', 'NX Monorepo，共用 lib 統一抽離'],
-          ['React 版本', '兩品牌版本不一致，各自維護', '統一升級至 React 18'],
-          ['樣式架構', 'Bootstrap + 各自客製 CSS，難以共用', 'Tailwind CSS 統一樣式系統'],
-          ['型別安全', '無 TypeScript 或部分導入', '全面 TypeScript 化'],
-          ['API 邏輯', '分散在各頁面，模組邊界模糊', '重新設計資料流整合與模組切分'],
-        ],
+        title: '狀態管理演進：從 Redux Toolkit 到 Zustand + React Query',
+        tabLabel: '狀態管理',
+        whatIDid:
+          '專案初期規劃階段確認採用 redux-toolkit 作為狀態管理方案，實際開發後重新評估非同步 API 資料與跨元件共享狀態的處理方式，逐步把 redux-toolkit 換成 React Query + Zustand 的組合。',
+        techUsed: ['Zustand', 'React Query (useQuery/useMutation)', 'Redux Toolkit（前期方案）'],
+        challenges:
+          '現象：商品頁的非同步請求很多也很雜（規格切換、庫存查詢、折價券查詢…），照原訂計畫用 redux-toolkit 寫，每加一種查詢就要多寫一個 slice，loading/error 狀態也得自己手動維護，程式碼量越堆越多。\n\n除錯過程：重新盤點這些狀態的性質後發現，它們幾乎都是「跟後端要資料」的查詢型行為，跟 redux 原本設計拿來處理的「跨元件共享同步 UI 狀態」性質根本不同，用同一套工具硬做，才是樣板程式碼爆量的根因；同時也在會議中明確定義兩種 hook 的分野：useQuery 用在查詢類（如折價券查詢），useMutation 用在異動類（如加入購物車）。\n\n解法：把「非同步 API 資料」全部改用 React Query 的 useQuery/useMutation 管理（自動處理 loading/error/cache），redux-toolkit 只保留給少數真正需要跨元件共享的同步狀態，後續這部分也逐步被更輕量的 Zustand 取代，redux-toolkit 最終在專案裡完全淡出。',
+        comparisonTable: {
+          columns: ['面向', 'Redux Toolkit（原方案）', 'React Query + Zustand（改後）'],
+          rows: [
+            ['非同步 API 資料', '需手動寫 slice + thunk，loading/error 自行維護', 'useQuery/useMutation 自動處理 loading/error/cache'],
+            ['跨元件同步狀態', '同樣用 redux slice 處理', '改用 Zustand，API 更輕量、幾乎無侵入性'],
+            ['新增一種查詢', '需多寫一個 slice + reducer', '直接呼叫 useQuery，不需額外樣板'],
+            ['最終定位', '全站唯一狀態方案', '逐步淡出，僅過渡期殘留'],
+          ],
+        },
+        learnings:
+          '不是「先選定一個狀態管理工具就要用到底」，而是依資料性質分別選擇：Zustand 處理跨元件共享的同步狀態，React Query 處理非同步資料的 cache 與重新驗證；兩者搭配比單用 Redux Toolkit 更貼近實際需求，也降低樣板程式碼。',
       },
       {
-        title: '技術傳承與團隊影響',
-        tabLabel: '團隊影響',
-        content:
-          '資深工程師離職後，我成為最熟悉整體架構的人，開始協助新人理解專案結構與開發規範。這段經驗讓我不只是寫功能，而是開始思考如何建立一個能被傳承的系統。',
+        title: '共用元件邊界設計：從 HOLA 專屬到跨品牌共用',
+        tabLabel: '共用元件設計',
+        whatIDid:
+          '2023 年架構重構時，NX mono-repo 已經把 Apps 底下規劃成 hola、tlw 各自獨立的目錄；但 2024 年 TLW 真正啟動開發時，才發現原本歸在共用層的 libs/hola-layout、libs/hola-ui-component 命名與內容其實是綁死給 HOLA 用的，需要重新界定「真正共用」與「品牌專屬」的邊界，同時釐清 libs/utilities（真正與業務邏輯無關的共用 function/hook）該收斂哪些內容。',
+        techUsed: ['Nx Libs', 'Nx affected build/test', 'Component Boundary Design'],
+        challenges:
+          '現象：TLW 改版啟動時，第一直覺是直接沿用 HOLA 已經寫好、放在共用層資料夾的 libs/hola-layout、libs/hola-ui-component。\n\n除錯過程：實際攤開這些元件的內容才發現，雖然放在「共用」的資料夾位置，但命名、樣式變數、甚至部分邏輯都是綁死給 HOLA 用的；若 TLW 直接 import，等於把品牌耦合的程式碼當成通用元件繼承過去，但若每個品牌各自複製一份，又會讓 Nx workspace 的 affected build/test（只重建真正變動的專案）失去意義，兩個品牌會被迫綁在一起重建。\n\n解法：與團隊討論後，把「真正跟業務邏輯脫鉤、任何品牌都能直接套用」的部分抽出來另開資料夾管理，hola-layout/hola-ui-component 維持專屬給 HOLA 用，TLW 需要的共用邏輯則獨立拆分，確保 Nx affected 機制仍然只會抓到真正有變動的專案。',
+        comparisonTable: {
+          columns: ['面向', 'Before（TLW 啟動時）', 'After（重新界定後）'],
+          rows: [
+            ['libs/hola-layout, hola-ui-component', '被視為共用層，TLW 打算直接沿用', '維持專屬 HOLA，不再視為跨品牌共用'],
+            ['真正通用的邏輯', '與品牌邏輯混在同一個 lib 內', '拆分獨立資料夾，供 TLW 與後續品牌共用'],
+            ['Nx affected build/test', '若各自複製一份，affected 範圍會失準', '共用邊界清楚後，affected 只重建真正變動的專案'],
+          ],
+        },
+        learnings:
+          '「放在共用目錄」不等於「真的可以共用」，共用層的判斷標準應該是「這段程式碼是否與特定品牌的業務邏輯脫鉤」，而不是資料夾位置；之後規劃新共用元件時會先問「這是通用邏輯，還是剛好目前只有一個品牌在用」。',
       },
     ],
   },
@@ -121,7 +146,13 @@ export const PROJECTS_DATA_ZH: FullProject[] = [
     imageUrl: XmasTree1.src,
     link: '/projects/christmas-tree',
     tags: ['Interactive', 'State Design', 'Performance'],
-    technologies: ['React', 'RTK Query', 'Zustand', 'Framer Motion', 'Tailwind CSS'],
+    technologies: [
+      'React',
+      'RTK Query',
+      'Zustand',
+      'Framer Motion',
+      'Tailwind CSS',
+    ],
     media: [
       { type: 'image', url: XmasTree1.src },
       { type: 'image', url: XmasTree2.src },
@@ -138,18 +169,7 @@ export const PROJECTS_DATA_ZH: FullProject[] = [
         type: 'presentation',
       },
     ],
-    sections: [
-      {
-        title: '資料流設計與狀態同步機制',
-        content:
-          '正式區與測試區 SKU 各自獨立，無法直接共用邏輯，因此我先設計一層 SKU mapping abstraction，將不同環境商品映射至統一前端資料模型，避免環境差異污染業務邏輯。\n\n頁面 mount 時呼叫 product-list API 取得完整商品資料，轉換為 normalized 結構後存入 Zustand。狀態依照吊飾類別切分，確保單一分類更新不會觸發整體 re-render。\n\n當使用者加減商品數量時，會：\n1. 更新對應 SKU 數量\n2. 重新計算總價\n3. 根據 SKU 對應圖片與座標配置，動態渲染到樹上\n\n所有邏輯皆集中在狀態層計算，UI 僅負責呈現，確保資料流單向且可追蹤。這讓整個高度互動頁面在複雜條件下仍能維持穩定與一致性。',
-      },
-      {
-        title: '效能優化：降低 Zustand 更新頻率',
-        content:
-          '在專案初期我更重視功能正確性，但功能穩定後，我會回頭檢視資料流與 render 次數。這次透過合併請求與一次性寫入 store，降低不必要的 state update。\n我習慣在專案完成後，再進行一輪效能與資料流檢討。對我而言，持續優化是工程的一部分。\n初版實作使用 useQuery 以吊飾分類拆開打 product-list API（星星 / 吊飾 / 緞帶…）。雖然拆分後邏輯直覺，但代價是：每個分類 API 回來就觸發一次 Zustand 寫入，導致初始化階段產生大量 state update 與 re-render，頁面載入體感偏重。\n優化後改用 useQueries 併發請求所有分類，並在「全部請求完成」後才進行資料 mapping、分類整理與 normalize，最後一次性寫入 Zustand。\n這個改動的關鍵不是減少 API，而是把多次零碎的 store 更新收斂成一次，明顯改善初始載入的渲染成本與互動順暢度點。',
-      },
-    ],
+    sections: [],
   },
   {
     id: 'cms-development',
@@ -162,10 +182,21 @@ export const PROJECTS_DATA_ZH: FullProject[] = [
     imageUrl: NewBackoffice1.src,
     link: '/projects/cms-development',
     tags: ['Internal Tool', 'Schema Design', 'Dynamic Component', 'CMS'],
-    technologies: ['React', 'Nx', 'TypeScript', 'DND Kit', 'Tailwind CSS', 'API Integration'],
+    technologies: [
+      'React',
+      'Nx',
+      'TypeScript',
+      'DND Kit',
+      'Tailwind CSS',
+      'API Integration',
+    ],
     media: [
       { type: 'image', url: NewBackoffice1.src },
-      { type: 'video', url: 'https://www.youtube.com/watch?v=SSTAaGTBkQU', thumbnailUrl: NewBackoffice2.src },
+      {
+        type: 'video',
+        url: 'https://www.youtube.com/watch?v=SSTAaGTBkQU',
+        thumbnailUrl: NewBackoffice2.src,
+      },
     ],
     links: [
       {
@@ -179,33 +210,7 @@ export const PROJECTS_DATA_ZH: FullProject[] = [
         type: 'presentation',
       },
     ],
-    sections: [
-      {
-        title: '專案角色與開發範圍',
-        content:
-          '主導系統從需求定義到正式上線的完整流程，包含與營運團隊釐清操作情境、設計版型抽象結構與資料 Schema、建立動態元件載入機制、開發可擴充編輯系統、API 串接與發布流程設計。上線後完成交接並持續優化，目前新增版型與功能皆能在既有架構下擴充，無需重構核心邏輯。',
-      },
-      {
-        title: '動態元件載入機制 (Dynamic Component Injection)',
-        content:
-          '前台版位採資料驅動渲染設計，每一種版型對應一個組件映射（Component mapping）。前台依據後台設定的版型類型，動態載入對應組件並渲染內容。此設計使新增版型時僅需註冊對應組件，而不需修改既有渲染流程，大幅降低擴充成本並提升架構穩定性。',
-      },
-      {
-        title: '基於 Schema 的編輯系統設計',
-        content:
-          '同一個編輯區塊可能因版型不同而產生不同輸入欄位（例如廣告看板需要圖片與連結，商品橫滑需要商品貨號，影片區塊需要影片連結）。為避免為每種版型撰寫獨立表單，因此設計 Schema 驅動的表單生成機制：每種版型定義欄位結構，系統依據定義動態生成對應輸入組件，並統一處理資料驗證與格式轉換。此設計讓新增版型時只需新增定義，而不需重寫編輯邏輯。',
-      },
-      {
-        title: '資料與版型分離設計',
-        content:
-          '系統將版型結構與內容資料分離。版型負責定義區塊排列與欄位規格，資料僅儲存實際內容與排序資訊。透過此設計，即使調整版型樣式，也不影響既有資料格式，確保長期維護穩定性與向後相容性。',
-      },
-      {
-        title: '功能亮點與系統能力',
-        content:
-          '系統支援多種版型註冊機制、拖拉排序（DND）、即時預覽、權限管理、操作紀錄追蹤與安全發布流程。前後台資料一致性由統一資料模型控管，避免非法格式破壞前台頁面。此專案將工程部署頻率顯著降低，同時保留版型控制與資料安全。',
-      },
-    ],
+    sections: [],
   },
   {
     id: 'portfolio',
@@ -238,33 +243,7 @@ export const PROJECTS_DATA_ZH: FullProject[] = [
         type: 'website',
       },
     ],
-    sections: [
-      {
-        title: '設計理念與技術核心',
-        content:
-          '想打造一個具備個人特色的作品集。技術上採用 Nx 及 Next.js 架構，並結合 MSW 模擬 API 環境，確保即便在沒有真實後端的情況下，也能模擬完整的資料互動。',
-      },
-      {
-        title: '動態效果與使用者體驗',
-        content:
-          '為了增加操作的流暢度與互動感，於各頁面增加花的動態元素，以及各區塊的滑入動畫，讓使用者在瀏覽時能有更佳的體驗。',
-      },
-      {
-        title: '架構優化',
-        content:
-          '架構使用 Nx 進行專案管理，並結合 MSW (Mock Service Worker) 模擬 API 環境，確保即便在沒有真實後端的情況下，也能模擬完整的資料互動。',
-      },
-      {
-        title: '技術挑戰',
-        content:
-          '如何將履歷與過往的電商經驗結合，並在有限的版面內呈現豐富的內容，同時保持良好的使用者體驗。',
-      },
-      {
-        title: '未來規劃',
-        content:
-          '持續優化網站並結合廣告平台設置理念，未來我不再需要手工更新 MSW 的測試資料，而是有一個後台能夠隨心所欲入稿。',
-      },
-    ],
+    sections: [],
   },
   {
     id: 'self-management-workflow',
@@ -284,23 +263,7 @@ export const PROJECTS_DATA_ZH: FullProject[] = [
       { type: 'image', url: Management3.src },
     ],
     links: [],
-    sections: [
-      {
-        title: '任務管理與優先順序',
-        content:
-          '平時我會使用 Notion 記錄每一份任務（Task），並進行優先順序的排列，確保重要且緊急的事項能被優先處理，同時也協助我釐清每日的工作重點。',
-      },
-      {
-        title: '透明化溝通',
-        content:
-          '透過清晰的工單狀態與進度記錄，讓主管能清楚知道我目前手上的工作內容與進度，大幅降低溝通成本，並在遇到需要調整資源的情況時，能有客觀的依據進行討論。',
-      },
-      {
-        title: '實作歷程與知識沉澱',
-        content:
-          '在執行任務的過程中，我會詳細記錄實作歷程以及遇到的困難。當任務完成後，這些記錄會被整理並同步回公司的工單系統，作為完整的開發紀錄，這不僅方便日後回溯，也能成為團隊的共享知識庫。',
-      },
-    ],
+    sections: [],
   },
   {
     id: 'pm-projects',
@@ -327,18 +290,7 @@ export const PROJECTS_DATA_ZH: FullProject[] = [
         type: 'document',
       },
     ],
-    sections: [
-      {
-        title: '產品說明',
-        content:
-          '規劃將其他平台的資料快速轉換成 104 履歷的串接流程，目前合作平台：整招簡歷平台、元太數位-大專院校 ep 系統。',
-      },
-      {
-        title: '負責工作',
-        content:
-          '1. 提案說明\n2. 溝通：與設計討論頁面實用性、與三方串接工程確認細部規格、與 QA 討論測試案例（TC）、與業務及行銷協調產品走向\n3. 履歷表、註冊、啟用會員流程盤點\n4. 撰寫規格書\n5. 測試網頁製作（自學前端框架 React 自製外部平台）',
-      },
-    ],
+    sections: [],
   },
   {
     id: 'funtour-system',
@@ -357,26 +309,6 @@ export const PROJECTS_DATA_ZH: FullProject[] = [
       { type: 'image', url: BackEnd2.src },
     ],
     links: [],
-    sections: [
-      {
-        title: '核心工作內容',
-        content:
-          '優化購票完成郵件系統，規劃系統串接架構並撰寫開發文件。參與貓空纜車第三方串接專案，使用 Postman 進行 API 測試驗證、重構串接文件並撰寫測試程式碼。',
-      },
-      {
-        title: '金流與測試經驗',
-        content:
-          '協助金流服務系統開發，參與 API 測試、代碼審查（Code Review）並撰寫串接文件。這段經驗培養了我對資料正確性、失敗情境處理與測試流程的高度敏感度。',
-      },
-      {
-        title: '使用者介面 (UI/UX) 優化',
-        content: '參與後端管理系統的介面優化，提升內部人員操作流程的流暢度。',
-      },
-      {
-        title: '文件化與協作',
-        content:
-          '將營運需求轉化為工程規格文件，確保需求正確實作並降低溝通成本。撰寫並維護 API 串接文件，支援外部系統與第三方服務順利整合。',
-      },
-    ],
+    sections: [],
   },
 ];

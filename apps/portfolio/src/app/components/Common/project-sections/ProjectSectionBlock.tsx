@@ -1,131 +1,95 @@
 import React from 'react';
 import { ProjectSection } from '../../../api/project-detail-api.type';
 
-function TextBlock({ title, content }: { title: string; content: string }) {
+const LABEL_CLASS = 'text-tiny font-bold uppercase tracking-widest text-txt-darkBrown/60';
+const BODY_CLASS = 'text-tiny text-txt-darkBrown leading-relaxed';
+
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: string | string[];
+}) {
   return (
-    <div className="prose prose-sm max-w-none text-txt-darkBrown leading-relaxed">
-      <h3 className="text-xl font-bold text-txt-darkBrown mb-2">{title}</h3>
-      <p className="whitespace-pre-line">{content}</p>
+    <div className="space-y-1.5">
+      <span className={LABEL_CLASS}>{label}</span>
+      {Array.isArray(children) ? (
+        <ul className={`list-disc list-inside space-y-1 ${BODY_CLASS}`}>
+          {children.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
+      ) : (
+        <div className={`whitespace-pre-line ${BODY_CLASS}`}>{children}</div>
+      )}
     </div>
   );
 }
 
-function DecisionBlock({
-  title,
-  problem,
-  options,
-  decision,
-  why,
-}: {
-  title: string;
-  problem: string;
-  options?: { label: string; detail: string }[];
-  decision: string;
-  why?: string[];
-}) {
+function ComparisonTable({ columns, rows }: { columns: string[]; rows: string[][] }) {
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-6 space-y-5">
-      <h3 className="text-xl font-bold text-txt-darkBrown">{title}</h3>
-
-      <div className="space-y-1">
-        <span className="text-xs font-bold uppercase tracking-widest text-ad-error">
-          問題
-        </span>
-        <p className="text-sm text-txt-darkBrown leading-relaxed">{problem}</p>
-      </div>
-
-      {options && options.length > 0 && (
-        <div className="space-y-2">
-          <span className="text-xs font-bold uppercase tracking-widest text-gray-600">
-            評估選項
-          </span>
-          <ul className="space-y-2">
-            {options.map((option) => (
-              <li key={option.label} className="flex flex-col sm:flex-row sm:gap-3 text-sm">
-                <span className="font-bold text-txt-brown shrink-0 sm:w-40">
-                  {option.label}
-                </span>
-                <span className="text-gray-600 leading-relaxed">{option.detail}</span>
-              </li>
+    <div className="overflow-x-auto rounded-lg border border-gray-200">
+      <table className="w-full text-tiny text-left border-collapse">
+        <thead>
+          <tr>
+            {columns.map((column) => (
+              <th
+                key={column}
+                className="px-4 py-2 font-bold text-txt-darkBrown border-b border-gray-200 whitespace-nowrap"
+              >
+                {column}
+              </th>
             ))}
-          </ul>
-        </div>
-      )}
-
-      <div className="rounded-md bg-[#FFFDDE] p-4 space-y-2">
-        <span className="text-xs font-bold uppercase tracking-widest text-ad-success">
-          決策
-        </span>
-        <p className="text-sm font-semibold text-txt-darkBrown leading-relaxed">{decision}</p>
-        {why && why.length > 0 && (
-          <ul className="list-disc list-inside text-sm text-gray-700 space-y-1">
-            {why.map((reason) => (
-              <li key={reason}>{reason}</li>
-            ))}
-          </ul>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function ComparisonBlock({
-  title,
-  content,
-  columns,
-  rows,
-}: {
-  title: string;
-  content?: string;
-  columns: string[];
-  rows: string[][];
-}) {
-  return (
-    <div className="space-y-3">
-      <h3 className="text-xl font-bold text-txt-darkBrown">{title}</h3>
-      {content && (
-        <p className="text-sm text-txt-darkBrown leading-relaxed">{content}</p>
-      )}
-      <div className="overflow-x-auto rounded-lg border border-gray-200">
-        <table className="w-full text-sm text-left border-collapse">
-          <thead className="bg-gray-200">
-            <tr>
-              {columns.map((column) => (
-                <th
-                  key={column}
-                  className="px-4 py-2 font-bold text-txt-darkBrown whitespace-nowrap"
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, rowIndex) => (
+            <tr key={rowIndex} className="border-t border-gray-200">
+              {row.map((cell, cellIndex) => (
+                <td
+                  key={cellIndex}
+                  className={`px-4 py-2 align-top leading-relaxed text-txt-darkBrown ${
+                    cellIndex === 0 ? 'font-semibold' : ''
+                  }`}
                 >
-                  {column}
-                </th>
+                  {cell}
+                </td>
               ))}
             </tr>
-          </thead>
-          <tbody>
-            {rows.map((row, rowIndex) => (
-              <tr key={rowIndex} className="border-t border-gray-200">
-                {row.map((cell, cellIndex) => (
-                  <td
-                    key={cellIndex}
-                    className="px-4 py-2 text-gray-700 align-top leading-relaxed"
-                  >
-                    {cell}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
 
 export function ProjectSectionBlock({ section }: { section: ProjectSection }) {
-  if (section.type === 'decision') {
-    return <DecisionBlock {...section} />;
-  }
-  if (section.type === 'comparison') {
-    return <ComparisonBlock {...section} />;
-  }
-  return <TextBlock title={section.title} content={section.content} />;
+  const { title, whatIDid, techUsed, challenges, comparisonTable, learnings } = section;
+
+  return (
+    <div className="rounded-lg border border-gray-200 bg-white p-6 space-y-6">
+      <h3 className="text-xl font-bold text-txt-darkBrown">{title}</h3>
+
+      <Field label="我做了什麼">{whatIDid}</Field>
+
+      <Field label="遇到的困難">{challenges}</Field>
+
+      {comparisonTable && (
+        <ComparisonTable columns={comparisonTable.columns} rows={comparisonTable.rows} />
+      )}
+
+      <Field label="學習了什麼">{learnings}</Field>
+
+      {techUsed.length > 0 && (
+        <div className="flex flex-wrap gap-x-3 gap-y-1 border-t border-gray-200 pt-4">
+          {techUsed.map((tech) => (
+            <span key={tech} className="text-tiny font-bold text-txt-brown">
+              #{tech}
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }

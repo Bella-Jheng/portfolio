@@ -50,54 +50,70 @@ export const PROJECTS_DATA_EN: FullProject[] = [
     ],
     sections: [
       {
-        type: 'decision',
-        title: 'Technical Validation & PoC',
-        tabLabel: 'Validation',
-        problem:
-          'The hard question was not "should we use NX," but how to decouple two highly coupled legacy projects, whether the React 18 upgrade would introduce unpredictable issues, and how Tailwind and Bootstrap could coexist.',
-        options: [
-          {
-            label: 'Full rewrite',
-            detail:
-              'Highest risk — business logic for both brands could not be validated in time without risking a production outage.',
-          },
-          {
-            label: 'Keep two separate projects, upgrade independently',
-            detail:
-              'Does not solve the root problem of scattered shared logic and inconsistent React versions — just delays the architectural debt.',
-          },
-          {
-            label: 'PoC first, then adopt NX Monorepo (chosen)',
-            detail:
-              'Worked with a senior engineer to test concurrent rendering impact, shared-lib extraction feasibility, and TypeScript conversion cost, then used the results to drive the decision.',
-          },
-        ],
-        decision:
-          'Adopted NX Monorepo + React 18 upgrade, backed by PoC data rather than gut feeling.',
-        why: [
-          'Reduced uncertainty on a transformation this consequential before committing',
-          'This decision would shape the technical direction for the next 3-5 years — not something to guess on',
-        ],
-      },
-      {
-        type: 'comparison',
-        title: 'Architecture: Before & After',
+        title: 'HOLA Frontend Architecture Overhaul: From Single-repo to NX Mono-repo',
         tabLabel: 'Architecture',
-        content:
-          'Once the direction was set, the abstract "architecture upgrade" broke down into concrete, comparable changes.',
-        columns: ['Aspect', 'Before', 'After'],
-        rows: [
-          ['Project management', 'HOLA / TLW in separate repos, shared logic copy-pasted', 'NX Monorepo with extracted shared libraries'],
-          ['React version', 'Inconsistent across the two brands', 'Unified upgrade to React 18'],
-          ['Styling', 'Bootstrap + per-brand custom CSS, hard to share', 'Unified Tailwind CSS system'],
-          ['Type safety', 'No or partial TypeScript', 'Fully typed with TypeScript'],
-          ['API logic', 'Scattered across pages, unclear module boundaries', 'Redesigned data flow and module boundaries'],
+        whatIDid: [
+          'Led the planning and execution of migrating the HOLA frontend from a single-repo to an NX mono-repo, covering a full audit and conversion of folder structure, React version, component style, styling framework, and test framework.',
+          '2022/12/13: architecture requirements proposed, planning began',
+          '2023/7/24: new page development began (homepage, product page, category pages, search results)',
+          '2023/10/23: integration testing began',
+          '2023/11/29: launched (roughly 365 days end to end)',
         ],
+        techUsed: ['NX Monorepo', 'React 18', 'TypeScript', 'Tailwind CSS', 'Jest'],
+        challenges:
+          "Symptom: to keep up with constant change requests, the old architecture never dared to retire old components or styles — new ones just got layered on top, so the codebase kept growing. Old and new components shared parts of the same flow, so old flows could never be fully removed either, leaving a lot of dead code behind. Build/deploy time eventually stretched to about 20 minutes.\n\nInvestigation: auditing the single-repo's folder structure showed that Utilities and Components both had \"hola\" and \"others\" code mixed together with no clear module boundary — that was the real root cause of low reusability and the ever-growing codebase, not that the components themselves were badly written. We also re-examined the specific limitations of React 17, class-based components, and Bootstrap: Bootstrap had to be injected at the site's outermost layer, so any version mismatch between header and body would break the layout; class-based components made `this` easy to get wrong in complex scenarios.\n\nFix: proposed an NX mono-repo layout that split Utilities/Apis/Components from a mixed \"hola/tlw\" structure into brand-specific folders under Applications (hola, tlw), each managing its own Utility/Apis/Components, while hoisting genuinely common components (header, footer, product card) to the outer shared layer. In parallel, upgraded to React 18 (automatic batching now applies to all state updates, not just event listeners, plus Suspense/Transition), switched to functional components, replaced Bootstrap with Tailwind (scoped styles fix the leakage problem, plus tree-shaking), and added Jest as the test framework.",
+        comparisonTable: {
+          columns: ['Aspect', 'Old Architecture', 'New Architecture'],
+          rows: [
+            ['Folder structure', 'single-repo', 'mono-repo'],
+            ['Tooling', 'None', 'NX'],
+            ['React version', '17', '18'],
+            ['Component style', 'Class-based', 'Functional'],
+            ['Styling framework', 'Bootstrap', 'Tailwind'],
+            ['Test framework', 'None', 'Jest'],
+          ],
+        },
+        learnings:
+          "Build time dropped from 17m2s to 7m45s — more than cut in half. Also learned that architectural migration isn't always black-and-white per technology (class-based components still had real advantages for batched complex state and lifecycle control, for instance) — trade-offs should be based on the actual constraints and costs of the situation, not just chasing what's newer. A transformation this large also needs to be broken into distinct plan → build → integration-test → launch phases to stay under control.",
       },
       {
-        title: 'Knowledge Transfer',
-        tabLabel: 'Team Impact',
-        content: 'After senior engineers left, I became the primary architect contact, assisting newcomers in understanding project structures and development standards. This experience taught me to build systems that can be passed on, not just write features.',
+        title: 'State Management Evolution: From Redux Toolkit to Zustand + React Query',
+        tabLabel: 'State Mgmt',
+        whatIDid:
+          'The project originally planned to use redux-toolkit for state management. After real development began, I helped re-evaluate how async API data and cross-component shared state should be handled, and gradually replaced redux-toolkit with a React Query + Zustand combination.',
+        techUsed: ['Zustand', 'React Query (useQuery/useMutation)', 'Redux Toolkit (original plan)'],
+        challenges:
+          'Symptom: the product page fires a lot of varied async requests (spec switching, stock lookups, coupon checks...). Following the original redux-toolkit plan, every new query meant writing another slice, and loading/error states had to be managed by hand — the codebase kept growing.\n\nInvestigation: re-examining what these states actually were, almost all of them were "fetch data from the backend" query behavior — fundamentally different from the "cross-component synchronous UI state" Redux was designed for. Forcing both into the same tool was the real source of the boilerplate explosion. We also explicitly defined the split in team discussions: useQuery for reads (like coupon checks), useMutation for writes (like add-to-cart).\n\nFix: moved all async API data to React Query\'s useQuery/useMutation (which handles loading/error/cache automatically). Redux Toolkit was kept only for the few cases that truly needed cross-component synchronous state, and even that was gradually replaced by the lighter-weight Zustand — redux-toolkit eventually phased out of the project entirely.',
+        comparisonTable: {
+          columns: ['Aspect', 'Redux Toolkit (original)', 'React Query + Zustand (after)'],
+          rows: [
+            ['Async API data', 'Manual slice + thunk; loading/error handled by hand', 'useQuery/useMutation auto-handle loading/error/cache'],
+            ['Cross-component sync state', 'Also handled via redux slices', 'Moved to Zustand — lighter, nearly zero boilerplate'],
+            ['Adding a new query', 'Requires a new slice + reducer', 'Just call useQuery, no extra boilerplate'],
+            ['Final role in the project', 'Sole state solution site-wide', 'Phased out; only transitional leftovers remain'],
+          ],
+        },
+        learnings:
+          "It's not about picking one state management tool and sticking with it forever — the right choice depends on the nature of the data: Zustand for cross-component synchronous state, React Query for async data caching and revalidation. The combination fit the actual needs far better than Redux Toolkit alone, and cut boilerplate significantly.",
+      },
+      {
+        title: 'Shared Component Boundaries: From HOLA-Only to Cross-Brand',
+        tabLabel: 'Component Boundaries',
+        whatIDid:
+          "During the 2023 architecture overhaul, the NX mono-repo had already laid out hola and tlw as separate folders under Applications. But when TLW development actually kicked off in 2024, we found that libs/hola-layout and libs/hola-ui-component — nominally in the shared layer — were in fact named and built specifically for HOLA. I had to re-define the boundary between 'genuinely shared' and 'brand-specific,' and clarify what libs/utilities (truly brand-agnostic shared functions/hooks) should actually contain.",
+        techUsed: ['Nx Libs', 'Nx affected build/test', 'Component Boundary Design'],
+        challenges:
+          'Symptom: when TLW started, the first instinct was to directly reuse libs/hola-layout and libs/hola-ui-component, which HOLA had already built and placed under the shared-layer folder.\n\nInvestigation: unpacking what was actually inside these libraries revealed that, despite living in a "shared" folder, their naming, style variables, and even parts of the logic were hard-wired for HOLA. If TLW imported them directly, brand-coupled code would be inherited as if it were generic. But if each brand maintained its own copy instead, Nx workspace\'s affected build/test (which only rebuilds genuinely changed projects) would lose its point — the two brands would end up forced to rebuild together regardless.\n\nFix: after discussing with the team, we extracted the parts that were truly decoupled from brand-specific business logic into their own folder, kept hola-layout/hola-ui-component HOLA-only, and split out the logic TLW actually needed to share — keeping the Nx affected mechanism accurate to what had really changed.',
+        comparisonTable: {
+          columns: ['Aspect', 'Before (when TLW started)', 'After (boundary redefined)'],
+          rows: [
+            ['libs/hola-layout, hola-ui-component', 'Treated as shared; TLW planned to reuse directly', 'Kept HOLA-only, no longer considered cross-brand shared'],
+            ['Genuinely reusable logic', 'Mixed together with brand-specific logic in the same lib', 'Split into its own folder for TLW and future brands to share'],
+            ['Nx affected build/test', 'Would drift out of accuracy if each brand duplicated code', 'Stays accurate once the shared boundary is clear'],
+          ],
+        },
+        learnings:
+          'Living in a "shared" folder doesn\'t mean something is actually shareable — the real test is whether the code is decoupled from brand-specific business logic, not its file path. Since then, whenever planning a new shared component, the first question is: is this genuinely generic logic, or does it just happen to be used by one brand right now?',
       },
     ],
   },
@@ -129,16 +145,7 @@ export const PROJECTS_DATA_EN: FullProject[] = [
         type: 'presentation',
       },
     ],
-    sections: [
-      {
-        title: 'Data Flow & State Sync',
-        content: 'Independent SKU management across environments required an abstraction layer for SKU mapping. I used Zustand for normalized state management, ensuring single-category updates without triggering full re-renders. Every logic is centralized in the state layer, ensuring unidirectional and traceable data flow.',
-      },
-      {
-        title: 'Performance Optimization',
-        content: 'Initial implementation triggered multiple state updates and re-renders. After optimization using concurrent requests and batch store writes, I significantly improved initial load rendering costs and interaction smoothness.',
-      },
-    ],
+    sections: [],
   },
   {
     id: 'cms-development',
@@ -160,28 +167,7 @@ export const PROJECTS_DATA_EN: FullProject[] = [
       { label: 'Document Intro', url: 'https://hackmd.io/@-pJOuWsHT5qfiLSWl-nBgQ/SJk21fAIge/edit', type: 'document' },
       { label: 'Video Demo', url: 'https://www.youtube.com/watch?v=SSTAaGTBkQU', type: 'presentation' },
     ],
-    sections: [
-      {
-        title: 'Project Roles & Scope',
-        content: 'Led the entire process from requirement definition to launch, including role-based workflows and API design. Current architecture allows adding new features and layouts without refactoring core logic.',
-      },
-      {
-        title: 'Dynamic Component Injection',
-        content: 'Frontend slots are data-driven. Each layout corresponds to a component mapping. Frontend dynamically loads components based on backend-defined types, significantly reducing expansion costs.',
-      },
-      {
-        title: 'Schema-based Form Generator',
-        content: 'Developed a schema-based form system to avoid duplicate form logic for different layout types. Each layout defines its fields, and the system dynamically generates input components and handles validation.',
-      },
-      {
-        title: 'Data & Template Separation',
-        content: 'Separated layout structures from content data. Layout handles field specs while data stores content and sorting, ensuring backward compatibility even during style adjustments.',
-      },
-      {
-        title: 'Highlights & Capabilities',
-        content: 'Supports DND sorting, real-time preview, permission management, and secure deployment flows. Reduced deployment frequency significantly while keeping content safe.',
-      },
-    ],
+    sections: [],
   },
   {
     id: 'portfolio',
@@ -206,28 +192,7 @@ export const PROJECTS_DATA_EN: FullProject[] = [
       { label: 'GitHub Code', url: 'https://github.com/Bella-Jheng/portfolio', type: 'github' },
       { label: 'Demo Site', url: 'https://portfolio-liard-pi-12.vercel.app/', type: 'website' },
     ],
-    sections: [
-      {
-        title: 'Philosophy & Technical Core',
-        content: 'Wanted to build a portfolio with personal character. Using Nx and Next.js, along with MSW to simulate a real API environment for full data interaction simulation.',
-      },
-      {
-        title: 'Animation & User Experience',
-        content: 'Added dynamic flower elements and scroll animations to enhance browsing experience and interaction smoothness.',
-      },
-      {
-        title: 'Architecture Optimization',
-        content: 'Used Nx for monorepo management and MSW for mocking, ensuring the project can be tested and showcased without a real backend.',
-      },
-      {
-        title: 'Technical Challenges',
-        content: 'Integrating previous e-commerce experience into a portfolio while maintaining good UX within limited space.',
-      },
-      {
-        title: 'Future Plans',
-        content: 'Continue optimizing the site and integrate a backend for easier content updates, moving away from manual MSW data updates.',
-      },
-    ],
+    sections: [],
   },
   {
     id: 'self-management-workflow',
@@ -247,20 +212,7 @@ export const PROJECTS_DATA_EN: FullProject[] = [
       { type: 'image', url: Management3.src },
     ],
     links: [],
-    sections: [
-      {
-        title: 'Task Management',
-        content: 'Utilizing Notion to track every task and prioritize them, ensuring urgent and important items are handled first while clarifying daily focus.',
-      },
-      {
-        title: 'Transparent Communication',
-        content: 'By using clear status and progress records, supervisors can understand current workload and priorities, significantly reducing communication costs.',
-      },
-      {
-        title: 'Implementation History',
-        content: 'Detailed records of implementation and difficulties are documented and synced back to company systems, serving as shared knowledge for the team.',
-      },
-    ],
+    sections: [],
   },
   {
     id: 'pm-projects',
@@ -278,16 +230,7 @@ export const PROJECTS_DATA_EN: FullProject[] = [
     links: [
       { label: 'Spec Document (Sample)', url: 'https://y6sx3j.axshare.com/#g=1&p=%E5%B0%88%E6%A1%88%E7%B0%A1%E4%BB%8B&dp=0&c=1', type: 'document' },
     ],
-    sections: [
-      {
-        title: 'Product Overview',
-        content: 'Planned cross-platform data synchronization to convert external data into resume profiles.',
-      },
-      {
-        title: 'Responsibilities',
-        content: 'Includes requirement gathering, cross-team coordination (Engineering, QA, Business), drafting specifications, and building demo sites for testing.',
-      },
-    ],
+    sections: [],
   },
   {
     id: 'funtour-system',
@@ -306,23 +249,6 @@ export const PROJECTS_DATA_EN: FullProject[] = [
       { type: 'image', url: BackEnd2.src },
     ],
     links: [],
-    sections: [
-      {
-        title: 'Core Responsibilities',
-        content: 'Optimized ticketing email systems and planned architectural integrations. Performed API testing and validation using Postman.',
-      },
-      {
-        title: 'Payment Services & Testing',
-        content: 'Assisted in payment service development, performed code reviews, and drafted integration documents, building sensitivity to data accuracy and edge cases.',
-      },
-      {
-        title: 'UI/UX Optimization',
-        content: 'Participated in backend interface improvements to enhance internal tool usability.',
-      },
-      {
-        title: 'Documentation & Collaboration',
-        content: 'Translated business needs into engineering specs and maintained API documentation for third-party service integration.',
-      },
-    ],
+    sections: [],
   },
 ];

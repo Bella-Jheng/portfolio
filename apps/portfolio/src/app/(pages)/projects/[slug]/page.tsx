@@ -47,7 +47,7 @@ export default function ProjectDetailPage({
   }
 
   return (
-    <div className="bg-[#FBFAF1] min-h-screen pb-10 pt-24 md:pt-32 px-4 md:px-10">
+    <div className="bg-[#FBFAF1] min-h-screen pb-32 md:pb-10 pt-24 md:pt-32 px-4 md:px-10">
       <div className="max-w-[1440px] mx-auto">
         {/* Breadcrumbs */}
         <RevealOnScroll>
@@ -110,7 +110,6 @@ export default function ProjectDetailPage({
               </header>
             </RevealOnScroll>
 
-            <RevealOnScroll delay={400}>
               <div className="space-y-6">
                 <div className="flex flex-wrap gap-2">
                   {project.technologies.map((tech: string) => (
@@ -125,10 +124,10 @@ export default function ProjectDetailPage({
                   <p>{project.description}</p>
                 </div>
 
-                {/* Action Buttons */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-8">
-                  {project.links && project.links.length > 0 ? (
-                    project.links.map((link, idx) => {
+                {/* Action Buttons — desktop inline */}
+                {project.links && project.links.length > 0 ? (
+                  <div className="hidden md:grid md:grid-cols-2 gap-4 pt-8">
+                    {project.links.map((link, idx) => {
                       const isPrimary = idx === 0;
                       return (
                         <a
@@ -147,47 +146,78 @@ export default function ProjectDetailPage({
                             hover:-translate-y-1 hover:shadow-md active:translate-y-0 group
                           `}
                         >
-                          <span className="text-sm break-words">
-                            {link.label}
-                          </span>
+                          <span className="text-sm break-words">{link.label}</span>
                           <span className="flex items-center justify-center shrink-0">
                             <ExternalLink className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                           </span>
                         </a>
                       );
-                    })
-                  ) : (
+                    })}
+                  </div>
+                ) : (
+                  <div className="hidden md:flex pt-8">
                     <button className="bg-gray-200 text-gray-500 py-3 rounded-full font-bold uppercase tracking-widest cursor-not-allowed flex items-center justify-center gap-2 w-full">
                       {isEn ? 'No Link Available' : '暫無連結'}
                     </button>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
-            </RevealOnScroll>
           </div>
         </div>
 
         {/* Detailed Sections (Tabbed) */}
         {project.sections && project.sections.length > 0 && (
-          <RevealOnScroll delay={500}>
             <div className="mt-16 md:mt-20">
               <ProjectDetailTabs sections={project.sections} />
             </div>
-          </RevealOnScroll>
         )}
       </div>
 
       {/* Featured Projects */}
       {otherProjects.length > 0 && (
-        <RevealOnScroll delay={600}>
           <div className="mt-16 md:mt-24">
             <ProjectSlider
               title={isEn ? 'Featured Projects' : '精選作品'}
               projects={otherProjects}
             />
           </div>
-        </RevealOnScroll>
       )}
+
+      {/* Action Buttons — mobile fixed bottom bar */}
+      {project.links && project.links.length > 0 ? (
+        <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#FBFAF1]/90 backdrop-blur-md border-t border-gray-200 px-4 pt-3 pb-safe"
+          style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
+        >
+          <div className="flex flex-col gap-2 max-w-lg mx-auto">
+            {project.links.map((link, idx) => {
+              const isPrimary = idx === 0;
+              return (
+                <a
+                  key={idx}
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`
+                    ${
+                      isPrimary
+                        ? 'bg-txt-darkBrown text-white'
+                        : 'border border-txt-darkBrown bg-transparent text-txt-darkBrown'
+                    }
+                    py-3 px-6 rounded-sm font-bold uppercase tracking-widest
+                    transition-all duration-200 active:scale-95
+                    flex flex-row items-center justify-center gap-2 text-center
+                  `}
+                >
+                  <span className="text-sm">{link.label}</span>
+                  <span className="flex items-center justify-center shrink-0">
+                    <ExternalLink className="w-4 h-4" />
+                  </span>
+                </a>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
 
       <ShareModal
         isOpen={isShareModalOpen}

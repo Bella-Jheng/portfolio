@@ -22,7 +22,7 @@ export function ProjectDetailTabs({ sections }: { sections: ProjectSection[] }) 
             <button
               key={index}
               onClick={() => setActiveIndex(index)}
-              className={`relative shrink-0 pb-4 text-sm md:text-base font-bold transition-colors whitespace-nowrap ${
+              className={`relative shrink-0 pb-4 text-tiny md:text-base font-bold transition-colors whitespace-nowrap ${
                 isActive ? 'text-txt-darkBrown' : 'text-gray-500 hover:text-gray-700'
               }`}
             >
