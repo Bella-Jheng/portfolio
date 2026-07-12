@@ -21,6 +21,7 @@ import {
   PM1,
   BackEnd1,
   BackEnd2,
+  AiScript1,
 } from '@/public/img';
 
 export const PROJECTS_DATA_EN: FullProject[] = [
@@ -168,6 +169,69 @@ export const PROJECTS_DATA_EN: FullProject[] = [
       { label: 'Video Demo', url: 'https://www.youtube.com/watch?v=SSTAaGTBkQU', type: 'presentation' },
     ],
     sections: [],
+  },
+  {
+    id: 'component-scaffold-script',
+    title: 'Faster with AI-Era Tooling: A Parameterized Layout-Component Script',
+    category: 'AI 實作',
+    displayCategory: 'AI Implementation',
+    period: '2026',
+    description:
+      'Standardized the manual process of "building a new ad layout component" into an SOP, then turned it into a parameterized script: feed in a component\'s naming parameters and it auto-generates the type definitions, component mapping, module exports, and test data. Cut development time (including testing) from {{5 working days}} to {{2}}, with an {{80% completion rate}} \u2014 faster and more accurate than doing it by hand. (The linked SOP document below has been redacted \u2014 internal system names and other commercially sensitive details from my former employer have been removed to protect their confidentiality.)',
+    imageUrl: AiScript1.src,
+    link: '/projects/component-scaffold-script',
+    tags: ['Developer Tooling', 'Process Automation', 'SOP Design'],
+    technologies: ['Node.js', 'TypeScript', 'React', 'Codegen'],
+    media: [
+      { type: 'image', url: AiScript1.src },
+    ],
+    links: [
+      {
+        label: 'SOP Document (Redacted)',
+        url: 'https://hackmd.io/@KkiMC7PPQueku3pX2dHGeg/BkNETl-VMe',
+        type: 'document',
+      },
+    ],
+    sections: [
+      {
+        title: 'Process Audit & SOP Standardization',
+        tabLabel: 'SOP Design',
+        whatIDid: [
+          'Audited the full manual workflow for "building a new ad layout component" and found the same steps (registering the ad_code, component-mapping config, type definitions, module exports, test data) had to be hand-edited across {{5-6 different files}} every time \u2014 with the content and location of each edit almost identical, differing only in naming',
+          'Distilled this implicit process into a standard SOP document defining {{8 naming parameters}} (e.g. [ad_code], [FolderName], [ComponentName], [HandlerName], [ChineseName]); once those parameters are fixed, every subsequent step \u2014 which file to touch, what to add \u2014 becomes rule-based',
+          'For the "build from an existing component" case (copying an existing TLW or HOLA component as a template), the SOP explicitly defines the source-folder parameters so the later script has something concrete to key off of',
+        ],
+        techUsed: ['SOP Documentation', 'Process Design', 'Naming Convention'],
+        challenges:
+          "Symptom: building a new layout component by hand took {{5 working days}} on average, including testing. Breaking down where that time actually went showed most of it wasn't spent on logic unique to that component \u2014 it was repetitive boilerplate: adding a near-identical block of code, differing only in variable names, across the type definitions, component mapping, index exports, and test data files. Missing one of those edits usually wasn't caught until a runtime error like \"Element type is invalid\" showed up, and then someone had to track down which step got skipped.\n\nInvestigation: laying out records from past component additions side by side showed the step order and the files involved were almost completely fixed \u2014 the only thing that ever changed was a handful of naming-related parameters. In other words, this wasn't work that needed to be redesigned each time; it was the same rules applied to different parameters, repeated by hand \u2014 a good candidate for abstracting into a standard process and automating, rather than leaving it to each engineer's individual habits.\n\nFix: made the implicit knowledge explicit first, writing it up as an SOP document (with each parameter's definition, format, and example) so anyone filling in the parameter table gets a consistent result. That step was also the precondition for automating it with a script \u2014 without the rules spelled out clearly, no program can know what to generate.",
+        learnings:
+          "Automation isn't preceded by writing code \u2014 it's preceded by making the process and its rules explicit. A process you can't describe in a clear sentence usually can't be turned into a reliable script either. Just the act of converting implicit knowledge into an explicit SOP already lowered the team's cognitive load around \"how exactly is this step supposed to be done,\" even before any automation was written \u2014 documentation alone made onboarding faster.",
+      },
+      {
+        title: 'Script Automation & Rollout Results',
+        tabLabel: 'Automation & Impact',
+        whatIDid: [
+          "Wrote automation logic matching each step defined in the SOP: given the naming parameters, the script auto-adds the new ad_code type in ad-data.type.ts, inserts the handler import and the AD_CODE_TO_COMPONENT_INFO config object in component-mapping.ts, and adds the component/type exports in index.ts",
+          "For the \"build from an existing component\" case, the script copies the file structure (UI component, handler, type) from the source folder named in the parameters, and batch-rewrites style class prefixes to match the target brand (e.g. hola-)",
+          "Auto-inserts the corresponding mock JSON into the pageData.ad_data array in the test-data file, so the new component shows up on the local page right after generation without hand-assembling test fixtures",
+          "Deliberately left about 20% of the work for engineers to finish by hand (custom UI styling, component-specific business logic) \u2014 the script's target was {{80% completion}} on the parts that are guaranteed to repeat and follow a rule, not full end-to-end automation",
+        ],
+        techUsed: ['Node.js', 'Codegen Script', 'File System Automation'],
+        challenges:
+          "The biggest concern early on was whether the generated code could actually be trusted \u2014 if the script missed a file, it would fail at runtime exactly the same way a manual miss would, just with the script as the culprit instead of a person. For the script to genuinely replace most of the manual effort, it needed to cover every one of the SOP's fixed-rule file changes, not just a few of the steps.\n\nFix & verification: mapped each of the SOP's four major steps (system registration, component implementation, module export, test data) to its own processing function in the script, and back-tested each one against real past components \u2014 confirming the generated code's structure, naming, and exports matched what a human had produced by hand before treating it as production-ready. After rollout, tracking actual time spent on several new components confirmed development time including testing dropped {{from an average of 5 working days to 2}}, with the generated skeleton hitting an {{80% completion rate}} \u2014 leaving engineers to focus only on final UI customization and business logic.",
+        comparisonTable: {
+          columns: ['Aspect', 'Manual Process', 'Script-Automated Process'],
+          rows: [
+            ['Development time (incl. testing)', '{{5 working days}}', '{{2 working days}}'],
+            ['Files touched', '5-6 files edited by hand, easy to miss one', 'Auto-generated per SOP rules, covers every fixed change point'],
+            ['Skeleton completion rate', "Varies with the developer's experience and familiarity", '{{80%}} (types/mapping/exports/test data all in place)'],
+            ['Consistency', 'Relies on memory or copying an old component', 'Uniform output driven by parameterized rules'],
+          ],
+        },
+        learnings:
+          "This made it clearer to me that in an AI/automation era, an engineer's leverage isn't typing speed \u2014 it's the ability to abstract repetitive, rule-following work into a clear process and parameters, then let tooling systematize it. It also taught me that automation doesn't need to chase 100% coverage: handing the predictable, rule-bound 80% to a script while leaving the remaining 20% for engineers to apply real judgment turned out to be a more practical, more maintainable design than forcing full automation.",
+      },
+    ],
   },
   {
     id: 'portfolio',

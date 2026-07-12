@@ -16,7 +16,7 @@ export interface ProjectSection {
     columns: string[];
     rows: string[][];
   };
-  learnings: string;
+  learnings: string | string[];
 }
 
 export interface FullProject extends Project {

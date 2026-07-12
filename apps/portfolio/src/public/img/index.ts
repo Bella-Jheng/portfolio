@@ -23,3 +23,4 @@ export { default as Testrite5 } from './project-testrite-5.png';
 export { default as PM1 } from './project-pm-1.png';
 export { default as BackEnd1 } from './project-backend-1.png';
 export { default as BackEnd2 } from './project-backend-2.png';
+export { default as AiScript1 } from './project-ai-script-1.png';

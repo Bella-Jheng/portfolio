@@ -21,6 +21,7 @@ import {
   PM1,
   BackEnd1,
   BackEnd2,
+  AiScript1,
 } from '@/public/img';
 
 export const PROJECTS_DATA_ZH: FullProject[] = [
@@ -211,6 +212,59 @@ export const PROJECTS_DATA_ZH: FullProject[] = [
       },
     ],
     sections: [],
+  },
+  {
+    id: 'component-scaffold-script',
+    title: 'AI 輔助開發組版元件自動化腳本',
+    category: 'AI 實作',
+    displayCategory: 'AI 實作',
+    period: '2026',
+    description:
+      '將新增一個廣告組版元件的人工開發流程標準化成 SOP，並寫成一支參數化 script，只要填入元件的命名參數，就能自動產出型別定義、元件映射、模組匯出與測試資料，把原本含測試需要 {{5 個工作天}} 的開發時程縮短到 {{2 天}}，完成率達 {{80%}}，比人工更快速也更準確。下方連結的 SOP 文件已經過隱碼處理，隱去前公司內部系統名稱與商業機敏資訊，以保護前公司資安與隱私。',
+    imageUrl: AiScript1.src,
+    link: '/projects/component-scaffold-script',
+    tags: ['Developer Tooling', 'Process Automation', 'SOP Design'],
+    technologies: ['Node.js', 'TypeScript', 'React', 'Codegen'],
+    media: [
+      { type: 'image', url: AiScript1.src },
+    ],
+    links: [
+      {
+        label: 'SOP 文件已隱碼處理',
+        url: 'https://hackmd.io/@KkiMC7PPQueku3pX2dHGeg/BkNETl-VMe',
+        type: 'document',
+      },
+    ],
+    sections: [
+      {
+        title: 'SOP 標準化與 Script 自動化開發',
+        tabLabel: 'SOP 與自動化',
+        whatIDid: [
+          '盤點新增一個廣告組版元件的完整人工開發流程，發現同樣的步驟，包含註冊 ad_code、元件映射設定、型別定義、模組匯出、測試資料，每次都要在 {{5、6 個不同檔案}}裡手動修改，只有命名不同',
+          '把這套隱性流程收斂成一份標準 SOP 文件，定義出 {{8 個命名參數}}，像是 [ad_code]、[FolderName]、[ComponentName]、[HandlerName]、[ChineseName]，也涵蓋參考既有 TLW 或 HOLA 元件當範本的情境',
+          '產出後保留約 20% 讓工程師手動處理，像是 UI 客製樣式、特殊業務邏輯，script 的目標訂在把重複、有規則可循的部分做到 {{80% 完成率}}，而不是強求全自動',
+        ],
+        techUsed: ['SOP 文件化', 'Node.js', 'Codegen Script', 'Process Design'],
+        challenges:
+          '人工開發一個新的組版元件平均要花 {{5 個工作天}}，含測試，但把時程攤開後發現，大部分工時並不是花在這個元件獨有的邏輯上，而是重複性的樣板工作，只要漏改其中一個檔案，通常要等到 Runtime 噴錯才會發現。導入初期最擔心產出的程式碼品質不可靠，甚至事後檢查花的時間比自己開發還久，所以每一步都用既有元件的真實案例回測，確認產出的程式碼結構、命名與 export 都跟人工版本一致才算過關。\n\n上線後追蹤實際工時，證實開發時程{{從平均 5 個工作天縮短到 2 個工作天}}，骨架完成率達到 {{80%}}，工程師只需要專注在最後的 UI 客製與業務邏輯。',
+        comparisonTable: {
+          columns: ['項目', '人工開發流程', 'Script 自動化流程'],
+          rows: [
+            ['開發時程含測試', '{{5 個工作天}}', '{{2 個工作天}}'],
+            ['涉及檔案異動', '需手動修改 5～6 個檔案，容易漏改', '依 SOP 規則自動產生，涵蓋所有固定異動點'],
+            ['元件骨架完成率', '依開發者經驗與熟悉度浮動', '{{80%}}，型別、映射、匯出、測試資料全部就位'],
+            ['一致性', '依賴開發者記憶或複製舊元件', '統一透過參數化規則產出，結果一致'],
+          ],
+        },
+        learnings: [
+          '工程師的槓桿在於把重複、有規則可循的工作抽象成清楚的流程與參數，再用工具把它系統化，保留剩下的 20% 讓工程師處理真正需要判斷的部分，比起追求 100% 全自動更務實',
+          '這是 AI 進場後我第一次嘗試用 AI 完成的內容，{{一開始其實很排斥 AI 的到來}}，身為工程師難免有種傲氣和自尊心，不希望自己做的事情被取代',
+          '透過這次嘗試更清楚自己的價值，在於更專注在溝通，把使用者真正需要的做出來，也把重心放在產出比以往更細膩的內容',
+          '過去常為了縮短工時而顧不到程式效能與品質，現在用 AI 縮短工時後，能把心思放回程式品質，也趁機磨練自己 review code 的能力',
+          'AI 時代下工程師需要的能力，不再是用的技術有多炫砲、邏輯力有多強，而是能不能發現痛點並解決',
+        ],
+      },
+    ],
   },
   {
     id: 'portfolio',
