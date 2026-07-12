@@ -15,21 +15,20 @@ export function ProjectDetailTabs({ sections }: { sections: ProjectSection[] }) 
 
   return (
     <div>
-      <div className="flex justify-center gap-8 overflow-x-auto border-b border-gray-200">
+      <div className="flex flex-wrap justify-center gap-2 md:gap-3 overflow-x-auto">
         {sections.map((section, index) => {
           const isActive = index === activeIndex;
           return (
             <button
               key={index}
               onClick={() => setActiveIndex(index)}
-              className={`relative shrink-0 pb-4 text-tiny md:text-base font-bold transition-colors whitespace-nowrap ${
-                isActive ? 'text-txt-darkBrown' : 'text-gray-500 hover:text-gray-700'
+              className={`shrink-0 px-4 py-2 rounded-full text-tiny md:text-sm font-bold whitespace-nowrap border transition-all duration-300 ${
+                isActive
+                  ? 'bg-[#8B9467] text-white border-[#8B9467] shadow-sm'
+                  : 'bg-white text-txt-darkBrown border-gray-200 hover:border-txt-brown'
               }`}
             >
               {tabLabelFor(section)}
-              {isActive && (
-                <span className="absolute left-0 right-0 -bottom-px h-0.5 bg-txt-red" />
-              )}
             </button>
           );
         })}
