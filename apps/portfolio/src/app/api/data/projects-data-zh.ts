@@ -271,7 +271,7 @@ export const PROJECTS_DATA_ZH: FullProject[] = [
     displayCategory: '前端專案',
     period: '2025',
     description:
-      '以前更新官網廣告版位都需要工程師修改程式並重新部署，流程耗時且高度依賴技術人員。本專案從零開始設計並實作一套可視化組版系統，使營運人員能自行管理版位內容，同時維持資料結構的嚴謹性與前台版型穩定性。此專案不僅優化營運流程，更重構了版型管理與資料模型之間的關係，建立可擴充與可長期維護的架構基礎。',
+      '過去官網廣告版位異動都需要工程師改程式、重新部署，一次調整常要等好幾天。我從零設計並開發了一套可視化組版系統（CMS）。\n\n• 讓營運人員能自行拖拉排版、上傳圖片、編輯內容，不必再排工程師時間\n• 把版型結構與內容資料分離，維持前台版型穩定與資料嚴謹\n• 支援即時預覽、權限管理，擴充新版型不需改動核心邏輯\n• 上線後版位更新從跨部門排時程，縮短到營運人員自己幾分鐘內完成',
     imageUrl: NewBackoffice1.src,
     link: '/projects/cms-development',
     tags: ['Internal Tool', 'Schema Design', 'Dynamic Component', 'CMS'],
@@ -293,8 +293,8 @@ export const PROJECTS_DATA_ZH: FullProject[] = [
     ],
     links: [
       {
-        label: '專案文案介紹',
-        url: 'https://hackmd.io/@-pJOuWsHT5qfiLSWl-nBgQ/SJk21fAIge/edit',
+        label: '專案介紹文件',
+        url: 'https://hackmd.io/@KkiMC7PPQueku3pX2dHGeg/ryBfTgWNGe',
         type: 'document',
       },
       {
@@ -414,11 +414,11 @@ export const PROJECTS_DATA_ZH: FullProject[] = [
   {
     id: 'portfolio',
     title: '個人作品集平台',
-    category: '前端專案',
-    displayCategory: '前端專案',
+    category: 'AI 實作',
+    displayCategory: 'AI 實作',
     period: '2026',
     description:
-      '不僅是一個作品展示平台，更是我對前端技術的整合與實踐。透過 Next.js 與 MSW 的整合，實現了前後端協作模式。',
+      '這個作品集網站以 Next.js 打造，用 MSW 模擬完整後端 API，跑出真實的前後端協作流程\n• 支援雙語切換、履歷一鍵匯出 PDF、完整響應式設計，手機電腦體驗一致\n• 整個 Monorepo 用 Nx 管理，方便未來擴充其他子專案\n• 規劃加入後台可視化編輯功能，取代目前手動修改程式碼裡的資料',
     imageUrl: Portfolio1.src,
     link: '/projects/portfolio',
     tags: ['Tailwind', 'Next.js', 'Personal Design', 'MSW'],
@@ -451,7 +451,7 @@ export const PROJECTS_DATA_ZH: FullProject[] = [
     displayCategory: '其他',
     period: 'Ongoing',
     description:
-      '建立一套高效的工作管理流程，使用 Notion 進行任務拆解與優先順序排列。這不僅讓主管能即時掌握進度，促進溝通效率，更詳細記錄了每個任務的實作歷程與技術難點，最終將這些寶貴經驗與解法同步回專案管理系統，形成完整的知識庫。',
+      '用 Notion 建立個人工作管理流程，讓工作進度對主管與團隊更透明，也讓過去解決過的問題被系統性地保留下來，而不是解決完就忘記。\n\n• 拆解任務並排列優先順序，主管不用問也能一目了然掌握進度\n• 記錄每個任務的技術難點、嘗試過的方案與解法，累積成可搜尋的知識庫\n• 降低單一成員離職造成的知識斷層風險\n• 依專案性質調整拆解顆粒度，持續優化最適合團隊步調的工作方法',
     imageUrl: Management1.src,
     link: '/projects/self-management-workflow',
     tags: ['Notion', 'Workflow', 'Documentation', 'Communication'],
@@ -471,7 +471,7 @@ export const PROJECTS_DATA_ZH: FullProject[] = [
     displayCategory: 'PM 專案',
     period: '2021-2022',
     description:
-      '擔任產品負責人（Product Owner），主導多項跨團隊協作專案，包含三個工程團隊、設計團隊、測試團隊、行銷及業務團隊之間的溝通橋樑。',
+      '擔任產品負責人（Product Owner），主導預備會員相關產品專案，是三個工程團隊、設計、測試、行銷、業務團隊間的溝通橋樑。\n\n• 負責需求蒐集、撰寫規格文件，並協調跨團隊時程與依賴關係\n• 運用 GA、GTM 與 NLP 分析使用者行為，讓規格制定有數據支持而非憑直覺\n• 在有限開發資源下排列多個並行專案的優先順序，避免資源分散\n• 培養跨職能溝通、需求分析與專案管理能力，更能同理不同角色的立場',
     imageUrl: PM1.src,
     link: '/projects/pm-projects',
     tags: ['Product Management', 'Cross-team', 'NLP'],
@@ -498,7 +498,7 @@ export const PROJECTS_DATA_ZH: FullProject[] = [
     displayCategory: '後端專案',
     period: '2021/2-2021/9',
     description:
-      '參與旅遊票券平台後端系統開發，負責購票完成郵件系統優化、第三方 API 串接（如貓空纜車）以及金流服務協助開發，確保交易流程穩定可靠。',
+      '參與旅遊票券平台後端系統開發，讓使用者能線上購買票券（如貓空纜車票）並完成後續兌換與使用。\n\n• 優化購票完成後的郵件通知系統，確保付款成功即時收到正確票券資訊\n• 串接第三方 API，即時查詢庫存並同步訂單，設計重試與錯誤處理機制\n• 協助金流服務開發，確保交易流程穩定、紀錄正確無誤\n• 這是我第一份後端工作，體會到穩定性與資料正確性比開發速度更重要',
     imageUrl: BackEnd1.src,
     link: '/projects/funtour-system',
     tags: ['Backend', 'API Integration', 'Email System'],

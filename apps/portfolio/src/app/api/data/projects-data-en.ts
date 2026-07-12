@@ -247,7 +247,7 @@ export const PROJECTS_DATA_EN: FullProject[] = [
     displayCategory: 'Frontend Project',
     period: '2025',
     description:
-      'Previously, updating ad spots required code changes and deployment, which was time-consuming. This project designed and implemented a visual layout system from scratch, enabling operation teams to manage content while maintaining data integrity and frontend stability. It refactored the relationship between layout management and data models, building a scalable architecture.',
+      "Updating an ad placement on the company site used to require an engineer to change code and redeploy, often days per tweak. I designed and built a visual layout system (CMS) from scratch.\n\n• Lets operations staff drag-and-drop layouts, upload images, and edit content themselves\n• Separates layout structure from content data, keeping the live site stable and data well-formed\n• Supports live preview and permission management; new layout types need no core-logic changes\n• Cross-team-scheduled updates now take operations just minutes on their own",
     imageUrl: NewBackoffice1.src,
     link: '/projects/cms-development',
     tags: ['Internal Tool', 'Schema Design', 'Dynamic Component', 'CMS'],
@@ -385,7 +385,7 @@ export const PROJECTS_DATA_EN: FullProject[] = [
     displayCategory: 'Frontend Project',
     period: '2026',
     description:
-      'More than just a showcase, this is an integration of frontend best practices including Next.js and MSW for full-stack simulation.',
+      "This portfolio site is itself a piece of \"living work\": a vehicle for demonstrating technical ability and engineering thinking, not just a list of projects.\n\n• Built with Next.js; MSW simulates a full backend API to drive a real frontend/backend flow\n• Supports bilingual switching, one-click PDF resume export, and full responsive design\n• The whole Monorepo is managed with Nx, leaving room to add more apps\n• Roadmap: a visual admin editor to replace manually editing data in code",
     imageUrl: Portfolio1.src,
     link: '/projects/portfolio',
     tags: ['Tailwind', 'Next.js', 'Personal Design', 'MSW'],
@@ -410,7 +410,7 @@ export const PROJECTS_DATA_EN: FullProject[] = [
     displayCategory: 'Others',
     period: 'Ongoing',
     description:
-      'Established a high-efficiency management flow using Notion for task breakdown and prioritization. This not only allows supervisors to track progress but also creates a knowledge base of technical challenges and solutions.',
+      "A personal work-management workflow built in Notion, making my progress more visible to my manager and team while keeping past solutions from being forgotten.\n\n• Breaks tasks into sub-steps and ranks priority so progress is visible without having to ask\n• Logs each task's difficulties, attempted approaches, and solution into a searchable knowledge base\n• Reduces the risk of knowledge loss when a team member leaves\n• Tunes the breakdown granularity per project, refining the method over time",
     imageUrl: Management1.src,
     link: '/projects/self-management-workflow',
     tags: ['Notion', 'Workflow', 'Documentation', 'Communication'],
@@ -430,7 +430,7 @@ export const PROJECTS_DATA_EN: FullProject[] = [
     displayCategory: 'PM Project',
     period: '2021-2022',
     description:
-      'Served as Product Owner, leading cross-team collaboration involving multiple engineering and design teams, and acting as a bridge between business and technical units.',
+      "Served as Product Owner leading pre-registered-membership product initiatives, the communication bridge between three engineering teams, design, QA, marketing, and business.\n\n• Owned requirements gathering and spec writing, coordinating timelines and dependencies across teams\n• Used GA, GTM, and NLP to analyze user behavior, grounding specs in data rather than gut feeling\n• Prioritized multiple concurrent projects under limited engineering resources\n• Built cross-functional communication, requirements analysis, and project management skills",
     imageUrl: PM1.src,
     link: '/projects/pm-projects',
     tags: ['Product Management', 'Cross-team', 'NLP'],
@@ -448,7 +448,7 @@ export const PROJECTS_DATA_EN: FullProject[] = [
     displayCategory: 'Backend Project',
     period: '2021/2-2021/9',
     description:
-      'Participated in backend development for a travel platform, responsible for email optimization, third-party API integration, and payment services, ensuring stable transaction flows.',
+      "Backend development for a travel ticketing platform where users buy tickets online (like Maokong Gondola passes) and redeem them.\n\n• Optimized the post-purchase email notification system for accurate, timely ticket info\n• Integrated third-party APIs for real-time inventory checks and order sync, with retry/error handling\n• Helped build payment services to keep transactions reliable and records accurate\n• My first backend role, and I learned that stability and data correctness matter more than shipping speed",
     imageUrl: BackEnd1.src,
     link: '/projects/funtour-system',
     tags: ['Backend', 'API Integration', 'Email System'],
