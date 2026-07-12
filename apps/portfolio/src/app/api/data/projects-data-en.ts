@@ -22,6 +22,12 @@ import {
   BackEnd1,
   BackEnd2,
   AiScript1,
+  Bazi1,
+  Bazi2,
+  Bazi3,
+  Bazi4,
+  Bazi5,
+  Bazi6,
 } from '@/public/img';
 
 export const PROJECTS_DATA_EN: FullProject[] = [
@@ -316,6 +322,59 @@ export const PROJECTS_DATA_EN: FullProject[] = [
         },
         learnings:
           "This made it clearer to me that in an AI/automation era, an engineer's leverage isn't typing speed \u2014 it's the ability to abstract repetitive, rule-following work into a clear process and parameters, then let tooling systematize it. It also taught me that automation doesn't need to chase 100% coverage: handing the predictable, rule-bound 80% to a script while leaving the remaining 20% for engineers to apply real judgment turned out to be a more practical, more maintainable design than forcing full automation.",
+      },
+    ],
+  },
+  {
+    id: 'bazi',
+    title: 'Bazi: AI-Powered Chinese Astrology Analysis',
+    category: 'AI 實作',
+    displayCategory: 'AI Implementation',
+    period: '2026',
+    description:
+      "A Bazi (Chinese astrology) analysis tool built with Next.js 16, Firebase Firestore, and the Google Gemini API. Enter a birth date and time to get an AI-generated reading.\n\n• Google sign-in gives each user their own space and a daily question quota\n• Admin knowledge-base panel where AI auto-tags content, retrieved by element for precision\n• Supports downloadable share cards and native mobile sharing\n• Became a talking point among friends after launch, and sharpened my own grasp of chart rules",
+    imageUrl: Bazi1.src,
+    link: '/projects/bazi',
+    tags: ['AI Integration', 'RAG', 'Firebase', 'Full-Stack'],
+    technologies: [
+      'Next.js 16',
+      'Firebase Firestore',
+      'Google Gemini API',
+      'TanStack Query',
+      'Tailwind CSS',
+      'Vitest',
+    ],
+    media: [
+      { type: 'image', url: Bazi1.src },
+      { type: 'image', url: Bazi2.src },
+      { type: 'image', url: Bazi3.src },
+      { type: 'image', url: Bazi4.src },
+      { type: 'image', url: Bazi5.src },
+      { type: 'image', url: Bazi6.src },
+    ],
+    links: [
+      {
+        label: 'Live Demo',
+        url: 'https://portfolio-bazi.vercel.app/',
+        type: 'website',
+      },
+      {
+        label: 'DEVLOG',
+        url: 'https://github.com/Bella-Jheng/portfolio/blob/main/apps/bazi/DEVLOG.md',
+        type: 'document',
+      },
+    ],
+    sections: [
+      {
+        title: 'Project Motivation & What I Learned',
+        tabLabel: 'Dev Notes',
+        whatIDid:
+          "The full write-up lives in the DEVLOG. Click the link above for the complete story; this is the short version.\n\nAfter taking an online course on Bazi (Chinese astrology), I found the rules too dense to memorize and kept getting stuck in practice. So I scraped the course video transcripts and had AI turn them into a structured knowledge base, then built it into a site friends could use too, and each person gets their own space via Google sign-in, with a daily question quota.",
+        techUsed: ['Next.js 16', 'Firebase', 'Google Gemini API', 'TypeScript'],
+        challenges:
+          "• As the knowledge base grew, stuffing the entire thing into the AI prompt drove up token cost and hurt reading quality\n• A friend opening the link in LINE got blocked at Google sign-in with a 403; the in-app browser was the culprit, and login didn't work at all\n• Firestore read/write logic was scattered across many API routes, with the same business flow copy-pasted several times",
+        learnings:
+          "I built this after leaving my job. Before I left, I was burned out, AI had taken over a lot of the bug-fixing that used to be my main source of satisfaction, and at work I was mostly building other people's ideas, with most of the real decisions out of my hands. Even though I liked the company and the people, I still chose to leave.\n\nBefore I left, I was chatting with my manager, we were more like friends by that point, and he mentioned he was using AI to build a Pikmin-related plugin he'd never dared attempt before; frontend used to stump him completely, but AI finally let him pull it off. After 20 years in the industry, he said, your sense of accomplishment has to evolve too: grinding out a project by hand used to feel rewarding, but now being able to quickly build something you never thought you could is an even better kind of happy. He used to code for a paycheck; now the resources his job gives him let him bring that into his actual life, and that's what makes him happiest these days. He told me: you should try bringing code into your own life sometime.\n\nAt the time I only half got it. It didn't really click until I finished this site. It let me build more of what I actually wanted, and share it with friends, and every time someone tells me \"this is scarily accurate,\" it makes me want to make it even better.",
       },
     ],
   },

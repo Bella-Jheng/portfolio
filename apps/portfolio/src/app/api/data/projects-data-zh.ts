@@ -22,6 +22,12 @@ import {
   BackEnd1,
   BackEnd2,
   AiScript1,
+  Bazi1,
+  Bazi2,
+  Bazi3,
+  Bazi4,
+  Bazi5,
+  Bazi6,
 } from '@/public/img';
 
 export const PROJECTS_DATA_ZH: FullProject[] = [
@@ -349,6 +355,59 @@ export const PROJECTS_DATA_ZH: FullProject[] = [
           '過去常為了縮短工時而顧不到程式效能與品質，現在用 AI 縮短工時後，能把心思放回程式品質，也趁機磨練自己 review code 的能力',
           'AI 時代下工程師需要的能力，不再是用的技術有多炫砲、邏輯力有多強，而是能不能發現痛點並解決',
         ],
+      },
+    ],
+  },
+  {
+    id: 'bazi',
+    title: '八字命理：AI 命盤分析工具',
+    category: 'AI 實作',
+    displayCategory: 'AI 實作',
+    period: '2026',
+    description:
+      '因為自己喜歡算命，買了徐玉蘭老師的課程後，學是學了，但是懶得背規則，所以把徐老師的智慧灌進去，創造了這個網站。歡迎看到這篇的各位也算算看，{{目前已經累積50位用戶，網站經過用戶回饋已校正第三版，有近8成用戶都說準}}，歡迎試算～\n\n輸入出生年月日時即可取得 AI 命理解析。\n\n• 綁定 Google 帳號，每人擁有專屬空間與每日提問額度\n• 知識庫管理後台，AI 自動打標籤並依五行篩選精準檢索\n• 支援分享卡片下載、行動裝置原生分享\n• 上線後成為朋友間話題，也讓我對命盤規則更加熟練',
+    imageUrl: Bazi1.src,
+    link: '/projects/bazi',
+    tags: ['AI Integration', 'RAG', 'Firebase', 'Full-Stack'],
+    technologies: [
+      'Next.js 16',
+      'Firebase Firestore',
+      'Google Gemini API',
+      'TanStack Query',
+      'Tailwind CSS',
+      'Vitest',
+    ],
+    media: [
+      { type: 'image', url: Bazi1.src },
+      { type: 'image', url: Bazi2.src },
+      { type: 'image', url: Bazi3.src },
+      { type: 'image', url: Bazi4.src },
+      { type: 'image', url: Bazi5.src },
+      { type: 'image', url: Bazi6.src },
+    ],
+    links: [
+      {
+        label: '展示網站',
+        url: 'https://portfolio-bazi.vercel.app/',
+        type: 'website',
+      },
+      {
+        label: '開發記錄 DEVLOG',
+        url: 'https://github.com/Bella-Jheng/portfolio/blob/main/apps/bazi/DEVLOG.md',
+        type: 'document',
+      },
+    ],
+    sections: [
+      {
+        title: '專案動機與開發心得',
+        tabLabel: '開發心得',
+        whatIDid:
+          '完整記錄已經寫在開發記錄 DEVLOG，點擊上方連結可查看完整內容，以下是扼要說明。\n學了線上課程後發現八字規則太多背不起來，實戰常卡關，於是把課程影片字幕爬出來讓 AI 整理成知識庫，並做成網站讓朋友也能用',
+        techUsed: ['Next.js 16', 'Firebase', 'Google Gemini API', 'TypeScript'],
+        challenges:
+          '• 知識庫變大後，AI 提示詞全量塞入知識會讓 token 費用飆升、分析品質下降\n• 朋友用 LINE 打開連結登入 Google 帳號時，被內建瀏覽器擋下回傳 403，完全無法登入\n• Firestore 讀寫邏輯散落在多個 API 路由裡，同樣的業務流程被複製貼上好幾次',
+        learnings:
+          '這是我離職後做的作品。離職前我有點職業倦怠，AI 取代了我很多解 bug 的成就感，加上在公司大多是做別人的東西、很多決定不由自己，即使喜歡公司環境，我還是選擇離開。\n離職前和主管閒聊，他提到自己在用 AI 做一個以前想都不敢想的皮克敏外掛，過去不懂前端總是卡關，現在靠 AI 終於實現了。他說做了 20 年，成就感也該跟著時代迭代，以前土法煉鋼完成一個專案很有成就感，現在能快速做出過去不敢想的東西更快樂，寫程式不只是為了賺錢，也能把它帶進生活裡。他說：你不妨試試看把程式帶入你的生活。\n當下我似懂非懂，直到做完這個網站才真正明白。它讓我完成更多想做的事，還能跟朋友分享，每次聽到「算得很準」，都讓我更想把它做得更好，更在短短一周內快速學習後端，把我以往不敢嘗試的內容通通做出來。或許本身要做同一個工作這麼久就需要勇氣，還有各種契機去調整自己的心態，這次的嘗試除了打開我的眼界外，更讓我重新愛上寫程式',
       },
     ],
   },
