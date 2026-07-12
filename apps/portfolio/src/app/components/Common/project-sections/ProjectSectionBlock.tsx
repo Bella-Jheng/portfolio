@@ -1,5 +1,6 @@
 import React from 'react';
 import { ProjectSection } from '../../../api/project-detail-api.type';
+import { highlightText } from '../highlight-text';
 
 const LABEL_CLASS = 'text-tiny font-bold uppercase tracking-widest text-txt-darkBrown/60';
 const BODY_CLASS = 'text-tiny text-txt-darkBrown leading-relaxed';
@@ -17,11 +18,11 @@ function Field({
       {Array.isArray(children) ? (
         <ul className={`list-disc list-inside space-y-1 ${BODY_CLASS}`}>
           {children.map((item) => (
-            <li key={item}>{item}</li>
+            <li key={item}>{highlightText(item)}</li>
           ))}
         </ul>
       ) : (
-        <div className={`whitespace-pre-line ${BODY_CLASS}`}>{children}</div>
+        <div className={`whitespace-pre-line ${BODY_CLASS}`}>{highlightText(children)}</div>
       )}
     </div>
   );
@@ -53,7 +54,7 @@ function ComparisonTable({ columns, rows }: { columns: string[]; rows: string[][
                     cellIndex === 0 ? 'font-semibold' : ''
                   }`}
                 >
-                  {cell}
+                  {highlightText(cell)}
                 </td>
               ))}
             </tr>

@@ -12,6 +12,26 @@ import { ProjectSlider } from '../../../components/Common/project-slider';
 import { useProjectDetail } from '../../../api/project-detail-api';
 import { useProjects } from '../../../api/project-list-api';
 import { useLanguage } from '../../../hooks/use-language';
+import { highlightText } from '../../../components/Common/highlight-text';
+
+function renderDescription(description: string) {
+  return description.split('\n\n').map((block, index) => {
+    const lines = block.split('\n').filter(Boolean);
+    const isBulletBlock = lines.every((line) => line.startsWith('• '));
+
+    if (isBulletBlock) {
+      return (
+        <ul key={index} className="list-disc list-inside space-y-1">
+          {lines.map((line, lineIndex) => (
+            <li key={lineIndex}>{highlightText(line.replace(/^•\s*/, ''))}</li>
+          ))}
+        </ul>
+      );
+    }
+
+    return <p key={index}>{highlightText(block)}</p>;
+  });
+}
 
 export default function ProjectDetailPage({
   params,
@@ -121,7 +141,7 @@ export default function ProjectDetailPage({
                   <h3 className="text-xl font-bold text-txt-darkBrown mb-2">
                     {isEn ? 'About the Project' : '關於此專案'}
                   </h3>
-                  <p>{project.description}</p>
+                  {renderDescription(project.description)}
                 </div>
 
                 {/* Action Buttons — desktop inline */}
@@ -167,7 +187,10 @@ export default function ProjectDetailPage({
 
         {/* Detailed Sections (Tabbed) */}
         {project.sections && project.sections.length > 0 && (
-            <div className="mt-16 md:mt-20">
+            <div className="mt-10 md:mt-14">
+              <h2 className="text-xl md:text-2xl font-black text-txt-darkBrown mb-5 text-center">
+                {isEn ? 'Project Deep Dive' : '專案深度剖析'}
+              </h2>
               <ProjectDetailTabs sections={project.sections} />
             </div>
         )}

@@ -6,6 +6,7 @@ import { ArrowRight } from '@/public/icon';
 
 import { Project } from '@/app/api';
 import { useLanguage } from '@/app/hooks/use-language';
+import { highlightText } from '../highlight-text';
 
 type ProjectCardProps = Project;
 
@@ -44,7 +45,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
           {title}
         </h3>
         <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">
-          {description}
+          {highlightText(description)}
         </p>
 
         {/* Decorative arrow */}
