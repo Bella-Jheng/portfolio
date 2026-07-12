@@ -32,7 +32,7 @@ export const PROJECTS_DATA_ZH: FullProject[] = [
     displayCategory: '前端專案',
     period: '2023 - 2024',
     description:
-      '原本兩個品牌各自維護專案，React 版本不一致、樣式架構混亂，共用邏輯分散。加入公司不到三個月，我就參與這場前端底層重建。這是決定未來 3–5 年技術走向的架構轉型。我參與 PoC 驗證與實際落地開發，從新人慢慢成為最熟悉整體架構的人。對我來說，架構的價值在於讓後面的人更好走。',
+      'HOLA 與特力屋 TLW 原本各自維護前端專案，版本落差、樣式混亂、共用邏輯分散，改一個共用問題要改兩次。我加入公司不到三個月就參與這場前端底層重建，這是決定公司未來 3 到 5 年技術走向的架構轉型。\n\n• 主導技術驗證 PoC，用實測結果而非直覺支持架構決策\n• 整合兩品牌進同一個 Monorepo，統一升級框架、改寫元件、換掉樣式系統\n• 建置時間從近 20 分鐘縮短到不到 8 分鐘\n• 資深同事離職後，逐步成為團隊最熟悉整體架構的人，協助新人上手',
     imageUrl: Testrite1.src,
     link: '/projects/testrite-refactor',
     tags: ['Monorepo Migration', 'React 18 Upgrade', 'Architecture Design'],
@@ -69,18 +69,18 @@ export const PROJECTS_DATA_ZH: FullProject[] = [
     ],
     sections: [
       {
-        title: 'HOLA 前端架構重構：從 Single-repo 到 NX Mono-repo',
+        title: 'HOLA 前端架構重構，從 Single-repo 到 NX Mono-repo',
         tabLabel: '架構重構',
         whatIDid: [
           '參與 HOLA 前端從 single-repo 到 NX mono-repo 的架構重構規劃與落地，範圍涵蓋目錄結構、React 版本、元件寫法、樣式框架、測試框架的全面實測與轉換。',
-          '2022/12/13：提出架構需求，開始規劃',
-          '2023/7/24：進入首頁、商品頁、館分類頁、大中分類頁、搜尋結果頁的新頁面開發',
-          '2023/10/23：進入新頁面整合測試',
-          '2023/11/29：正式上線（前後歷時約 365 天）',
+          '2022/12/13 提出架構需求，開始規劃',
+          '2023/7/24 進入首頁、商品頁、館分類頁、大中分類頁、搜尋結果頁的新頁面開發',
+          '2023/10/23 進入新頁面整合測試',
+          '2023/11/29 正式上線，前後歷時約 365 天',
         ],
-        techUsed: ['NX Monorepo', 'React 18', 'TypeScript', 'Tailwind CSS', 'Jest'],
+        techUsed: ['NX Monorepo', 'Nx Graph', 'React 18', 'TypeScript', 'Tailwind CSS', 'Jest'],
         challenges:
-          '現象：舊架構為了因應反覆變更的需求，舊的元件及樣式不敢棄用，只能直接疊加開發新的，導致程式不斷龐大；新舊元件因部分流程共用，舊流程也無法完整移除，遺留大量無用程式碼；最終打包（上版）時間拉長到約 20 分鐘。\n\n除錯過程：盤點整個 single-repo 的目錄結構後發現，Utilities、Components 底下都是「hola」跟「others」混雜在一起，沒有清楚的模組邊界——這才是複用性低、程式碼持續膨脹的根本原因，不是元件本身寫得不好。同時也重新檢視了 React 17、Class-based 元件、Bootstrap 各自造成的限制：Bootstrap 需要注入在全站最外層，header 與 body 版本有差時頁面會直接跑版；Class-based 元件在複雜情境下 this 指向容易出錯。\n\n解法：以 NX 建立 mono-repo 的目錄需求，把 Utilities/Apis/Components 從「hola/tlw 混雜」改成 Apps 底下依品牌（hola/tlw）獨立分工、各自管理自己的 Utility/Apis/Components，並把常用小工具、元件（header/footer/商品卡）提升到最外層共用；同步升級 React 18（拿到 automatic batching 全面套用到所有狀態更新，而非僅限 event listener，並可用 Suspense/Transition）、改用 Functional 元件、樣式框架換成 Tailwind（scoped 樣式解決感染問題、支援 tree-shaking），並新增 Jest 測試框架。',
+          '舊架構為了因應反覆變更的需求，舊的元件及樣式不敢棄用，只能直接疊加開發新的，導致程式不斷龐大，新舊元件因部分流程共用，舊流程也無法完整移除。另一個關鍵原因是元件沒有模組化，各個專案又各自安裝重複的 node_modules，導致某個頁面不再使用時，沒辦法確定哪些程式碼可以安全刪除、哪些還被其他地方依賴，只能整批留著，遺留大量無用程式碼，最終打包上版時間拉長到約 20 分鐘。\n\n盤點整個 single-repo 的目錄結構後發現，Utilities、Components 底下都是 hola 跟 others 混雜在一起，沒有清楚的模組邊界，這才是複用性低、程式碼持續膨脹的根本原因，不是元件本身寫得不好。同時也重新檢視了 React 17、Class-based 元件、Bootstrap 各自造成的限制，Bootstrap 需要注入在全站最外層，header 與 body 版本有差時頁面會直接跑版，Class-based 元件在複雜情境下 this 指向容易出錯。\n\n後來用 NX 建立 mono-repo 的目錄結構，把 Utilities/Apis/Components 從 hola/tlw 混雜的狀態，改成 Apps 底下依品牌 hola/tlw 獨立分工，各自管理自己的 Utility/Apis/Components，並把常用小工具、元件 header/footer/商品卡提升到最外層共用，同步升級 React 18，拿到 automatic batching 全面套用到所有狀態更新，而非僅限 event listener，並可用 Suspense/Transition，改用 Functional 元件，樣式框架換成 Tailwind，用 scoped 樣式解決感染問題，支援 tree-shaking，並新增 Jest 測試框架。Nx 也內建 nx graph，能快速視覺化元件之間的相依關係，之後要判斷某個元件或頁面能不能刪除，一眼就能看出還有沒有其他地方在用，不用再靠人工翻程式碼確認。',
         comparisonTable: {
           columns: ['項目', '原架構', '新架構'],
           rows: [
@@ -93,18 +93,18 @@ export const PROJECTS_DATA_ZH: FullProject[] = [
           ],
         },
         learnings:
-          '打包時間從 17m2s 降到 7m45s，減少超過一半；也學到架構轉型不是每項技術都非黑即白（例如 Class-based 在複雜狀態批次操作與生命週期控制上其實仍有優勢），取捨要基於實際情境的限制與代價，而不是單純追新。這麼大的轉型也需要拆成規劃→開發→整合測試→上線分階段推進，才不會失控。',
+          '打包時間從 17m2s 降到 7m45s，減少超過一半，也學到架構轉型不是每項技術都非黑即白，像 Class-based 在複雜狀態批次操作與生命週期控制上其實仍有優勢，取捨要基於實際情境的限制與代價，而不是單純追新。這麼大的轉型也需要拆成規劃→開發→整合測試→上線分階段推進，才不會失控。也體會到相依關係不透明時，工程師會傾向保守不刪程式碼，久了就是一堆廢 code，把相依關係視覺化之後，砍舊程式碼才有依據，這也是後來能持續維持程式碼庫精簡的關鍵工具。',
       },
       {
-        title: '狀態管理演進：從 Redux Toolkit 到 Zustand + React Query',
+        title: '狀態管理演進，從 Redux Toolkit 到 Zustand + React Query',
         tabLabel: '狀態管理',
         whatIDid:
           '專案初期規劃階段確認採用 redux-toolkit 作為狀態管理方案，實際開發後重新評估非同步 API 資料與跨元件共享狀態的處理方式，逐步把 redux-toolkit 換成 React Query + Zustand 的組合。',
-        techUsed: ['Zustand', 'React Query (useQuery/useMutation)', 'Redux Toolkit（前期方案）'],
+        techUsed: ['Zustand', 'React Query', 'Redux Toolkit'],
         challenges:
-          '現象：商品頁的非同步請求很多也很雜（規格切換、庫存查詢、折價券查詢…），照原訂計畫用 redux-toolkit 寫，每加一種查詢就要多寫一個 slice，loading/error 狀態也得自己手動維護，程式碼量越堆越多。\n\n除錯過程：重新盤點這些狀態的性質後發現，它們幾乎都是「跟後端要資料」的查詢型行為，跟 redux 原本設計拿來處理的「跨元件共享同步 UI 狀態」性質根本不同，用同一套工具硬做，才是樣板程式碼爆量的根因；同時也在會議中明確定義兩種 hook 的分野：useQuery 用在查詢類（如折價券查詢），useMutation 用在異動類（如加入購物車）。\n\n解法：把「非同步 API 資料」全部改用 React Query 的 useQuery/useMutation 管理（自動處理 loading/error/cache），redux-toolkit 只保留給少數真正需要跨元件共享的同步狀態，後續這部分也逐步被更輕量的 Zustand 取代，redux-toolkit 最終在專案裡完全淡出。',
+          '商品頁的非同步請求很多也很雜，包含規格切換、庫存查詢、折價券查詢，照原訂計畫用 redux-toolkit 寫，每加一種查詢就要多寫一個 slice，loading、error 狀態也得自己手動維護，程式碼量越堆越多。\n\n重新盤點這些狀態的性質後發現，它們幾乎都是跟後端要資料的查詢型行為，跟 redux 原本設計拿來處理的跨元件共享同步 UI 狀態性質根本不同，用同一套工具硬做，才是樣板程式碼爆量的根因，同時也在會議中明確定義兩種 hook 的分野，useQuery 用在查詢類，像是折價券查詢，useMutation 用在異動類，像是加入購物車。\n\n後來把非同步 API 資料全部改用 React Query 的 useQuery/useMutation 管理，自動處理 loading、error、cache，redux-toolkit 只保留給少數真正需要跨元件共享的同步狀態，後續這部分也逐步被更輕量的 Zustand 取代，redux-toolkit 最終在專案裡完全淡出。',
         comparisonTable: {
-          columns: ['面向', 'Redux Toolkit（原方案）', 'React Query + Zustand（改後）'],
+          columns: ['面向', 'Redux Toolkit 原方案', 'React Query + Zustand 改後'],
           rows: [
             ['非同步 API 資料', '需手動寫 slice + thunk，loading/error 自行維護', 'useQuery/useMutation 自動處理 loading/error/cache'],
             ['跨元件同步狀態', '同樣用 redux slice 處理', '改用 Zustand，API 更輕量、幾乎無侵入性'],
@@ -113,18 +113,18 @@ export const PROJECTS_DATA_ZH: FullProject[] = [
           ],
         },
         learnings:
-          '不是「先選定一個狀態管理工具就要用到底」，而是依資料性質分別選擇：Zustand 處理跨元件共享的同步狀態，React Query 處理非同步資料的 cache 與重新驗證；兩者搭配比單用 Redux Toolkit 更貼近實際需求，也降低樣板程式碼。',
+          '不是先選定一個狀態管理工具就要用到底，而是依資料性質分別選擇，Zustand 處理跨元件共享的同步狀態，React Query 處理非同步資料的 cache 與重新驗證，兩者搭配比單用 Redux Toolkit 更貼近實際需求，也降低樣板程式碼。',
       },
       {
-        title: '共用元件邊界設計：從 HOLA 專屬到跨品牌共用',
+        title: '共用元件邊界設計，從 HOLA 專屬到跨品牌共用',
         tabLabel: '共用元件設計',
         whatIDid:
-          '2023 年架構重構時，NX mono-repo 已經把 Apps 底下規劃成 hola、tlw 各自獨立的目錄；但 2024 年 TLW 真正啟動開發時，才發現原本歸在共用層的 libs/hola-layout、libs/hola-ui-component 命名與內容其實是綁死給 HOLA 用的，需要重新界定「真正共用」與「品牌專屬」的邊界，同時釐清 libs/utilities（真正與業務邏輯無關的共用 function/hook）該收斂哪些內容。',
+          '2023 年架構重構時，NX mono-repo 已經把 Apps 底下規劃成 hola、tlw 各自獨立的目錄，但 2024 年 TLW 真正啟動開發時，才發現原本歸在共用層的 libs/hola-layout、libs/hola-ui-component 命名與內容其實是綁死給 HOLA 用的，需要重新界定真正共用與品牌專屬的邊界，同時釐清 libs/utilities 這種真正與業務邏輯無關的共用 function/hook 該收斂哪些內容。',
         techUsed: ['Nx Libs', 'Nx affected build/test', 'Component Boundary Design'],
         challenges:
-          '現象：TLW 改版啟動時，第一直覺是直接沿用 HOLA 已經寫好、放在共用層資料夾的 libs/hola-layout、libs/hola-ui-component。\n\n除錯過程：實際攤開這些元件的內容才發現，雖然放在「共用」的資料夾位置，但命名、樣式變數、甚至部分邏輯都是綁死給 HOLA 用的；若 TLW 直接 import，等於把品牌耦合的程式碼當成通用元件繼承過去，但若每個品牌各自複製一份，又會讓 Nx workspace 的 affected build/test（只重建真正變動的專案）失去意義，兩個品牌會被迫綁在一起重建。\n\n解法：與團隊討論後，把「真正跟業務邏輯脫鉤、任何品牌都能直接套用」的部分抽出來另開資料夾管理，hola-layout/hola-ui-component 維持專屬給 HOLA 用，TLW 需要的共用邏輯則獨立拆分，確保 Nx affected 機制仍然只會抓到真正有變動的專案。',
+          'TLW 改版啟動時，第一直覺是直接沿用 HOLA 已經寫好、放在共用層資料夾的 libs/hola-layout、libs/hola-ui-component。\n\n實際攤開這些元件的內容才發現，雖然放在共用的資料夾位置，但命名、樣式變數，甚至部分邏輯都是綁死給 HOLA 用的，若 TLW 直接 import，等於把品牌耦合的程式碼當成通用元件繼承過去，但若每個品牌各自複製一份，又會讓 Nx workspace 只重建真正變動專案的 affected build/test 失去意義，兩個品牌會被迫綁在一起重建。\n\n與團隊討論後，把真正跟業務邏輯脫鉤、任何品牌都能直接套用的部分抽出來另開資料夾管理，hola-layout/hola-ui-component 維持專屬給 HOLA 用，TLW 需要的共用邏輯則獨立拆分，確保 Nx affected 機制仍然只會抓到真正有變動的專案。',
         comparisonTable: {
-          columns: ['面向', 'Before（TLW 啟動時）', 'After（重新界定後）'],
+          columns: ['面向', 'Before TLW 啟動時', 'After 重新界定後'],
           rows: [
             ['libs/hola-layout, hola-ui-component', '被視為共用層，TLW 打算直接沿用', '維持專屬 HOLA，不再視為跨品牌共用'],
             ['真正通用的邏輯', '與品牌邏輯混在同一個 lib 內', '拆分獨立資料夾，供 TLW 與後續品牌共用'],
@@ -132,18 +132,18 @@ export const PROJECTS_DATA_ZH: FullProject[] = [
           ],
         },
         learnings:
-          '「放在共用目錄」不等於「真的可以共用」，共用層的判斷標準應該是「這段程式碼是否與特定品牌的業務邏輯脫鉤」，而不是資料夾位置；之後規劃新共用元件時會先問「這是通用邏輯，還是剛好目前只有一個品牌在用」。',
+          '放在共用目錄不等於真的可以共用，共用層的判斷標準應該是這段程式碼是否與特定品牌的業務邏輯脫鉤，而不是資料夾位置，之後規劃新共用元件時會先問，這是通用邏輯，還是剛好目前只有一個品牌在用。',
       },
     ],
   },
   {
     id: 'christmas-tree',
-    title: '聖誕樹專案－客製體驗式商品頁',
+    title: '聖誕樹客製體驗商品頁專案',
     category: '前端專案',
     displayCategory: '前端專案',
     period: '2024',
     description:
-      '為聖誕購物季量身打造的高互動活動頁面，整合複雜的客製化邏輯與即時畫面更新，提供消費者身歷其境的購物體驗。',
+      '為聖誕購物季打造的高互動客製化商品頁，讓使用者像組裝真樹一樣，自由搭配樹種、樹頂星、燈飾、吊飾、緞帶、樹裙六個部位配件，組出專屬聖誕樹。\n\n• 支援正反面即時預覽，價格隨選購即時更新\n• 處理多重限制邏輯，特定樹種不相容樹裙、吊飾上限 7 個並自動分配正反面位置\n• 中途離開頁面可保留選擇，直到結帳才清除\n• 串接購物車，處理重複客製化時的確認與覆蓋流程，確保頁面與購物車一致',
     imageUrl: XmasTree1.src,
     link: '/projects/christmas-tree',
     tags: ['Interactive', 'State Design', 'Performance'],
@@ -170,7 +170,93 @@ export const PROJECTS_DATA_ZH: FullProject[] = [
         type: 'presentation',
       },
     ],
-    sections: [],
+    sections: [
+      {
+        title: '資料模型設計',
+        tabLabel: '資料模型',
+        whatIDid: [
+          '以 Zustand 設計選購資料模型，涵蓋樹種、樹頂星、燈飾、吊飾、緞帶、樹裙六個部位，單選部位存字串、吊飾採可重複的字串陣列記錄款式與數量',
+          '吊飾的正反面位置不額外開欄位儲存，而是用陣列順序當作排列依據，索引 0 到 3 對應正面，4 到 6 對應背面，搭配一個全域的正反面 boolean 狀態，渲染時依當前視角決定要畫哪一段陣列',
+          '導入 Zustand persist middleware，將 selectedList／selectedSetNum／customSelectedList 存進 sessionStorage，讓使用者中途離開頁面再返回時能還原選擇，直到結帳完成才清除；商品庫存資料與正反面視角則不持久化，重新整理後一律重打 API、預設回到正面',
+        ],
+        techUsed: ['Zustand', 'Zustand persist middleware', 'TypeScript', 'React'],
+        challenges:
+          '一開始想過要幫每個裝飾品額外存在哪個視角、第幾個位置，但這樣寫入邏輯會變得很重，新增或刪除都要同步維護位置編號。後來改成讓陣列順序本身就代表位置，視角只用單一全域旗標表示，資料結構單純很多，但也代表所有該顯示正面還是背面的判斷都要在寫入陣列的當下同步算好，不能事後才推導。',
+        learnings:
+          '不是所有狀態都需要獨立欄位，能用既有結構，像是陣列順序，隱含表達的資訊，就不用另外設計欄位去重複記錄，減少一份資料就少一份要同步的風險，哪些狀態需要持久化、哪些該在重新整理後重置，也要在設計階段就想清楚，而不是全部無腦存。',
+      },
+      {
+        title: '即時運算與 UI 同步控制',
+        tabLabel: '即時同步',
+        whatIDid: [
+          '用 Zustand 的 computed middleware 把 totalPrice、totalQty、isAllSelected 都設計成從 selectedList 衍生的計算屬性，而不是額外用 action 手動更新，選購狀態一變、金額與數量自動重算',
+          '串接成品展示圖、價格提示文字、已選清單三處 UI，全部訂閱同一份 store，運算結果與畫面同步更新，確保使用者操作過程中的預算透明度',
+        ],
+        techUsed: ['Zustand', 'Zustand computed middleware', 'RTK Query', 'React'],
+        challenges:
+          '同一個操作，像是點選一個吊飾，會牽動畫面上至少三處不同區塊的顯示與一次金額重算，如果各自用 local state 處理，很容易漏更新或算錯總價，如果改成每次選購動作都手動呼叫重算價格的 action，又容易漏呼叫。改用衍生計算屬性後，金額永遠是 selectedList 的函式，不會有忘記重算這種狀態，所有子元件訂閱同一份 store 就能保證畫面與價格同步。',
+        learnings:
+          '能用衍生計算表達的狀態，就不要存成獨立欄位再手動同步，把 totalPrice 設計成 selectedList 的計算結果，而不是另一個要自己維護的 state，從根本上排除了忘記更新總價這類 bug 的可能性。',
+      },
+      {
+        title: '動態影像載入與定位系統',
+        tabLabel: '效能與定位',
+        whatIDid: [
+          '每個裝飾品的圖片都用非同步函式依 SKU 動態載入，並用固定的絕對定位座標，依斷點切換 px 值，把星星、吊飾、緞帶、樹裙精準釘在聖誕樹圖上',
+          '緞帶只存一張圖檔，透過 CSS scale-x(-1) 鏡像出另一側，同一張素材畫出左右兩邊，不用多存一份反向圖檔',
+          '用 ResizeObserver 監聽外層容器尺寸，容器寬度小於 120px 時直接隱藏裝飾圖層，避免在極窄螢幕下擠壓變形',
+          '切換聖誕樹主體圖片時，樹頂星、吊飾、緞帶、樹裙的定位邏輯完全獨立於底圖，不會因為換了樹種而跑位或被重算',
+        ],
+        techUsed: ['React', 'ResizeObserver', 'Tailwind CSS', 'Framer Motion'],
+        challenges:
+          '聖誕樹裝飾是高頻互動的圖形場景，使用者可能快速切換樹種、增減多個吊飾，若每個裝飾都要重新計算座標，介面很容易出現延遲或錯位。挑戰在於把底圖是什麼和裝飾釘在哪裡拆成兩件互不影響的事，底圖只是背景圖替換，裝飾的定位邏輯完全不看底圖是哪一棵樹，換底圖不會觸發任何裝飾重新計算位置。',
+        learnings:
+          '效能問題往往不是單一元件慢，而是資料與渲染沒有解耦，把裝飾定位設計成完全不依賴底圖選擇，才能在高頻互動下維持流暢，也讓日後新增裝飾類型或調整版型時，不需要牽動底圖切換的邏輯。',
+      },
+      {
+        title: '跨裝置滾動與預覽體驗',
+        tabLabel: '滾動體驗',
+        whatIDid: [
+          '桌機版用 GSAP ScrollTrigger 建立 scrub 動畫，讓右側樹狀預覽面板的捲動位置跟隨左側選購清單的捲動進度等比例同步，而不是單純用 CSS sticky 固定',
+          '行動裝置版設計了可收合的預覽小樹迷你列，預設收起，輕點才展開成完整預覽疊層，避免在小螢幕上讓操作區與預覽區永久搶畫面',
+          '監聽捲動方向與頁尾位置，讓底部購物條在使用者向下捲動時自動收起、接近頁尾時完全隱藏，減少常駐 UI 對內容的遮擋',
+        ],
+        techUsed: ['GSAP', 'ScrollTrigger', 'React'],
+        challenges:
+          '桌機版原本可以直接用 CSS position: sticky 讓預覽面板固定在畫面上，但實際需求是預覽面板要跟著左側清單的捲動進度等比例捲動，而不是完全靜止不動，純 CSS 做不到這種與捲動進度綁定的效果，因此改用 GSAP ScrollTrigger 的 scrub 模式，把左側清單的捲動距離對應到右側面板的捲動位移。行動裝置螢幕小，操作區跟預覽區無法同時常駐，因此拆成預設收合、需要時才展開的互動模式。',
+        learnings:
+          '不是所有跟著捲動的需求都適合用 CSS sticky 解決，當需要捲動進度跟另一個區塊的位移量綁定時，還是得靠 scrub 動畫這類工具，行動裝置的介面設計也讓我更清楚，預設隱藏、需要才展開比硬塞進畫面更符合小螢幕的操作邏輯。',
+      },
+      {
+        title: '複雜業務邏輯控制',
+        tabLabel: '業務邏輯',
+        whatIDid: [
+          '設計互斥與相容性檢查，用 useEffect 監看選中的樹種 SKU，若符合特定條件，正式站與測試站各自對應不同 SKU 代碼，就自動把樹裙選項禁用並重設為不選擇，樹種換回相容款式時自動解除限制',
+          '實作吊飾數量與視角的自動化聯動，每次新增或刪除吊飾都會即時計算目前總數，超過 4 個就自動切到背面視角，少於 5 個就切回正面，讓使用者不用手動切換也能看到剛才動到的裝飾',
+          '單選與吊飾複選都遵守同一條規則，只要使用者手動調整任何配件，若目前選的是預設靈感組合就自動切換成自由搭配，避免使用者以為自己在編輯範本，卻其實正在覆蓋不存在的狀態',
+        ],
+        techUsed: ['Zustand', 'React', 'TypeScript'],
+        challenges:
+          '這些規則彼此會互相影響，新增一個吊飾同時要判斷陣列長度是否要觸發視角切換，也要判斷目前是不是該從靈感組合轉成自由搭配，兩件事都要在同一次操作裡同步完成，稍有疏漏就會出現畫面切到背面了，但陣列裡其實還在前 4 格之類的邊界情況。做法是把這些判斷都收在同一個事件處理函式裡依序執行，而不是分散成多個各自訂閱、各自反應的 effect，減少互相搶跑的風險。',
+        learnings:
+          '條件式業務邏輯越多，越需要確保觸發時機是可控的單一入口，而不是讓多個 effect 各自監聽同一份狀態、各自觸發，後者很容易因為執行順序不確定而產生邊界情況，把相關聯的判斷寫在同一個處理函式裡，即使程式碼看起來長一點，也比拆成多個 effect 更容易推理正確性。',
+      },
+      {
+        title: '購物車 API 交易編排與衝突處理',
+        tabLabel: '交易控制',
+        whatIDid: [
+          '設計先查詢、再決定的加入購物車流程，點擊結帳時先呼叫購物車查詢 API，確認購物車裡是否已經有舊的客製化聖誕樹商品，而不是直接把新選購的商品硬塞進去',
+          '偵測到衝突時跳出確認彈窗，讓使用者選擇保留原客製或確認更新，使用者選擇更新後，才依序先移除購物車裡的舊樹相關品項，全部移除成功後再依序寫入新選購的每個部位',
+          '把新增與移除購物車都拆成單筆 API 依序等待的序列，而不是平行送出，每一筆呼叫都個別收集錯誤訊息，任一筆失敗會彙整成清單顯示給使用者，而不是整批失敗後不知道哪筆出錯',
+          '全部品項成功寫入購物車後才清除頁面的選購狀態 sessionStorage 並導向購物車頁，確保頁面看到的客製化樹與購物車裡實際的商品隨時保持一致',
+        ],
+        techUsed: ['RTK Query', 'Zustand'],
+        challenges:
+          '這個頁面的操作結果最終要跟購物車這個外部系統對齊，而使用者可能不是第一次來，購物車裡可能已經有一棵舊的客製化樹。如果不先查詢就直接寫入，會變成新舊商品同時存在購物車裡，使用者反而搞不清楚哪組才是最新選的。挑戰在於要用查詢、確認、依序移除、依序新增這個多步驟流程取代單純的一次性寫入，並且每一步都要能個別回報成功或失敗，而不是把六、七個部位包成一個大請求送出去。',
+        learnings:
+          '涉及外部系統，也就是購物車，且使用者可能重複造訪時，不能假設這是第一次加入購物車，先查詢現況、偵測衝突、讓使用者確認，比事後才發現購物車裡有兩棵樹再讓客服善後，省下的成本高很多。把多筆寫入拆成依序執行並個別收集錯誤，也讓失敗時能明確告訴使用者是哪個品項出了問題，而不是一句籠統的新增失敗。',
+      },
+    ],
   },
   {
     id: 'cms-development',

@@ -32,7 +32,7 @@ export const PROJECTS_DATA_EN: FullProject[] = [
     displayCategory: 'Frontend Project',
     period: '2023 - 2024',
     description:
-      'Previously, two brands maintained separate projects with inconsistent React versions and messy style architectures. Within three months of joining, I participated in this core frontend reconstruction. This was not just a version upgrade, but an architectural transformation determining the technical direction for the next 3-5 years. I was involved from PoC validation to actual development, eventually becoming the most knowledgeable person regarding the overall architecture. To me, the value of architecture lies in making the path easier for those who follow.',
+      "HOLA and TRPLUS (TLW) used to run separate frontend projects: mismatched React versions, inconsistent styling, shared logic duplicated across both. Less than three months after joining, I was pulled into this ground-up rebuild, an architectural transformation that would shape the company's technical direction for years.\n\n• Led PoC validation, using test results rather than gut feeling to drive the architecture decision\n• Merged both brands into one Monorepo, upgraded the framework, rewrote components, replaced the styling system\n• Build time dropped from nearly 20 minutes to under 8\n• Became the team's go-to person on the overall architecture as seniors left, helping onboard new hires",
     imageUrl: Testrite1.src,
     link: '/projects/testrite-refactor',
     tags: ['Monorepo Migration', 'React 18 Upgrade', 'Architecture Design'],
@@ -62,7 +62,7 @@ export const PROJECTS_DATA_EN: FullProject[] = [
         ],
         techUsed: ['NX Monorepo', 'React 18', 'TypeScript', 'Tailwind CSS', 'Jest'],
         challenges:
-          "Symptom: to keep up with constant change requests, the old architecture never dared to retire old components or styles — new ones just got layered on top, so the codebase kept growing. Old and new components shared parts of the same flow, so old flows could never be fully removed either, leaving a lot of dead code behind. Build/deploy time eventually stretched to about 20 minutes.\n\nInvestigation: auditing the single-repo's folder structure showed that Utilities and Components both had \"hola\" and \"others\" code mixed together with no clear module boundary — that was the real root cause of low reusability and the ever-growing codebase, not that the components themselves were badly written. We also re-examined the specific limitations of React 17, class-based components, and Bootstrap: Bootstrap had to be injected at the site's outermost layer, so any version mismatch between header and body would break the layout; class-based components made `this` easy to get wrong in complex scenarios.\n\nFix: proposed an NX mono-repo layout that split Utilities/Apis/Components from a mixed \"hola/tlw\" structure into brand-specific folders under Applications (hola, tlw), each managing its own Utility/Apis/Components, while hoisting genuinely common components (header, footer, product card) to the outer shared layer. In parallel, upgraded to React 18 (automatic batching now applies to all state updates, not just event listeners, plus Suspense/Transition), switched to functional components, replaced Bootstrap with Tailwind (scoped styles fix the leakage problem, plus tree-shaking), and added Jest as the test framework.",
+          "Symptom: to keep up with constant change requests, the old architecture never dared to retire old components or styles; new ones just got layered on top, so the codebase kept growing. Old and new components shared parts of the same flow, so old flows could never be fully removed either, leaving a lot of dead code behind. Build/deploy time eventually stretched to about 20 minutes.\n\nInvestigation: auditing the single-repo's folder structure showed that Utilities and Components both had \"hola\" and \"others\" code mixed together with no clear module boundary, which was the real root cause of low reusability and the ever-growing codebase, not that the components themselves were badly written. We also re-examined the specific limitations of React 17, class-based components, and Bootstrap: Bootstrap had to be injected at the site's outermost layer, so any version mismatch between header and body would break the layout; class-based components made `this` easy to get wrong in complex scenarios.\n\nFix: proposed an NX mono-repo layout that split Utilities/Apis/Components from a mixed \"hola/tlw\" structure into brand-specific folders under Applications (hola, tlw), each managing its own Utility/Apis/Components, while hoisting genuinely common components (header, footer, product card) to the outer shared layer. In parallel, upgraded to React 18 (automatic batching now applies to all state updates, not just event listeners, plus Suspense/Transition), switched to functional components, replaced Bootstrap with Tailwind (scoped styles fix the leakage problem, plus tree-shaking), and added Jest as the test framework.",
         comparisonTable: {
           columns: ['Aspect', 'Old Architecture', 'New Architecture'],
           rows: [
@@ -75,7 +75,7 @@ export const PROJECTS_DATA_EN: FullProject[] = [
           ],
         },
         learnings:
-          "Build time dropped from 17m2s to 7m45s — more than cut in half. Also learned that architectural migration isn't always black-and-white per technology (class-based components still had real advantages for batched complex state and lifecycle control, for instance) — trade-offs should be based on the actual constraints and costs of the situation, not just chasing what's newer. A transformation this large also needs to be broken into distinct plan → build → integration-test → launch phases to stay under control.",
+          "Build time dropped from 17m2s to 7m45s, more than cut in half. Also learned that architectural migration isn't always black-and-white per technology (class-based components still had real advantages for batched complex state and lifecycle control, for instance); trade-offs should be based on the actual constraints and costs of the situation, not just chasing what's newer. A transformation this large also needs to be broken into distinct plan → build → integration-test → launch phases to stay under control.",
       },
       {
         title: 'State Management Evolution: From Redux Toolkit to Zustand + React Query',
@@ -84,27 +84,27 @@ export const PROJECTS_DATA_EN: FullProject[] = [
           'The project originally planned to use redux-toolkit for state management. After real development began, I helped re-evaluate how async API data and cross-component shared state should be handled, and gradually replaced redux-toolkit with a React Query + Zustand combination.',
         techUsed: ['Zustand', 'React Query (useQuery/useMutation)', 'Redux Toolkit (original plan)'],
         challenges:
-          'Symptom: the product page fires a lot of varied async requests (spec switching, stock lookups, coupon checks...). Following the original redux-toolkit plan, every new query meant writing another slice, and loading/error states had to be managed by hand — the codebase kept growing.\n\nInvestigation: re-examining what these states actually were, almost all of them were "fetch data from the backend" query behavior — fundamentally different from the "cross-component synchronous UI state" Redux was designed for. Forcing both into the same tool was the real source of the boilerplate explosion. We also explicitly defined the split in team discussions: useQuery for reads (like coupon checks), useMutation for writes (like add-to-cart).\n\nFix: moved all async API data to React Query\'s useQuery/useMutation (which handles loading/error/cache automatically). Redux Toolkit was kept only for the few cases that truly needed cross-component synchronous state, and even that was gradually replaced by the lighter-weight Zustand — redux-toolkit eventually phased out of the project entirely.',
+          'Symptom: the product page fires a lot of varied async requests (spec switching, stock lookups, coupon checks...). Following the original redux-toolkit plan, every new query meant writing another slice, and loading/error states had to be managed by hand, and the codebase kept growing.\n\nInvestigation: re-examining what these states actually were, almost all of them were "fetch data from the backend" query behavior, fundamentally different from the "cross-component synchronous UI state" Redux was designed for. Forcing both into the same tool was the real source of the boilerplate explosion. We also explicitly defined the split in team discussions: useQuery for reads (like coupon checks), useMutation for writes (like add-to-cart).\n\nFix: moved all async API data to React Query\'s useQuery/useMutation (which handles loading/error/cache automatically). Redux Toolkit was kept only for the few cases that truly needed cross-component synchronous state, and even that was gradually replaced by the lighter-weight Zustand, and redux-toolkit eventually phased out of the project entirely.',
         comparisonTable: {
           columns: ['Aspect', 'Redux Toolkit (original)', 'React Query + Zustand (after)'],
           rows: [
             ['Async API data', 'Manual slice + thunk; loading/error handled by hand', 'useQuery/useMutation auto-handle loading/error/cache'],
-            ['Cross-component sync state', 'Also handled via redux slices', 'Moved to Zustand — lighter, nearly zero boilerplate'],
+            ['Cross-component sync state', 'Also handled via redux slices', 'Moved to Zustand, lighter and nearly zero boilerplate'],
             ['Adding a new query', 'Requires a new slice + reducer', 'Just call useQuery, no extra boilerplate'],
             ['Final role in the project', 'Sole state solution site-wide', 'Phased out; only transitional leftovers remain'],
           ],
         },
         learnings:
-          "It's not about picking one state management tool and sticking with it forever — the right choice depends on the nature of the data: Zustand for cross-component synchronous state, React Query for async data caching and revalidation. The combination fit the actual needs far better than Redux Toolkit alone, and cut boilerplate significantly.",
+          "It's not about picking one state management tool and sticking with it forever; the right choice depends on the nature of the data: Zustand for cross-component synchronous state, React Query for async data caching and revalidation. The combination fit the actual needs far better than Redux Toolkit alone, and cut boilerplate significantly.",
       },
       {
         title: 'Shared Component Boundaries: From HOLA-Only to Cross-Brand',
         tabLabel: 'Component Boundaries',
         whatIDid:
-          "During the 2023 architecture overhaul, the NX mono-repo had already laid out hola and tlw as separate folders under Applications. But when TLW development actually kicked off in 2024, we found that libs/hola-layout and libs/hola-ui-component — nominally in the shared layer — were in fact named and built specifically for HOLA. I had to re-define the boundary between 'genuinely shared' and 'brand-specific,' and clarify what libs/utilities (truly brand-agnostic shared functions/hooks) should actually contain.",
+          "During the 2023 architecture overhaul, the NX mono-repo had already laid out hola and tlw as separate folders under Applications. But when TLW development actually kicked off in 2024, we found that libs/hola-layout and libs/hola-ui-component, nominally in the shared layer, were in fact named and built specifically for HOLA. I had to re-define the boundary between 'genuinely shared' and 'brand-specific,' and clarify what libs/utilities (truly brand-agnostic shared functions/hooks) should actually contain.",
         techUsed: ['Nx Libs', 'Nx affected build/test', 'Component Boundary Design'],
         challenges:
-          'Symptom: when TLW started, the first instinct was to directly reuse libs/hola-layout and libs/hola-ui-component, which HOLA had already built and placed under the shared-layer folder.\n\nInvestigation: unpacking what was actually inside these libraries revealed that, despite living in a "shared" folder, their naming, style variables, and even parts of the logic were hard-wired for HOLA. If TLW imported them directly, brand-coupled code would be inherited as if it were generic. But if each brand maintained its own copy instead, Nx workspace\'s affected build/test (which only rebuilds genuinely changed projects) would lose its point — the two brands would end up forced to rebuild together regardless.\n\nFix: after discussing with the team, we extracted the parts that were truly decoupled from brand-specific business logic into their own folder, kept hola-layout/hola-ui-component HOLA-only, and split out the logic TLW actually needed to share — keeping the Nx affected mechanism accurate to what had really changed.',
+          'Symptom: when TLW started, the first instinct was to directly reuse libs/hola-layout and libs/hola-ui-component, which HOLA had already built and placed under the shared-layer folder.\n\nInvestigation: unpacking what was actually inside these libraries revealed that, despite living in a "shared" folder, their naming, style variables, and even parts of the logic were hard-wired for HOLA. If TLW imported them directly, brand-coupled code would be inherited as if it were generic. But if each brand maintained its own copy instead, Nx workspace\'s affected build/test (which only rebuilds genuinely changed projects) would lose its point, and the two brands would end up forced to rebuild together regardless.\n\nFix: after discussing with the team, we extracted the parts that were truly decoupled from brand-specific business logic into their own folder, kept hola-layout/hola-ui-component HOLA-only, and split out the logic TLW actually needed to share, keeping the Nx affected mechanism accurate to what had really changed.',
         comparisonTable: {
           columns: ['Aspect', 'Before (when TLW started)', 'After (boundary redefined)'],
           rows: [
@@ -114,7 +114,7 @@ export const PROJECTS_DATA_EN: FullProject[] = [
           ],
         },
         learnings:
-          'Living in a "shared" folder doesn\'t mean something is actually shareable — the real test is whether the code is decoupled from brand-specific business logic, not its file path. Since then, whenever planning a new shared component, the first question is: is this genuinely generic logic, or does it just happen to be used by one brand right now?',
+          'Living in a "shared" folder doesn\'t mean something is actually shareable; the real test is whether the code is decoupled from brand-specific business logic, not its file path. Since then, whenever planning a new shared component, the first question is: is this genuinely generic logic, or does it just happen to be used by one brand right now?',
       },
     ],
   },
@@ -125,7 +125,7 @@ export const PROJECTS_DATA_EN: FullProject[] = [
     displayCategory: 'Frontend Project',
     period: '2024',
     description:
-      'A high-interaction campaign page created for the Christmas shopping season, integrating complex customization logic and real-time UI updates to provide an immersive shopping experience.',
+      "A highly interactive customization page for the Christmas shopping season, letting users assemble a tree the way they'd decorate a real one, freely picking six categories of decorations to build their own.\n\n• Live front/back preview, with price updating instantly as items are added or removed\n• Handles constraint logic: certain trunks are incompatible with certain skirts; pendants capped at 7, auto-placed front/back\n• Leaving mid-selection keeps choices intact until checkout\n• Integrates with the cart, confirming before overwriting when a user re-customizes",
     imageUrl: XmasTree1.src,
     link: '/projects/christmas-tree',
     tags: ['Interactive', 'State Design', 'Performance'],
@@ -146,7 +146,93 @@ export const PROJECTS_DATA_EN: FullProject[] = [
         type: 'presentation',
       },
     ],
-    sections: [],
+    sections: [
+      {
+        title: 'Data Model Design',
+        tabLabel: 'Data Model',
+        whatIDid: [
+          'Modeled the selection state in Zustand across six parts (trunk, tree topper, lights, pendants, ribbon, skirt): single-select parts are plain strings, while pendants use a string array that allows repeats to encode both which style and how many',
+          "Rather than storing a separate field for each pendant's view (front/back), the array order itself encodes position: indices 0–3 render on the front face and 4–6 on the back, paired with a single global boolean for which face is currently shown, computed at render time",
+          'Added Zustand\'s persist middleware to write selectedList, selectedSetNum, and customSelectedList to sessionStorage, so a user who leaves mid-selection and returns gets their choices restored, cleared only after checkout; product/stock data and the current view are deliberately left out of persistence and reset to the front face on reload',
+        ],
+        techUsed: ['Zustand', 'Zustand persist middleware', 'TypeScript', 'React'],
+        challenges:
+          "The first instinct was to give every decoration its own \"which view, which position\" fields, but that makes every add/remove responsible for keeping position numbers in sync too. Letting array order itself represent position, with a single global flag for the active view, kept the data structure much simpler, at the cost of every write to the array needing to already know which face it should end up on, rather than deriving that later.",
+        learnings:
+          "Not every piece of state needs its own field; information that's already implied by an existing structure (array order, in this case) doesn't need a parallel field duplicating it, and one fewer piece of state is one fewer thing that can drift out of sync. Deciding what should persist versus reset on reload also needs to be a deliberate design choice, not \"just persist everything.\"",
+      },
+      {
+        title: 'Real-time Computation & UI Sync',
+        tabLabel: 'Real-time Sync',
+        whatIDid: [
+          "Used Zustand's computed middleware to derive totalPrice, totalQty, and isAllSelected straight from selectedList as computed properties, rather than updating them via a separate manual action, so any change to the selection recalculates them automatically",
+          'Wired up the finished-tree preview, the price hint text, and the selected-items list to the same store, so all three stay in sync with the derived totals, keeping budget visible throughout the flow',
+        ],
+        techUsed: ['Zustand', 'Zustand computed middleware', 'RTK Query', 'React'],
+        challenges:
+          'A single action (e.g. tapping one pendant) has to move at least three separate UI regions and trigger a price recalculation at once. Handling that with local state per component, or with a manually-called "recalculate" action, both leave room for a missed update or a stale total. Deriving the totals as computed properties of selectedList instead means the price is always a pure function of the selection, so there\'s no separate step to forget to call.',
+        learnings:
+          "State that can be expressed as a derived computation shouldn't be stored as its own field that you manually keep in sync. Making totalPrice a computed result of selectedList, rather than a parallel piece of state, eliminates an entire class of \"forgot to recalculate the total\" bugs by construction.",
+      },
+      {
+        title: 'Dynamic Image Loading & Positioning',
+        tabLabel: 'Performance & Positioning',
+        whatIDid: [
+          'Loaded each decoration image asynchronously by SKU and pinned tree toppers, pendants, ribbons, and skirts to fixed absolute-position coordinates (breakpoint-specific px values) on the tree image',
+          'Stored only one ribbon image and mirrored it for the other side with a CSS scale-x(-1) transform, rendering both sides from a single asset instead of shipping a second flipped file',
+          'Used a ResizeObserver on the outer container to hide the decoration layer entirely once the container drops below 120px wide, avoiding cramped, distorted rendering on very narrow screens',
+          "Kept the tree topper, pendant, ribbon, and skirt positioning logic fully independent of the trunk image, so switching trunks never shifts or recalculates any decoration's position",
+        ],
+        techUsed: ['React', 'ResizeObserver', 'Tailwind CSS', 'Framer Motion'],
+        challenges:
+          "Tree decoration is a high-frequency graphics scenario: users can rapidly switch trunks or add/remove many pendants, and recalculating every decoration's coordinates on each change would quickly show up as lag or misalignment. The challenge was splitting \"which trunk is selected\" from \"where decorations are pinned\" into two things that never affect each other: decoration positioning logic doesn't reference the trunk at all, so swapping trunks never triggers any repositioning.",
+        learnings:
+          "Performance problems are rarely about one slow component; they're usually about data and rendering not being decoupled. Making decoration positioning fully independent of trunk selection is what kept things smooth under heavy interaction, and it also means adding a new decoration type or adjusting the layout later never touches the trunk-switching logic.",
+      },
+      {
+        title: 'Cross-device Scroll & Preview Experience',
+        tabLabel: 'Scroll Experience',
+        whatIDid: [
+          'On desktop, used GSAP ScrollTrigger to scrub-sync the right-hand tree preview panel\'s scroll position proportionally to the scroll progress of the left-hand part-selection list, instead of relying on plain CSS sticky positioning',
+          'On mobile, built a collapsible "preview your tree" mini-bar, collapsed by default and expanding into a full preview overlay on tap, so the selection area and the preview never permanently compete for the same small screen',
+          "Tracked scroll direction and proximity to the page footer to auto-collapse the bottom cart bar while scrolling down and hide it entirely near the footer, reducing how much persistent UI covers the content",
+        ],
+        techUsed: ['GSAP', 'ScrollTrigger', 'React'],
+        challenges:
+          "The desktop preview panel could have just used CSS position: sticky, but the actual requirement was for it to scroll proportionally with the left list's scroll progress, not stay perfectly still. Plain CSS can't bind one region's scroll offset to another region's scroll progress, so GSAP ScrollTrigger's scrub mode was used to map the left list's scroll distance onto the right panel's scroll position. On mobile, the small viewport meant the selection UI and the preview couldn't both stay permanently visible, which led to the collapsed-by-default, expand-on-demand pattern.",
+        learnings:
+          "Not every \"follows the scroll\" requirement is a job for CSS sticky; once you need one region's scroll progress bound to another region's displacement, you need a scrub-style animation tool instead. Designing for mobile's tighter real estate also clarified that \"hidden by default, expand on demand\" usually serves small screens better than trying to force everything to stay visible at once.",
+      },
+      {
+        title: 'Complex Business Logic Control',
+        tabLabel: 'Business Logic',
+        whatIDid: [
+          "Designed mutual-exclusion and compatibility checks with a useEffect watching the selected trunk SKU: matching a specific SKU (a different code per environment, UAT vs. production) auto-disables the skirt option and resets it to \"not needed,\" and lifts the restriction automatically once the trunk changes back to a compatible one",
+          'Implemented automatic view-switching tied to pendant count: every add or remove recalculates the total, auto-switching to the back view once the count exceeds 4 and back to the front once it drops below 5, so the just-changed decoration is always visible without a manual toggle',
+          'Applied the same rule to both single-select parts and the pendant multi-select: any manual edit to a part while a preset "inspiration" combo is active automatically switches the state to "custom," so the user is never silently editing a template that no longer reflects what they see',
+        ],
+        techUsed: ['Zustand', 'React', 'TypeScript'],
+        challenges:
+          "These rules interact with each other: adding one pendant has to decide both whether the array length should trigger a view switch and whether the current selection should flip from preset to custom, and both have to resolve within the same operation. Miss the ordering and you get edge cases like \"the view flipped to the back, but the array still only has the front four filled.\" The fix was running all of these checks in sequence inside a single event handler, rather than splitting them into several independent effects that each react to the same state on their own.",
+        learnings:
+          "The more conditional business logic a feature accumulates, the more it matters that the trigger point stays a single, controllable entry; multiple effects each independently watching the same state is a recipe for order-dependent edge cases. Keeping related checks in one handler, even if that function gets longer, is easier to reason about correctly than splitting them across effects.",
+      },
+      {
+        title: 'Cart API Transaction Orchestration & Conflict Handling',
+        tabLabel: 'Transactions',
+        whatIDid: [
+          'Designed a "check first, then decide" add-to-cart flow: checkout first calls a cart-lookup API to check whether an older customized tree is already sitting in the cart, instead of writing the new selection straight in',
+          'On detecting a conflict, surfaces a confirmation dialog ("keep the original" vs. "confirm replace"); once the user confirms, the old tree-related items are removed from the cart first, and only after all removals succeed does it write each part of the new selection',
+          'Split both the add and remove operations into sequential single-item API calls (rather than firing them in parallel), collecting errors per call, so one failing item surfaces as a specific error rather than an opaque batch failure',
+          'Only clears the page\'s selection state (sessionStorage) and redirects to the cart page once every item has been written successfully, keeping what the page shows in sync with what\'s actually in the cart',
+        ],
+        techUsed: ['RTK Query', 'Zustand'],
+        challenges:
+          "This page's end state ultimately has to reconcile with an external system (the cart), and the user might not be a first-time visitor; the cart could already hold an older customized tree. Writing the new selection in without checking first would leave both the old and new trees in the cart at once, leaving the user unsure which one is current. The challenge was replacing a single one-shot write with a multi-step \"check → confirm → remove in sequence → add in sequence\" flow where every step can report success or failure independently, instead of bundling six or seven parts into one big request.",
+        learnings:
+          "When a flow touches an external system (the cart) and the user might be a repeat visitor, you can't assume this is their first add-to-cart. Checking current state and surfacing a conflict for the user to confirm costs far less than a support ticket after the fact when two trees show up in someone's cart. Splitting multiple writes into a sequence with per-item error collection also means a failure can point at exactly which item broke, instead of a generic \"add failed\" message.",
+      },
+    ],
   },
   {
     id: 'cms-development',
