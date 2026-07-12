@@ -24,11 +24,12 @@ console.log(
   Portfolio4.src,
   Portfolio5.src,
 );
-const CATEGORIES_ZH = ['全部', '前端專案', 'PM 專案', '後端專案', '其他'] as const;
-const CATEGORIES_EN = ['All', 'Frontend', 'PM', 'Backend', 'Other'] as const;
+const CATEGORIES_ZH = ['全部', 'AI 實作', '前端專案', 'PM 專案', '後端專案', '其他'] as const;
+const CATEGORIES_EN = ['All', 'AI Implementation', 'Frontend', 'PM', 'Backend', 'Other'] as const;
 
 const CATEGORY_MAP: Record<string, string> = {
   all: 'all',
+  ai: 'AI 實作',
   frontend: '前端專案',
   pm: 'PM 專案',
   backend: '後端專案',
@@ -57,13 +58,14 @@ function ProjectsContent() {
   const handleCategoryChange = (label: string) => {
     const index = (categories as readonly string[]).indexOf(label);
     const id = Object.keys(CATEGORY_MAP)[index];
-    
-    if (id && id !== categoryId) {
+
+    if (id && id !== activeCategory) {
       setIsTabLoading(true);
+      setActiveCategory(id);
       router.push(`/projects?category=${id}`, { scroll: false });
       setTimeout(() => {
         setIsTabLoading(false);
-      }, 600);
+      }, 300);
     }
   };
 
@@ -86,9 +88,7 @@ function ProjectsContent() {
               </span>
             </div>
           </header>
-        </RevealOnScroll>
 
-        <RevealOnScroll delay={100}>
           <ProjectTabs
             categories={categories}
             activeCategory={categories[Object.keys(CATEGORY_MAP).indexOf(activeCategory)]}
@@ -97,21 +97,19 @@ function ProjectsContent() {
         </RevealOnScroll>
 
         {/* Project Grid - 4 cards across on desktop */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {isTabLoading
-            ? Array.from({ length: 8 }).map((_, index) => (
+        <RevealOnScroll>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {isTabLoading
+              ? Array.from({ length: 8 }).map((_, index) => (
                 <ProjectCardSkeleton key={`skeleton-${index}`} />
               ))
-            : filteredProjects.map((project, index) => (
-                <RevealOnScroll
-                  key={index}
-                  delay={200 + index * 100}
-                  className="h-full"
-                >
+              : filteredProjects.map((project, index) => (
+                <div key={index} className="h-full">
                   <ProjectCard {...project} />
-                </RevealOnScroll>
+                </div>
               ))}
-        </div>
+          </div>
+        </RevealOnScroll>
       </div>
     </div>
   );

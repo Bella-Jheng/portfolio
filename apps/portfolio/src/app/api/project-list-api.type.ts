@@ -1,4 +1,4 @@
-export type ProjectCategory = '前端專案' | 'PM 專案' | '後端專案' | '其他';
+export type ProjectCategory = '前端專案' | 'AI 實作' | 'PM 專案' | '後端專案' | '其他';
 
 export interface Project {
   id: string;
