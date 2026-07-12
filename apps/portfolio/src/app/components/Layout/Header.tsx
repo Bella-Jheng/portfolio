@@ -68,9 +68,8 @@ export const Header: React.FC = () => {
         中
       </span>
       <span
-        className={`z-0 pointer-events-none inline-block h-[24px] w-[34px] transform rounded-full bg-[#FBFAF1] transition-all duration-700 ease-in-out shadow-[0_2px_4px_rgba(0,0,0,0.15)] ${
-          isEn ? 'translate-x-[34px]' : 'translate-x-0'
-        }`}
+        className={`z-0 pointer-events-none inline-block h-[24px] w-[34px] transform rounded-full bg-[#FBFAF1] transition-all duration-700 ease-in-out shadow-[0_2px_4px_rgba(0,0,0,0.15)] ${isEn ? 'translate-x-[34px]' : 'translate-x-0'
+          }`}
       />
     </button>
   );
@@ -97,7 +96,7 @@ export const Header: React.FC = () => {
             <p className="hidden md:block text-md text-gray-700 mt-1">
               {isEn
                 ? 'A Front-End Software Engineer, good at communication.'
-                : '擅長溝通轉譯的前端工程師'}
+                : '樂於溝通、理解用戶的前端工程師'}
             </p>
           </div>
 
@@ -120,33 +119,30 @@ export const Header: React.FC = () => {
         <nav className="hidden sm:flex text-md font-medium items-center space-x-5">
           <Link
             href="/"
-            className={`${
-              pathname === '/'
-                ? 'text-txt-red font-bold'
-                : 'text-gray-700 hover:text-txt-brown'
-            }`}
+            className={`${pathname === '/'
+              ? 'text-txt-red font-bold'
+              : 'text-gray-700 hover:text-txt-brown'
+              }`}
           >
             {isEn ? 'Home' : '首頁'}
           </Link>
           <span className="text-gray-400">|</span>
           <Link
             href="/resume"
-            className={`${
-              pathname === '/resume'
-                ? 'text-txt-red font-bold'
-                : 'text-gray-700 hover:text-txt-brown'
-            }`}
+            className={`${pathname === '/resume'
+              ? 'text-txt-red font-bold'
+              : 'text-gray-700 hover:text-txt-brown'
+              }`}
           >
             {isEn ? 'Resume' : '履歷'}
           </Link>
           <span className="text-gray-400">|</span>
           <Link
             href="/projects"
-            className={`${
-              pathname.startsWith('/projects')
-                ? 'text-txt-red font-bold'
-                : 'text-gray-700 hover:text-txt-brown'
-            }`}
+            className={`${pathname.startsWith('/projects')
+              ? 'text-txt-red font-bold'
+              : 'text-gray-700 hover:text-txt-brown'
+              }`}
           >
             {isEn ? 'Projects' : '作品'}
           </Link>
@@ -158,9 +154,8 @@ export const Header: React.FC = () => {
 
       {/* Mobile Menu Overlay */}
       <div
-        className={`fixed inset-0 z-50 bg-[#FBF9E1] flex flex-col p-8 transition-transform duration-500 ease-in-out transform ${
-          isMenuOpen ? 'translate-x-0' : 'translate-x-full'
-        }`}
+        className={`fixed inset-0 z-50 bg-[#FBF9E1] flex flex-col p-8 transition-transform duration-500 ease-in-out transform ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'
+          }`}
       >
         {/* Menu Header */}
         <div className="flex justify-between items-center mb-16">
@@ -181,9 +176,8 @@ export const Header: React.FC = () => {
           <div className="flex flex-col">
             <Link
               href="/"
-              className={`flex items-center text-xl font-black tracking-wider mb-2 ${
-                pathname === '/' ? 'text-txt-red' : 'text-txt-brown'
-              }`}
+              className={`flex items-center text-xl font-black tracking-wider mb-2 ${pathname === '/' ? 'text-txt-red' : 'text-txt-brown'
+                }`}
               onClick={toggleMenu}
             >
               <img src={BlackFlower.src} alt="" className="w-8 h-8 mr-4" />{' '}
@@ -195,9 +189,8 @@ export const Header: React.FC = () => {
           <div className="flex flex-col">
             <Link
               href="/resume"
-              className={`flex items-center text-2xl font-black tracking-wider mb-2 ${
-                pathname === '/resume' ? 'text-txt-red' : 'text-txt-brown'
-              }`}
+              className={`flex items-center text-2xl font-black tracking-wider mb-2 ${pathname === '/resume' ? 'text-txt-red' : 'text-txt-brown'
+                }`}
               onClick={toggleMenu}
             >
               <img src={RedFlower.src} alt="" className="w-8 h-8 mr-4" />{' '}
@@ -209,11 +202,10 @@ export const Header: React.FC = () => {
           <div className="flex flex-col">
             <Link
               href="/projects"
-              className={`flex items-center text-2xl font-black tracking-wider mb-2 ${
-                pathname.startsWith('/projects')
-                  ? 'text-txt-red'
-                  : 'text-txt-brown'
-              }`}
+              className={`flex items-center text-2xl font-black tracking-wider mb-2 ${pathname.startsWith('/projects')
+                ? 'text-txt-red'
+                : 'text-txt-brown'
+                }`}
               onClick={toggleMenu}
             >
               <img src={BlueFlower.src} alt="" className="w-8 h-8 mr-4" />{' '}
