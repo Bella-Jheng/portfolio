@@ -46,10 +46,20 @@ function ProjectsContent() {
 
   const [activeCategory, setActiveCategory] = useState(categoryId);
   const [isTabLoading, setIsTabLoading] = useState(false);
+  // Tracks a category we've already applied locally but whose URL update
+  // (router.push) hasn't landed yet, so the sync effect below doesn't
+  // revert activeCategory back to the stale categoryId in the meantime.
+  const pendingCategoryRef = React.useRef<string | null>(null);
 
   const categories = isEn ? CATEGORIES_EN : CATEGORIES_ZH;
 
   useEffect(() => {
+    if (pendingCategoryRef.current !== null) {
+      if (categoryId === pendingCategoryRef.current) {
+        pendingCategoryRef.current = null;
+      }
+      return;
+    }
     if (categoryId !== activeCategory) {
       setActiveCategory(categoryId);
     }
@@ -62,6 +72,7 @@ function ProjectsContent() {
     if (id && id !== activeCategory) {
       setIsTabLoading(true);
       setActiveCategory(id);
+      pendingCategoryRef.current = id;
       router.push(`/projects?category=${id}`, { scroll: false });
       setTimeout(() => {
         setIsTabLoading(false);

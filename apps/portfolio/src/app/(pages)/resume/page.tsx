@@ -73,9 +73,8 @@ export default function ResumePage() {
             key={index}
             src={flower.type === 'black' ? BlackFlower.src : BlueFlower.src}
             alt=""
-            className={`absolute select-none transition-transform duration-700 pointer-events-none ${
-              flower.className
-            } ${rotatingIndex === index ? 'rotate-180' : ''}`}
+            className={`absolute select-none transition-transform duration-700 pointer-events-none ${flower.className
+              } ${rotatingIndex === index ? 'rotate-180' : ''}`}
           />
         ))}
       <div className="max-w-6xl mx-auto mb-8 flex justify-end relative z-10">
@@ -169,142 +168,129 @@ export default function ResumePage() {
 
         {/* Experience Section with Vertical Timeline */}
         <section className="mb-12 relative">
-          <RevealOnScroll delay={300} forceVisible={isExporting}>
-            <div className="flex items-center gap-2 mb-8">
-              <h2 className="text-4xl font-black text-[#5E7985]">
-                {isEn ? 'Experience' : '工作經驗'}
-              </h2>
-              <img src={BlueFlower.src} alt="" className="w-8 h-8" />
-            </div>
-          </RevealOnScroll>
+          <div className="flex items-center gap-2 mb-8">
+            <h2 className="text-4xl font-black text-[#5E7985]">
+              {isEn ? 'Experience' : '工作經驗'}
+            </h2>
+            <img src={BlueFlower.src} alt="" className="w-8 h-8" />
+          </div>
 
           {/* Vertical Line (Desktop Only) */}
           <div className="absolute left-[8.5rem] top-24 bottom-10 w-[1px] bg-gray-200 hidden md:block z-0" />
 
           <div className="space-y-12">
             {resumeData.experience.map((exp, idx) => (
-              <RevealOnScroll
-                key={idx}
-                delay={400 + idx * 200}
-                forceVisible={isExporting}
+              <div
+                className="group flex flex-col md:flex-row gap-8 p-6 md:p-6 bg-white md:bg-transparent border border-gray-100 md:border-none rounded-2xl transition-all duration-300 relative hover:shadow-lg md:hover:shadow-none md:hover:bg-gray-50/50 md:rounded-xl"
+                style={{ zIndex: 1 }}
               >
-                <div
-                  className="group flex flex-col md:flex-row gap-8 p-6 md:p-6 bg-white md:bg-transparent border border-gray-100 md:border-none rounded-2xl transition-all duration-300 relative hover:shadow-lg md:hover:shadow-none md:hover:bg-gray-50/50 md:rounded-xl"
-                  style={{ zIndex: 1 }}
-                >
-                  <div className="relative">
-                    <p className="text-base font-bold text-gray-400 mb-4 font-mono tracking-tighter">
-                      {exp.period}
-                    </p>
+                <div className="relative">
+                  <p className="text-base font-bold text-gray-400 mb-4 font-mono tracking-tighter">
+                    {exp.period}
+                  </p>
 
-                    <div
-                      className={`w-16 h-16 md:w-20 md:h-20 transition-transform duration-300 group-hover:scale-105 group-hover:shadow-md ${
-                        exp.logoType === 'text'
-                          ? 'rounded-2xl flex items-center justify-center p-2'
-                          : 'flex items-center justify-center text-[#333] italic'
+                  <div
+                    className={`w-16 h-16 md:w-20 md:h-20 transition-transform duration-300 group-hover:scale-105 group-hover:shadow-md ${exp.logoType === 'text'
+                        ? 'rounded-2xl flex items-center justify-center p-2'
+                        : 'flex items-center justify-center text-[#333] italic'
                       }`}
-                      style={{ backgroundColor: exp.logoColor }}
+                    style={{ backgroundColor: exp.logoColor }}
+                  >
+                    <span
+                      className={
+                        exp.logoType === 'text'
+                          ? 'text-white font-black text-xl md:text-2xl text-center'
+                          : 'font-black text-3xl md:text-4xl italic'
+                      }
                     >
-                      <span
-                        className={
-                          exp.logoType === 'text'
-                            ? 'text-white font-black text-xl md:text-2xl text-center'
-                            : 'font-black text-3xl md:text-4xl italic'
-                        }
-                      >
-                        {exp.logoText}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex flex-col flex-1">
-                    <h3 className="text-2xl font-black mb-6 text-txt-darkBrown group-hover:text-[#5E7985] transition-colors duration-300">
-                      {exp.title}
-                    </h3>
-                    <ul className="text-base space-y-2 text-txt-darkBrown flex-grow">
-                      {exp.bulletPoints.map((point, pIdx) => (
-                        <li
-                          key={pIdx}
-                          className="pl-4 relative before:content-[''] before:absolute before:left-0 before:top-[0.6em] before:w-1.5 before:h-1.5 before:bg-gray-300 before:rounded-full"
-                        >
-                          {point}
-                        </li>
-                      ))}
-                    </ul>
-
-                    <div className="pt-8 border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-                      <div className="flex flex-wrap gap-2 md:gap-3">
-                        {exp.skills.map((skill, sIdx) => (
-                          <div
-                            key={sIdx}
-                            className="transition-all duration-300 hover:scale-105 hover:-translate-y-1"
-                          >
-                            <Tag className="shadow-sm group-hover/tag:shadow-md group-hover/tag:bg-[#DEDCA8]">
-                              {skill}
-                            </Tag>
-                          </div>
-                        ))}
-                      </div>
-
-                      {!isExporting && exp.projectUrl && (
-                        <a
-                          href={exp.projectUrl}
-                          className="group/link flex items-center text-txt-darkBrown font-bold text-sm uppercase tracking-widest hover:text-[#5E7985] transition-all duration-300 underline md:no-underline underline-offset-4"
-                        >
-                          {isEn ? 'see projects' : '查看更多作品'}
-                          <ArrowRight className="ml-1 w-4 h-4 transform transition-transform duration-300 group-hover/link:translate-x-1" />
-                        </a>
-                      )}
-                    </div>
+                      {exp.logoText}
+                    </span>
                   </div>
                 </div>
-              </RevealOnScroll>
+                <div className="flex flex-col flex-1">
+                  <h3 className="text-2xl font-black mb-6 text-txt-darkBrown group-hover:text-[#5E7985] transition-colors duration-300">
+                    {exp.title}
+                  </h3>
+                  <ul className="text-base space-y-2 text-txt-darkBrown flex-grow">
+                    {exp.bulletPoints.map((point, pIdx) => (
+                      <li
+                        key={pIdx}
+                        className="pl-4 relative before:content-[''] before:absolute before:left-0 before:top-[0.6em] before:w-1.5 before:h-1.5 before:bg-gray-300 before:rounded-full"
+                      >
+                        {point}
+                      </li>
+                    ))}
+                  </ul>
+
+                  <div className="pt-8 border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+                    <div className="flex flex-wrap gap-2 md:gap-3">
+                      {exp.skills.map((skill, sIdx) => (
+                        <div
+                          key={sIdx}
+                          className="transition-all duration-300 hover:scale-105 hover:-translate-y-1"
+                        >
+                          <Tag className="shadow-sm group-hover/tag:shadow-md group-hover/tag:bg-[#DEDCA8]">
+                            {skill}
+                          </Tag>
+                        </div>
+                      ))}
+                    </div>
+
+                    {!isExporting && exp.projectUrl && (
+                      <a
+                        href={exp.projectUrl}
+                        className="group/link flex items-center text-txt-darkBrown font-bold text-sm uppercase tracking-widest hover:text-[#5E7985] transition-all duration-300 underline md:no-underline underline-offset-4"
+                      >
+                        {isEn ? 'see projects' : '查看更多作品'}
+                        <ArrowRight className="ml-1 w-4 h-4 transform transition-transform duration-300 group-hover/link:translate-x-1" />
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         </section>
 
-        <RevealOnScroll delay={500} forceVisible={isExporting}>
-          <div className="border-b-2 border-dashed border-gray-300 my-10"></div>
-        </RevealOnScroll>
+        <div className="border-b-2 border-dashed border-gray-300 my-10"></div>
 
         {/* Education Section */}
-        <RevealOnScroll delay={600} forceVisible={isExporting}>
-          <section>
-            <div className="flex items-center gap-2 mb-8">
-              <h2 className="text-4xl font-black text-[#B23A3A]">
-                {isEn ? 'Education' : '學歷'}
-              </h2>
-              <img src={RedFlower.src} alt="" className="w-6 h-6" />
-            </div>
+        <section>
+          <div className="flex items-center gap-2 mb-8">
+            <h2 className="text-4xl font-black text-[#B23A3A]">
+              {isEn ? 'Education' : '學歷'}
+            </h2>
+            <img src={RedFlower.src} alt="" className="w-6 h-6" />
+          </div>
 
-            <div className="space-y-8">
-              {resumeData.education.map((edu, idx) => (
+          <div className="space-y-8">
+            {resumeData.education.map((edu, idx) => (
+              <div
+                key={idx}
+                className="flex items-center gap-8 group hover:bg-gray-50 p-4 rounded-xl transition-colors duration-300"
+              >
                 <div
-                  key={idx}
-                  className="flex items-center gap-8 group hover:bg-gray-50 p-4 rounded-xl transition-colors duration-300"
+                  className="w-20 h-20 rounded-full flex items-center justify-center p-2 transition-transform duration-500 group-hover:rotate-12"
+                  style={{ backgroundColor: edu.logoColor }}
                 >
-                  <div
-                    className="w-20 h-20 rounded-full flex items-center justify-center p-2 transition-transform duration-500 group-hover:rotate-12"
-                    style={{ backgroundColor: edu.logoColor }}
-                  >
-                    <div className="w-16 h-16 border-2 border-white rounded-full flex items-center justify-center">
-                      <span className="text-white text-sm text-center font-bold">
-                        {edu.logoText}
-                      </span>
-                    </div>
-                  </div>
-                  <div>
-                    <p className="font-bold text-xl">
-                      {edu.school}
-                    </p>
-                    <p className="text-base text-gray-700">
-                      {edu.department}
-                    </p>
+                  <div className="w-16 h-16 border-2 border-white rounded-full flex items-center justify-center">
+                    <span className="text-white text-sm text-center font-bold">
+                      {edu.logoText}
+                    </span>
                   </div>
                 </div>
-              ))}
-            </div>
-          </section>
-        </RevealOnScroll>
+                <div>
+                  <p className="font-bold text-xl">
+                    {edu.school}
+                  </p>
+                  <p className="text-base text-gray-700">
+                    {edu.department}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
       </div>
     </div>
   );

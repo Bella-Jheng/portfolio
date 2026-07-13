@@ -13,6 +13,7 @@ export const metadata = {
 import { MSWProvider } from '../MSWProvider';
 import ReactQueryProvider from '../ReactQueryProvider';
 import { GlobalLoading } from '../components/Common/loading';
+import { ScrollToTopButton } from '../components/Common/scroll-to-top';
 
 export default function RootLayout({
   children,
@@ -28,6 +29,7 @@ export default function RootLayout({
             <Header />
             <main className="">{children}</main>
             <Footer />
+            <ScrollToTopButton />
           </ReactQueryProvider>
         </MSWProvider>
       </body>

@@ -188,9 +188,6 @@ export default function ProjectDetailPage({
         {/* Detailed Sections (Tabbed) */}
         {project.sections && project.sections.length > 0 && (
             <div className="mt-10 md:mt-14">
-              <h2 className="text-xl md:text-2xl font-black text-txt-darkBrown mb-5 text-center">
-                {isEn ? 'Project Deep Dive' : '專案深度剖析'}
-              </h2>
               <ProjectDetailTabs sections={project.sections} />
             </div>
         )}

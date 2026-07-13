@@ -24,8 +24,8 @@ export const GlobalLoading: React.FC = () => {
 
   return isVisible ? (
     <LoadingScreen
-      className={`transition-opacity duration-1000 ease-out ${
-        isLoading ? 'opacity-100' : 'opacity-0 pointer-events-none'
+      className={`pointer-events-none transition-opacity duration-1000 ease-out ${
+        isLoading ? 'opacity-100' : 'opacity-0'
       }`}
     />
   ) : null;
