@@ -11,7 +11,7 @@ export interface ProjectSection {
   tabLabel?: string;
   whatIDid: string | string[];
   techUsed: string[];
-  challenges: string;
+  challenges: string | string[];
   comparisonTable?: {
     columns: string[];
     rows: string[][];

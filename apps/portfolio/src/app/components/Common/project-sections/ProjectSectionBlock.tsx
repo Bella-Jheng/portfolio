@@ -4,6 +4,36 @@ import { highlightText } from '../highlight-text';
 
 const LABEL_CLASS = 'text-tiny font-bold uppercase tracking-widest text-txt-darkBrown/60';
 const BODY_CLASS = 'text-tiny text-txt-darkBrown leading-relaxed';
+const HEADING_PATTERN = /^##(.+?)##\s*/;
+
+function splitHeading(text: string): { heading: string | null; body: string } {
+  const match = text.match(HEADING_PATTERN);
+  if (!match) {
+    return { heading: null, body: text };
+  }
+  return { heading: match[1], body: text.slice(match[0].length) };
+}
+
+function HeadedText({ text, inline }: { text: string; inline?: boolean }) {
+  const { heading, body } = splitHeading(text);
+  if (!heading) {
+    return <>{highlightText(body)}</>;
+  }
+  if (inline) {
+    return (
+      <>
+        <span className="font-bold text-txt-brown">{heading}:</span> {highlightText(body)}
+      </>
+    );
+  }
+  return (
+    <>
+      <span className="font-bold text-txt-brown">{heading}</span>
+      <br />
+      {highlightText(body)}
+    </>
+  );
+}
 
 function Field({
   label,
@@ -18,11 +48,19 @@ function Field({
       {Array.isArray(children) ? (
         <ul className={`list-disc list-inside space-y-1 ${BODY_CLASS}`}>
           {children.map((item) => (
-            <li key={item}>{highlightText(item)}</li>
+            <li key={item}>
+              <HeadedText text={item} inline />
+            </li>
           ))}
         </ul>
       ) : (
-        <div className={`whitespace-pre-line ${BODY_CLASS}`}>{highlightText(children)}</div>
+        <div className={`space-y-3 ${BODY_CLASS}`}>
+          {children.split('\n\n').map((paragraph, index) => (
+            <p key={index} className="whitespace-pre-line">
+              <HeadedText text={paragraph} />
+            </p>
+          ))}
+        </div>
       )}
     </div>
   );
