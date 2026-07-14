@@ -4,7 +4,6 @@ import React, { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Overlay } from '../../Atom/Overlay';
 import { Play, VolumeMute, VolumeUp, Close } from '@/public/icon';
-import { ImageDetail } from './ImageDetail';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Thumbs, FreeMode, Zoom } from 'swiper/modules';
 
@@ -126,6 +125,42 @@ const VideoSlide: React.FC<{ url: string; isActive: boolean }> = ({
   );
 };
 
+const HoverZoomImage: React.FC<{ src: string; alt: string }> = ({
+  src,
+  alt,
+}) => {
+  const [isHovering, setIsHovering] = useState(false);
+  const [origin, setOrigin] = useState({ x: 50, y: 50 });
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setOrigin({
+      x: ((e.clientX - rect.left) / rect.width) * 100,
+      y: ((e.clientY - rect.top) / rect.height) * 100,
+    });
+  };
+
+  return (
+    <div
+      className="relative w-full h-full flex items-center justify-center overflow-hidden"
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
+      onMouseMove={handleMouseMove}
+    >
+      <img
+        src={src}
+        alt={alt}
+        className="max-w-full max-h-full w-auto h-auto object-contain transition-transform duration-200 ease-out cursor-zoom-in"
+        style={{
+          transform: isHovering ? 'scale(2)' : 'scale(1)',
+          transformOrigin: `${origin.x}% ${origin.y}%`,
+        }}
+        onClick={(e) => e.stopPropagation()}
+      />
+    </div>
+  );
+};
+
 export const Lightbox: React.FC<LightboxProps> = ({
   isOpen,
   onClose,
@@ -206,20 +241,10 @@ export const Lightbox: React.FC<LightboxProps> = ({
                 {({ isActive }) => (
                   <div className="relative w-full h-full flex items-center justify-center">
                     {item.type === 'image' ? (
-                      <div className="swiper-zoom-container relative w-full h-full">
-                        {/* <img
+                      <div className="swiper-zoom-container flex w-full h-full items-center justify-center">
+                        <HoverZoomImage
                           src={item.url}
                           alt={`Gallery item ${index}`}
-                          className="object-contain"
-                          sizes="100vw"
-                        /> */}
-                        <ImageDetail
-                          className="w-full md:w-auto md:h-full"
-                          imageInfo={{
-                            src: item.url,
-                            alt: `Gallery item ${index}`,
-                          }}
-                          onClick={(e) => e.stopPropagation()}
                         />
                       </div>
                     ) : (
