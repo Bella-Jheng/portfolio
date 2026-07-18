@@ -50,7 +50,7 @@ export async function generateBaziReading(params: {
   pillars: BaziPillars;
   knowledge: string;
   currentYear: number;
-  majorFortuneInfo?: { currentCycle: string; currentAnnual: string };
+  majorFortuneInfo?: { currentCycle: string; currentAnnual: string; currentMonth: string };
   strength: string;
 }): Promise<FortuneReading> {
   const { name, gender, birthYear, birthMonth, birthDay, birthHour, pillars, knowledge, currentYear, majorFortuneInfo, strength } = params;
@@ -64,7 +64,7 @@ export async function generateBaziReading(params: {
     : '';
 
   const cycleSection = majorFortuneInfo
-    ? `\n【當前大運 / 流年】\n目前大運：${majorFortuneInfo.currentCycle}\n今年流年：${majorFortuneInfo.currentAnnual}\n`
+    ? `\n【當前大運 / 流年 / 流月】\n目前大運：${majorFortuneInfo.currentCycle}\n今年流年：${majorFortuneInfo.currentAnnual}\n本月流月：${majorFortuneInfo.currentMonth}\n`
     : '';
 
   const prompt = `你是一位精通子平八字的命理師。請根據以下已排出的八字命盤，依照子平命理規則進行深度分析。
@@ -130,7 +130,10 @@ ${formatPillarsForPrompt(pillars)}
 8. **${currentYear} 年運勢**（HTML 格式，200-500字）：${majorFortuneInfo
   ? `內部參考：目前大運「${majorFortuneInfo.currentCycle}」、今年流年「${majorFortuneInfo.currentAnnual}」。⚠️ 輸出時完全不要出現「大運」「流年」這兩個詞，也不要提到任何干支或五行組合名稱（如戊土、丙火、甲乙丙丁、子丑寅卯等），全部轉換成一般人聽得懂的白話說法，點出今年整體的有利方向與需要注意的風險。`
   : '（未提供運勢資訊，請略過此項，輸出空字串）'}
-9. **十神命格格局白話重點結論**（遵循徐玉蘭老師體系）：
+9. **本月運勢**（HTML 格式，200-500字）：${majorFortuneInfo
+  ? `內部參考：本月流月「${majorFortuneInfo.currentMonth}」，並綜合目前大運「${majorFortuneInfo.currentCycle}」、今年流年「${majorFortuneInfo.currentAnnual}」判斷本月氣場對命主的影響。⚠️ 輸出時完全不要出現「大運」「流年」「流月」這些詞，也不要提到任何干支或五行組合名稱，全部轉換成一般人聽得懂的白話說法，點出這個月的重點提醒與有利方向。`
+  : '（未提供運勢資訊，請略過此項，輸出空字串）'}
+10. **十神命格格局白話重點結論**（遵循徐玉蘭老師體系）：
   - 六個面向各 2–4 句：①核心性格 ②優勢能力 ③潛在風險 ④事業方向 ⑤感情特質（依性別分析夫星/妻星） ⑥身強弱對此格局的影響
   - 注意：晚子時（23:00–24:00）歸當日計算，月柱不變
 
@@ -144,6 +147,7 @@ ${formatPillarsForPrompt(pillars)}
   "remedy": "<p>補運建議 HTML...</p>",
   "actions": "1. 具體建議一\n2. 具體建議二\n3. 具體建議三",
   "cycleAnalysis": "<p>${currentYear} 年運勢 HTML...</p>",
+  "monthlyFortune": "<p>本月運勢 HTML...</p>",
   "tenGodAnalysis": "【格局】格局名稱｜身強/弱｜用神：XX｜忌神：XX\n【核心性格】...\n【優勢能力】...\n【潛在風險】...\n【事業方向】...\n【感情特質】...\n【格局影響】...",
   "traits": "關鍵詞一・關鍵詞二・關鍵詞三"
 }`;
@@ -165,9 +169,15 @@ const DETAIL_SECTIONS = {
   remedy: { key: 'remedyDetail', instruction: () => `**補運建議**（HTML 格式，200-500字）：根據用神五行給出顏色、方向、生肖、飾品建議` },
   cycleAnalysis: {
     key: 'cycleAnalysisDetail',
-    instruction: (year: number, majorFortuneInfo?: { currentCycle: string; currentAnnual: string }) => majorFortuneInfo
+    instruction: (year: number, majorFortuneInfo?: { currentCycle: string; currentAnnual: string; currentMonth: string }) => majorFortuneInfo
       ? `**${year} 年運勢**（HTML 格式，200-500字）：內部參考目前大運「${majorFortuneInfo.currentCycle}」與今年流年「${majorFortuneInfo.currentAnnual}」的核心氣場與五行特質對命主的影響，分析今年整體運勢走向、有利方向與需要注意的風險。⚠️ 輸出時完全不要出現「大運」「流年」字樣，也不要提到任何干支或五行組合名稱（如戊土、丙火、甲乙丙丁、子丑寅卯等），全部轉換成一般人聽得懂的白話說法。這一項不需要點名命盤干支，跟其他面向的「引用命盤」要求不同。`
       : `**${year} 年運勢**（未提供運勢資訊，請輸出空字串）`,
+  },
+  monthlyFortune: {
+    key: 'monthlyFortuneDetail',
+    instruction: (year: number, majorFortuneInfo?: { currentCycle: string; currentAnnual: string; currentMonth: string }) => majorFortuneInfo
+      ? `**本月運勢**（HTML 格式，200-500字）：內部參考本月流月「${majorFortuneInfo.currentMonth}」，並綜合目前大運「${majorFortuneInfo.currentCycle}」與今年流年「${majorFortuneInfo.currentAnnual}」判斷本月氣場對命主的影響，分析這個月的重點提醒與有利方向。⚠️ 輸出時完全不要出現「大運」「流年」「流月」字樣，也不要提到任何干支或五行組合名稱（如戊土、丙火、甲乙丙丁、子丑寅卯等），全部轉換成一般人聽得懂的白話說法。這一項不需要點名命盤干支，跟其他面向的「引用命盤」要求不同。`
+      : `**本月運勢**（未提供運勢資訊，請輸出空字串）`,
   },
   tenGodAnalysis: {
     key: 'tenGodAnalysisDetail',
@@ -194,7 +204,7 @@ export async function generateDetailedAnalysis(params: {
   pillars: BaziPillars;
   knowledge: string;
   currentYear: number;
-  majorFortuneInfo?: { currentCycle: string; currentAnnual: string };
+  majorFortuneInfo?: { currentCycle: string; currentAnnual: string; currentMonth: string };
   strength: string;
   sections: DetailSection[];
   existingSummary?: Partial<FortuneReading>;
@@ -210,7 +220,7 @@ export async function generateDetailedAnalysis(params: {
     : '';
 
   const cycleSection = majorFortuneInfo
-    ? `\n【當前大運 / 流年】\n目前大運：${majorFortuneInfo.currentCycle}\n今年流年：${majorFortuneInfo.currentAnnual}\n`
+    ? `\n【當前大運 / 流年 / 流月】\n目前大運：${majorFortuneInfo.currentCycle}\n今年流年：${majorFortuneInfo.currentAnnual}\n本月流月：${majorFortuneInfo.currentMonth}\n`
     : '';
 
   const summarySection = existingSummary

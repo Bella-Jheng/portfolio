@@ -37,11 +37,11 @@ export function CycleAnalysisSlide({ reading, theme, mobile }: CycleAnalysisSlid
     : -1;
   const currentCycle = fortune && cycleIdx >= 0 ? fortune.cycles[cycleIdx] : null;
 
-  if (!reading.fortune.cycleAnalysis) {
+  if (!reading.fortune.cycleAnalysis && !reading.fortune.cycleAnalysisDetail) {
     return (
       <div className="flex flex-col items-center justify-center w-full h-full py-12 text-[#636363]">
         <span className="text-4xl mb-3">🔄</span>
-        <p className="text-sm">尚未有大運 × 流年解析，請使用 Admin 重新排盤</p>
+        <p className="text-sm">尚未有大運 × 流年解析，請點選下方按鈕生成</p>
       </div>
     );
   }

@@ -6,19 +6,33 @@ import type { MagazineTheme } from './theme';
 import { useAuth } from '../../../lib/auth-context';
 import { TenGodsSlide } from './TenGodsSlide';
 import { CycleAnalysisSlide } from './CycleAnalysisSlide';
+import { MonthlyFortuneSlide } from './MonthlyFortuneSlide';
 import { StandardSlide } from './StandardSlide';
 import { ActionSlide } from './ActionSlide';
 
-type DetailSection = 'wealth' | 'career' | 'romance' | 'health' | 'remedy' | 'cycleAnalysis' | 'tenGodAnalysis';
+type DetailSection = 'wealth' | 'career' | 'romance' | 'health' | 'remedy' | 'cycleAnalysis' | 'monthlyFortune' | 'tenGodAnalysis';
 
 const TAB_TO_SECTION: Record<string, DetailSection | undefined> = {
   cycle: 'cycleAnalysis',
+  monthly: 'monthlyFortune',
   tengods: 'tenGodAnalysis',
   wealth: 'wealth',
   career: 'career',
   romance: 'romance',
   health: 'health',
   remedy: 'remedy',
+};
+
+// 每個 DetailSection 對應到 FortuneReading 上的「詳細版」欄位，用來判斷該分頁是否完全沒有內容（新欄位尚未補上）
+const DETAIL_FIELD: Record<DetailSection, 'wealthDetail' | 'careerDetail' | 'romanceDetail' | 'healthDetail' | 'remedyDetail' | 'cycleAnalysisDetail' | 'monthlyFortuneDetail' | 'tenGodAnalysisDetail'> = {
+  wealth: 'wealthDetail',
+  career: 'careerDetail',
+  romance: 'romanceDetail',
+  health: 'healthDetail',
+  remedy: 'remedyDetail',
+  cycleAnalysis: 'cycleAnalysisDetail',
+  monthlyFortune: 'monthlyFortuneDetail',
+  tenGodAnalysis: 'tenGodAnalysisDetail',
 };
 
 interface TabDef {
@@ -30,15 +44,16 @@ interface TabDef {
   accentColor: string | null;
 }
 
-const buildTabs = (accent: string, currentYear: number): TabDef[] => [
+const buildTabs = (accent: string, currentYear: number, currentMonth: number): TabDef[] => [
   { id: 'cycle',    num: '01', label: `${currentYear}年運勢`, subtitle: '當前大運流年交互影響分析',              emoji: '🌊', accentColor: null },
-  { id: 'tengods',  num: '02', label: '個性特質',      subtitle: '命格解讀、十神分析與內外在性格全觀',    emoji: '🔮', accentColor: accent },
-  { id: 'wealth',   num: '03', label: '財運狀況',      subtitle: '財富能量與正偏財運解析',               emoji: '💰', accentColor: '#D4A017' },
-  { id: 'career',   num: '04', label: '工作事業',      subtitle: '職場發展方向與機遇分析',               emoji: '💼', accentColor: '#60A8D0' },
-  { id: 'romance',  num: '05', label: '感情桃花',      subtitle: '感情模式與姻緣時機解析',               emoji: '🌸', accentColor: '#E87878' },
-  { id: 'health',   num: '06', label: '健康狀況',      subtitle: '身體能量強弱與注意事項',               emoji: '🌿', accentColor: '#7AC97A' },
-  { id: 'remedy',   num: '07', label: '補運建議',      subtitle: '強化五行與改善運勢的方法',             emoji: '✨', accentColor: accent },
-  { id: 'actions',  num: '08', label: '年度行動建議',  subtitle: '重點方向與具體行動計畫',               emoji: '🎯', accentColor: accent },
+  { id: 'monthly',  num: '02', label: `${currentMonth}月運勢`, subtitle: '當月流月氣場與重點提醒',               emoji: '🌙', accentColor: accent },
+  { id: 'tengods',  num: '03', label: '個性特質',      subtitle: '命格解讀、十神分析與內外在性格全觀',    emoji: '🔮', accentColor: accent },
+  { id: 'wealth',   num: '04', label: '財運狀況',      subtitle: '財富能量與正偏財運解析',               emoji: '💰', accentColor: '#D4A017' },
+  { id: 'career',   num: '05', label: '工作事業',      subtitle: '職場發展方向與機遇分析',               emoji: '💼', accentColor: '#60A8D0' },
+  { id: 'romance',  num: '06', label: '感情桃花',      subtitle: '感情模式與姻緣時機解析',               emoji: '🌸', accentColor: '#E87878' },
+  { id: 'health',   num: '07', label: '健康狀況',      subtitle: '身體能量強弱與注意事項',               emoji: '🌿', accentColor: '#7AC97A' },
+  { id: 'remedy',   num: '08', label: '補運建議',      subtitle: '強化五行與改善運勢的方法',             emoji: '✨', accentColor: accent },
+  { id: 'actions',  num: '09', label: '年度行動建議',  subtitle: '重點方向與具體行動計畫',               emoji: '🎯', accentColor: accent },
 ];
 
 interface TabSectionProps {
@@ -56,8 +71,10 @@ export function TabSection({ reading, theme, activeTabIdx, onActiveTabChange, on
   const tabBarRef = useRef<HTMLDivElement>(null);
   const sectionTopRef = useRef<HTMLDivElement>(null);
   const fortune = reading.fortune;
-  const tabs = buildTabs(theme.accent, new Date().getFullYear());
+  const now = new Date();
+  const tabs = buildTabs(theme.accent, now.getFullYear(), now.getMonth() + 1);
   const activeSection = TAB_TO_SECTION[tabs[activeIdx].id];
+  const missingContent = !!activeSection && !fortune[activeSection] && !fortune[DETAIL_FIELD[activeSection]];
   const [generating, setGenerating] = useState(false);
 
   // 暫時的測試按鈕邏輯：正式版要換成訂閱/選項解鎖後才觸發，這裡先不做配額檢查
@@ -95,6 +112,7 @@ export function TabSection({ reading, theme, activeTabIdx, onActiveTabChange, on
     const accent = tab.accentColor ?? theme.accent;
     switch (tab.id) {
       case 'cycle':    return <CycleAnalysisSlide reading={reading} theme={theme} mobile />;
+      case 'monthly':  return <MonthlyFortuneSlide reading={reading} theme={theme} mobile />;
       case 'tengods':
         return (
           <div className="flex flex-col gap-6">
@@ -146,7 +164,19 @@ export function TabSection({ reading, theme, activeTabIdx, onActiveTabChange, on
         <div className="bg-white border border-[#EAE5DF] rounded-3xl shadow-sm p-6 md:p-8 min-h-[300px]">
           {renderContent()}
         </div>
-        {activeSection && isAdmin && (
+        {activeSection && missingContent && (
+          <div className="flex justify-center mt-4">
+            <button
+              onClick={() => handleGenerateDetail(activeSection)}
+              disabled={generating}
+              style={{ backgroundColor: theme.accent }}
+              className="text-sm font-medium text-white px-6 py-2.5 rounded-full hover:opacity-90 transition-all disabled:opacity-40 shadow-sm"
+            >
+              {generating ? '生成中…' : '🔄 立即更新此內容'}
+            </button>
+          </div>
+        )}
+        {activeSection && isAdmin && !missingContent && (
           <div className="flex justify-center mt-4">
             <button
               onClick={() => handleGenerateDetail(activeSection)}

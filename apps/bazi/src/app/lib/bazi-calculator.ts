@@ -130,7 +130,7 @@ function getYearPillar(bornYear: number): Pillar {
 // ─── Month pillar ────────────────────────────────────────────────────────────
 // 五虎遁年起月法: 寅月(index 2) stem = yearStem%5*2 + 2
 // general: monthStem = (yearStem%5*2 + monthBranch) % 10
-function getMonthPillar(year: number, month: number, day: number): Pillar {
+export function getMonthPillar(year: number, month: number, day: number): Pillar {
   const { branchIndex, stemYear } = getMonthBranchAndYear(year, month, day);
   const yearStemIndex = mod(stemYear - 1984, 10);
   const stemIndex = mod(yearStemIndex % 5 * 2 + branchIndex, 10);
@@ -362,7 +362,8 @@ export function calculateDayMasterStrength(pillars: BaziPillars): DayMasterStren
 
   // Helper: effective element for a branch (with 庫 trigger and 三合/三會 conversion)
   const effectiveBranchEl = (branch: string, pillarStem: string): string => {
-    if (branchConvert.has(branch)) return branchConvert.get(branch)!;
+    const converted = branchConvert.get(branch);
+    if (converted) return converted;
     const ku = KU_CONFIG[branch];
     if (ku?.triggers.includes(pillarStem)) return ku.stored; // 庫 triggered → converts to stored element
     return BRANCH_ELEMENTS[branch]; // 本氣

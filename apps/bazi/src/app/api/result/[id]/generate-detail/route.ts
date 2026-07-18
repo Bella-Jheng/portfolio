@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { readingService, ServiceError } from '../../../../lib/services/reading-service';
 import type { DetailSection } from '../../../../lib/anthropic';
 
-const VALID_SECTIONS: DetailSection[] = ['wealth', 'career', 'romance', 'health', 'remedy', 'cycleAnalysis', 'tenGodAnalysis'];
+const VALID_SECTIONS: DetailSection[] = ['wealth', 'career', 'romance', 'health', 'remedy', 'cycleAnalysis', 'monthlyFortune', 'tenGodAnalysis'];
 
 // 暫時的測試端點：目前沒有身份驗證/解鎖配額檢查，正式上線前要補上
 // （只有訂閱/已解鎖的使用者才能觸發這個 API，且要有防止重複扣款/重複生成的邏輯）。

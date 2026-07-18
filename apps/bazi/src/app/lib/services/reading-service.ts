@@ -7,6 +7,7 @@ import {
   getDominantElements,
   calculateMajorFortune,
   getAnnualPillar,
+  getMonthPillar,
   calculateDayMasterStrength,
   STEMS,
   BRANCHES,
@@ -29,6 +30,7 @@ export class ServiceError extends Error {
 export interface MajorFortuneInfo {
   currentCycle: string;
   currentAnnual: string;
+  currentMonth: string;
 }
 
 export interface ReadingGenerationContext {
@@ -70,11 +72,15 @@ class ReadingService {
       const cycleIdx = mf.cycles.findLastIndex((cycle) => cycle.startAge <= virtualAge);
       const cycle = cycleIdx >= 0 ? mf.cycles[cycleIdx] : null;
       const annual = getAnnualPillar(currentYear);
+      const today = new Date();
+      const currentMonthNum = today.getMonth() + 1;
+      const monthly = getMonthPillar(currentYear, currentMonthNum, today.getDate());
       majorFortuneInfo = {
         currentCycle: cycle
           ? `${cycle.stem}${cycle.branch}（起運歲 ${cycle.startAge}，${cycle.startYear} 年起）`
           : '尚未入大運',
         currentAnnual: `${annual.stem}${annual.branch}（${currentYear} 年）`,
+        currentMonth: `${monthly.stem}${monthly.branch}（${currentYear} 年 ${currentMonthNum} 月）`,
       };
     }
 

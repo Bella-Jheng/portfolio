@@ -29,6 +29,8 @@ export interface FortuneReading {
   actions?: string;
   cycleAnalysis?: string;
   cycleAnalysisDetail?: string;
+  monthlyFortune?: string;
+  monthlyFortuneDetail?: string;
   tenGodAnalysis?: string;
   tenGodAnalysisDetail?: string;
   traits?: string;
