@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminAuth } from '../../lib/firebase';
-import { feedbackRepository } from '../../lib/repositories/feedback-repository';
+import { feedbackRepository, type FeedbackDoc } from '../../lib/repositories/feedback-repository';
+import { maskName } from '../../lib/mask-name';
 
 import { v4 as uuidv4 } from 'uuid';
 
 const ADMIN_UID = process.env.ADMIN_UID ?? '';
+const VALID_STATUSES = ['unprocessed', 'in_progress', 'resolved'];
 
 async function verifyAdmin(request: NextRequest): Promise<boolean> {
   const token = request.headers.get('Authorization')?.replace('Bearer ', '');
@@ -29,14 +31,22 @@ async function verifyUser(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
-  if (!(await verifyAdmin(request))) {
-    return NextResponse.json({ error: '權限不足' }, { status: 403 });
-  }
+function toPublicEntry(entry: FeedbackDoc) {
+  const rawName = (entry.userName as string) || (entry.userEmail ? String(entry.userEmail).split('@')[0] : '') || '匿名';
+  return {
+    id: entry.id,
+    message: entry.message,
+    displayName: maskName(rawName),
+    createdAt: entry.createdAt,
+    status: (entry.status as string) ?? 'unprocessed',
+    comments: (entry.comments as unknown[]) ?? [],
+  };
+}
 
+export async function GET() {
   try {
     const entries = await feedbackRepository.listAll();
-    return NextResponse.json(entries);
+    return NextResponse.json(entries.map(toPublicEntry));
   } catch (error) {
     console.error('Get feedback error:', error);
     return NextResponse.json({ error: '讀取回饋失敗' }, { status: 500 });
@@ -65,6 +75,8 @@ export async function POST(request: NextRequest) {
       uid: decoded.uid,
       userName: decoded.name ?? null,
       userEmail: decoded.email ?? null,
+      status: 'unprocessed',
+      comments: [],
       createdAt: now,
     });
 
@@ -72,5 +84,55 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Create feedback error:', error);
     return NextResponse.json({ error: '送出回饋失敗' }, { status: 500 });
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  if (!(await verifyAdmin(request))) {
+    return NextResponse.json({ error: '權限不足' }, { status: 403 });
+  }
+
+  try {
+    const body = await request.json();
+    const { id, status, comment, commentId, deleteComment } = body as {
+      id: string;
+      status?: string;
+      comment?: string;
+      commentId?: string;
+      deleteComment?: boolean;
+    };
+
+    if (!id) {
+      return NextResponse.json({ error: '缺少回饋 ID' }, { status: 400 });
+    }
+
+    if (status && !VALID_STATUSES.includes(status)) {
+      return NextResponse.json({ error: '無效的狀態' }, { status: 400 });
+    }
+
+    if (!status && !comment?.trim() && !(deleteComment && commentId)) {
+      return NextResponse.json({ error: '請提供要更新的狀態或留言' }, { status: 400 });
+    }
+
+    if (status) {
+      await feedbackRepository.updateStatus(id, status);
+    }
+
+    if (deleteComment && commentId) {
+      await feedbackRepository.deleteComment(id, commentId);
+    } else if (commentId && comment?.trim()) {
+      await feedbackRepository.editComment(id, commentId, comment.trim());
+    } else if (comment?.trim()) {
+      await feedbackRepository.addComment(id, {
+        id: uuidv4(),
+        message: comment.trim(),
+        createdAt: new Date().toISOString(),
+      });
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Update feedback error:', error);
+    return NextResponse.json({ error: '更新回饋失敗' }, { status: 500 });
   }
 }

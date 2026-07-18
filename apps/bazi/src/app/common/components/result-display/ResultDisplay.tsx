@@ -53,8 +53,26 @@ export function ResultDisplay({ reading, onUpdate }: ResultDisplayProps) {
   });
   const [containerWidth, setContainerWidth] = useState(0);
   const [activeTabIdx, setActiveTabIdx] = useState(0);
+  const [feedbackNudgeSignal, setFeedbackNudgeSignal] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const theme = deriveTheme(reading);
+
+  // 用 sessionStorage 記錄本次瀏覽切換過幾次頁籤：不用存 DB，且分頁/瀏覽器關掉後自然歸零，
+  // 下次重新開頁面就會從 0 重新累積，滿 4 次就跳出回饋視窗；同一次瀏覽只跳一次，填過與否都不重複彈出
+  const handleTabChange = (idx: number) => {
+    setActiveTabIdx(idx);
+    try {
+      if (sessionStorage.getItem('bazi_feedbackNudgeShown') === 'true') return;
+      const count = Number(sessionStorage.getItem('bazi_tabViewCount') ?? '0') + 1;
+      sessionStorage.setItem('bazi_tabViewCount', String(count));
+      if (count >= 4) {
+        sessionStorage.setItem('bazi_feedbackNudgeShown', 'true');
+        setFeedbackNudgeSignal((prev) => prev + 1);
+      }
+    } catch {
+      // sessionStorage 在隱私模式等環境可能不可用，略過即可，不影響主要功能
+    }
+  };
 
   useEffect(() => {
     const el = containerRef.current;
@@ -206,7 +224,7 @@ export function ResultDisplay({ reading, onUpdate }: ResultDisplayProps) {
 
       {/* Tab section: all other slides */}
       <div>
-        <TabSection reading={reading} theme={theme} activeTabIdx={activeTabIdx} onActiveTabChange={setActiveTabIdx} onUpdate={onUpdate} />
+        <TabSection reading={reading} theme={theme} activeTabIdx={activeTabIdx} onActiveTabChange={handleTabChange} onUpdate={onUpdate} />
       </div>
 
       <QASection reading={reading} theme={theme} onUpdate={onUpdate} />
@@ -215,7 +233,7 @@ export function ResultDisplay({ reading, onUpdate }: ResultDisplayProps) {
         <AdminQASection reading={reading} onUpdate={onUpdate} />
       )}
 
-      <FeedbackWidget />
+      <FeedbackWidget autoOpenSignal={feedbackNudgeSignal} />
 
       {showTopBtn && (
         <button

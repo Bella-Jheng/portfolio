@@ -8,10 +8,17 @@ import { useAuth } from '../../../lib/auth-context';
 import { useFetcher } from '../../../lib/use-fetcher';
 import { GoogleLoginButton } from '../google-login-button/GoogleLoginButton';
 
-export function FeedbackWidget() {
+interface FeedbackWidgetProps {
+  // 父層每次想主動彈出回饋視窗時，遞增這個數字（例如使用者瀏覽到第 4 個頁籤）；用遞增數字而非布林值，
+  // 是因為就算視窗已經開著、又被觸發一次，數字變化仍能被 effect 偵測到
+  autoOpenSignal?: number;
+}
+
+export function FeedbackWidget({ autoOpenSignal }: FeedbackWidgetProps) {
   const { user } = useAuth();
   const apiFetch = useFetcher();
   const [open, setOpen] = useState(false);
+  const [nudge, setNudge] = useState(false);
   const [message, setMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -30,11 +37,18 @@ export function FeedbackWidget() {
   // Portal 到 body 讓 fixed 定位真的以視窗為準。
   useEffect(() => setMounted(true), []);
 
-  const handleOpen = () => {
+  const handleOpen = (isNudge = false) => {
     setSubmitted(false);
     setError('');
+    setNudge(isNudge);
     setOpen(true);
   };
+
+  // 父層每次遞增 autoOpenSignal 就代表要主動彈出一次（例如使用者瀏覽到第 4 個頁籤時）
+  useEffect(() => {
+    if (!autoOpenSignal) return;
+    handleOpen(true);
+  }, [autoOpenSignal]);
 
   const handleSubmit = async () => {
     if (!message.trim()) return;
@@ -80,7 +94,7 @@ export function FeedbackWidget() {
           </AnimatePresence>
         </div>
         <motion.button
-          onClick={handleOpen}
+          onClick={() => handleOpen(false)}
           aria-label="意見回饋"
           className="relative w-11 h-11 rounded-full bg-white shadow-lg border border-[#EAE5DF] flex items-center justify-center"
           animate={{ y: [0, -6, 0] }}
@@ -131,8 +145,13 @@ export function FeedbackWidget() {
 
                 <div className="flex items-center gap-2">
                   <Image src="/cats/bazi-cat-default.webp" alt="" width={28} height={28} />
-                  <h3 className="text-[#4A4A4A] font-black text-sm tracking-wide">告訴我們你的想法</h3>
+                  <h3 className="text-[#4A4A4A] font-black text-sm tracking-wide">
+                    {nudge ? '你的支持是我最大的動力 💛' : '告訴我們你的想法'}
+                  </h3>
                 </div>
+                {nudge && !submitted && (
+                  <p className="text-xs text-[#6B6159] -mt-2">給點想法，讓我把網站做得更好</p>
+                )}
 
                 {!user ? (
                   <div className="py-4 space-y-4 text-center">
