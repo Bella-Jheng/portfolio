@@ -1,6 +1,8 @@
+import { Suspense } from 'react';
 import './global.css';
 import { Header } from '../components/Layout/Header';
 import { Footer } from '../components/Layout/Footer';
+import { LanguageUrlSync } from '../components/Common/language-url-sync';
 
 export const metadata = {
   title: "I'm Yiting - Portfolio",
@@ -25,6 +27,9 @@ export default function RootLayout({
       <body>
         <MSWProvider>
           <ReactQueryProvider>
+            <Suspense fallback={null}>
+              <LanguageUrlSync />
+            </Suspense>
             <GlobalLoading />
             <Header />
             <main className="">{children}</main>
