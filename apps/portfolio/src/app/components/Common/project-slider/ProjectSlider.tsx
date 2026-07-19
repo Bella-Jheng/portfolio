@@ -28,9 +28,9 @@ export const ProjectSlider: React.FC<ProjectSliderProps> = ({
   const swiperRef = useRef<SwiperType>(null);
 
   return (
-    <div className="w-full py-12 group relative overflow-hidden slider-root">
+    <div className="w-full py-6 group relative overflow-hidden slider-root">
       {title && (
-        <div className="max-w-7xl mx-auto px-4 md:px-10 mb-8">
+        <div className="max-w-7xl mx-auto px-4 md:px-10 mb-4">
           <h2 className="text-2xl md:text-3xl font-black text-txt-darkBrown section-title">
             {title}
           </h2>

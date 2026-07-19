@@ -38,7 +38,7 @@ const FLOWERS = [
     id: 'flower-6',
     type: 'blue',
     className:
-      'top-[35%] left-[25%] md:top-[30%] md:right-[20%] w-16 h-16 md:w-20 md:h-20',
+      'top-[35%] left-[6%] md:top-[30%] md:right-[20%] w-16 h-16 md:w-20 md:h-20',
   },
   {
     id: 'flower-7',
@@ -50,7 +50,7 @@ const FLOWERS = [
     id: 'flower-8',
     type: 'black',
     className:
-      'bottom-[12%] left-[30%] md:bottom-[38%] md:left-[55%] md:w-10 w-8 md:h-10 h-8 opacity-80',
+      'bottom-[12%] right-[6%] md:bottom-[38%] md:left-[55%] md:w-10 w-8 md:h-10 h-8 opacity-80',
   },
   {
     id: 'flower-9',
@@ -62,7 +62,7 @@ const FLOWERS = [
     id: 'flower-10',
     type: 'black',
     className:
-      'bottom-[38%] left-[60%] md:bottom-[50%] md:left-[15%] md:w-8 w-6 md:h-8 h-6 opacity-80',
+      'bottom-[42%] left-[5%] md:bottom-[50%] md:left-[15%] md:w-8 w-6 md:h-8 h-6 opacity-80',
   },
 ];
 
