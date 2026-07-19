@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import { Tag } from '../../components/Atom/Tag';
 import { ArrowRight } from '@/public/icon';
@@ -9,6 +9,9 @@ import { RevealOnScroll } from '../../components/Common/reveal-on-scroll';
 import { useResume } from '../../api/resume-api';
 import { DownloadPDF } from '../../components/Common/download-pdf';
 import { useLanguage } from '../../hooks/use-language';
+
+const RESUME_PDF_ZH = '/resume/yiting-resume-zh.pdf';
+const RESUME_PDF_EN = '/resume/yiting-resume-en.pdf';
 
 const FLOWERS = [
   {
@@ -36,9 +39,7 @@ const FLOWERS = [
 export default function ResumePage() {
   const { isEn } = useLanguage();
   const { data: resumeData, isLoading, isError } = useResume();
-  const [isExporting, setIsExporting] = useState(false);
   const [rotatingIndex, setRotatingIndex] = useState<number | null>(null);
-  const resumeRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -67,71 +68,32 @@ export default function ResumePage() {
 
   return (
     <div className="bg-[#FBFAF1] min-h-screen pb-10 pt-24 md:pt-32 px-4 md:px-0 relative overflow-hidden">
-      {!isExporting &&
-        FLOWERS.map((flower, index) => (
-          <img
-            key={index}
-            src={flower.type === 'black' ? BlackFlower.src : BlueFlower.src}
-            alt=""
-            className={`absolute select-none transition-transform duration-700 pointer-events-none ${flower.className
-              } ${rotatingIndex === index ? 'rotate-180' : ''}`}
-          />
-        ))}
-      <div className="max-w-6xl mx-auto mb-8 flex justify-end relative z-10">
+      {FLOWERS.map((flower, index) => (
+        <img
+          key={index}
+          src={flower.type === 'black' ? BlackFlower.src : BlueFlower.src}
+          alt=""
+          className={`absolute select-none transition-transform duration-700 pointer-events-none ${flower.className
+            } ${rotatingIndex === index ? 'rotate-180' : ''}`}
+        />
+      ))}
+      <div className="max-w-6xl mx-auto mb-8 flex flex-col sm:flex-row justify-end gap-3 relative z-10">
         <DownloadPDF
-          targetRef={resumeRef}
-          onExportingChange={setIsExporting}
-          fileName="resume"
+          href={RESUME_PDF_ZH}
+          label={isEn ? 'Download Chinese Resume' : '下載中文履歷'}
+        />
+        <DownloadPDF
+          href={RESUME_PDF_EN}
+          label={isEn ? 'Download English Resume' : '下載英文履歷'}
         />
       </div>
 
       <div
-        ref={resumeRef}
         className="max-w-6xl mx-auto md:bg-white p-8 pt-0 md:p-16 shadow-lg rounded-sm text-txt-darkBrown font-sans text-base"
         id="resume-content"
       >
-        {/* Basic Section - Only visible during PDF export */}
-        {isExporting && (
-          <>
-            <section className="mb-12">
-              <div className="flex items-center gap-2 mb-6 text-[#A6C98A]">
-                <h2 className="text-4xl font-black">
-                  {isEn ? 'Basic' : '基本資訊'}
-                </h2>
-                <img src={BlackFlower.src} alt="" className="w-6 h-6" />
-              </div>
-
-              <div className="space-y-2 text-base text-txt-darkBrown">
-                <p className="font-bold text-xl text-txt-darkBrown mb-4">
-                  {isEn ? 'Yiting Jheng 鄭伊婷' : '鄭伊婷 yiting'}
-                </p>
-                <p>
-                  <span className="font-bold">
-                    {isEn ? 'Position:' : '職位:'}
-                  </span>{' '}
-                  {isEn ? 'Front-End Software Engineer' : '前端軟體工程師'}
-                </p>
-                <p>
-                  <span className="font-bold">
-                    {isEn ? 'Phone:' : '聯絡電話:'}
-                  </span>{' '}
-                  0909015558
-                </p>
-                <p>
-                  <span className="font-bold">
-                    {isEn ? 'Email:' : '聯絡信箱:'}
-                  </span>{' '}
-                  bz850308@gmail.com
-                </p>
-              </div>
-            </section>
-
-            <div className="border-b-2 border-dashed border-gray-300 my-10"></div>
-          </>
-        )}
-
         {/* Me Section */}
-        <RevealOnScroll forceVisible={isExporting}>
+        <RevealOnScroll>
           <section className="mb-12">
             <div className="flex items-center gap-2 mb-6">
               <h2 className="text-4xl font-black">
@@ -141,13 +103,10 @@ export default function ResumePage() {
             </div>
 
             <div className="flex flex-col md:flex-row gap-8 items-start">
-              <div className="flex-1 space-y-6 text-base leading-relaxed text-txt-darkBrown">
-                {resumeData.me.map((item, idx) => (
-                  <div key={idx}>
-                    <p className="font-bold mb-2">{item.label}</p>
-                    <p>{item.content}</p>
-                  </div>
-                ))}
+              <div className="flex-1 space-y-5 text-base leading-relaxed text-txt-darkBrown">
+                {resumeData.me.map((paragraph, idx) =>
+                  <p key={idx}>{paragraph}</p>
+                )}
               </div>
               <div className="w-2/3 md:w-1/4 p-2 shadow-sm transition-transform duration-300 hover:scale-105">
                 <div className="aspect-[3/4] overflow-hidden">
@@ -162,7 +121,7 @@ export default function ResumePage() {
           </section>
         </RevealOnScroll>
 
-        <RevealOnScroll delay={200} forceVisible={isExporting}>
+        <RevealOnScroll delay={200}>
           <div className="border-b-2 border-dashed border-gray-300 my-10"></div>
         </RevealOnScroll>
 
@@ -191,8 +150,8 @@ export default function ResumePage() {
 
                   <div
                     className={`w-16 h-16 md:w-20 md:h-20 transition-transform duration-300 group-hover:scale-105 group-hover:shadow-md ${exp.logoType === 'text'
-                        ? 'rounded-2xl flex items-center justify-center p-2'
-                        : 'flex items-center justify-center text-[#333] italic'
+                      ? 'rounded-2xl flex items-center justify-center p-2'
+                      : 'flex items-center justify-center text-[#333] italic'
                       }`}
                     style={{ backgroundColor: exp.logoColor }}
                   >
@@ -236,7 +195,7 @@ export default function ResumePage() {
                       ))}
                     </div>
 
-                    {!isExporting && exp.projectUrl && (
+                    {exp.projectUrl && (
                       <a
                         href={exp.projectUrl}
                         className="group/link flex items-center text-txt-darkBrown font-bold text-sm uppercase tracking-widest hover:text-[#5E7985] transition-all duration-300 underline md:no-underline underline-offset-4"

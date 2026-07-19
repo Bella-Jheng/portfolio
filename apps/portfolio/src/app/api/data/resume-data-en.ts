@@ -2,28 +2,23 @@ import { ResumeData } from '../resume-api.type';
 
 export const RESUME_DATA_EN: ResumeData = {
   me: [
-    {
-      label: '【Core Philosophy】',
-      content: 'I am a Frontend Software Engineer with experience in e-commerce backend/frontend and platform systems. I care deeply about whether implementations are understandable, stable, and maintainable for the long term.',
-    },
-    {
-      label: '【Cross-role Translation】',
-      content: 'Having held roles in Backend Dev, PM, and Frontend, I can bridge the gap between technical limitations and business priorities, helping teams make pragmatic decisions.',
-    },
-    {
-      label: '【Technical Rigor】',
-      content: 'Experience in transactional systems has built a high sensitivity to data accuracy, edge cases, and testing robustness.',
-    },
+    "I studied Applied Foreign Languages, not computer science. During a college internship at the front desk of the Grand Hotel, I realized for the first time that being fluent in English alone made me easy to replace. After the internship, I started picking up other skills to stand out, even flying to Thailand to learn Thai. Then COVID hit, and jobs built around face-to-face language work shrank fast.",
+    'A friend introduced me to TibaMe, a coding bootcamp. I started with backend, and taught myself frontend along the way so I could ship a complete project. It was in the process of actually building something that I noticed how much I cared about how a screen looked and how it felt to use, far more than I cared about shaving a few seconds off a query. My first backend job only made that feeling more certain.',
+    'To figure out what I actually wanted, I took a Product Manager role, close to the whole picture, working directly with frontend, backend, design, and QA, watching what each side actually cared about and where they got stuck. Six months into that role, I started teaching myself frontend again, and luckily, six months after that, I joined Testrite.',
+    "At Testrite, I helped rebuild the e-commerce frontend architecture from the ground up. Within a year, the redesign's impact earned me a promotion, and I started leading junior engineers in maintaining the system and building development standards the whole team could follow. That experience taught me something beyond getting the architecture right: how to turn judgment calls that used to live only in my head into a process other people could actually follow. Going further back, my time as a PM taught me how to find solutions that could actually ship within both engineering constraints and business goals, and how to translate what each role cared about into language everyone could understand. Both are things I want to bring to my next team.",
+    "When AI started becoming mainstream, I didn't treat it as a threat. I used it to solve a problem I understood better than anyone: building a new page component from scratch used to take about five workdays, most of it spent on repetitive, easy-to-miss boilerplate. I turned that manual process into a fixed set of rules, then wrote an automation script around it, cutting the timeline to two days with an 80% completion rate on the base structure, freeing engineers to focus on the UI details and business logic that actually needed judgment. That experience made something click for me: in an AI-driven world, my value isn't in how fast I can type code, it's in spotting recurring bottlenecks, systematizing the fix, and owning every line I ship.",
+    'Eventually I chose to leave, wanting to bring these skills somewhere they could go further. I am currently looking for my next front-end engineering role, hoping to bring this same commitment to systems, process, and user experience to the next team.',
   ],
   experience: [
     {
-      period: '2022-PRESENT',
+      period: '2022-2026',
       company: 'Testrite (TLW)',
-      title: 'Front-End Software Engineer',
+      title: 'Front-End Software Engineer → Senior Engineer',
       logoType: 'text',
       logoColor: '#E67E22',
       logoText: 'TLW',
       bulletPoints: [
+        'Promoted to Senior Engineer within a year for driving a high-impact redesign, and began leading junior engineers in maintaining the system',
         'Led a large-scale frontend architecture overhaul, migrating a single repo to a Monorepo, upgrading React 17 to React 18, replacing Bootstrap with Tailwind CSS, and adopting TypeScript across the board',
         'Led the redesign and decoupling of the Testrite and HOLA websites, auditing existing APIs and frontend logic while rebuilding pages and shipping new features',
         'Built an e-commerce page-building CMS from 0 to 1, with an extensible frontend architecture that lets business teams adjust ad placements on demand',

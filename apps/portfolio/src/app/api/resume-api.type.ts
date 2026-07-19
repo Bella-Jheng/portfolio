@@ -1,8 +1,3 @@
-export interface MeItem {
-  label: string;
-  content: string;
-}
-
 export interface ExperienceItem {
   period: string;
   company: string;
@@ -23,7 +18,7 @@ export interface EducationItem {
 }
 
 export interface ResumeData {
-  me: MeItem[];
+  me: string[];
   experience: ExperienceItem[];
   education: EducationItem[];
 }

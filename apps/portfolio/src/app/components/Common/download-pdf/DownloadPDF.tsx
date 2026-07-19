@@ -1,115 +1,39 @@
 'use client';
 
-import React, { useState } from 'react';
-import { toPng } from 'html-to-image';
-import { jsPDF } from 'jspdf';
-import './DownloadPDF.scss';
+import React from 'react';
 
 interface DownloadPDFProps {
-  targetRef: React.RefObject<HTMLDivElement | null>;
-  onExportingChange?: (isExporting: boolean) => void;
-  fileName?: string;
+  href: string;
+  label: string;
 }
 
-export const DownloadPDF: React.FC<DownloadPDFProps> = ({
-  targetRef,
-  onExportingChange,
-  fileName = 'resume',
-}) => {
-  const [isExporting, setIsExporting] = useState(false);
-  const [downloadStatus, setDownloadStatus] = useState('Downloading');
-
-  const handleDownloadPdf = async () => {
-    if (targetRef.current === null) {
-      return;
-    }
-
-    setIsExporting(true);
-    onExportingChange?.(true);
-    setDownloadStatus('Capturing');
-
-    // Wait for the state update and for potential layout shifts to settle
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
-    try {
-      const dataUrl = await toPng(targetRef.current, {
-        cacheBust: true,
-        pixelRatio: 3,
-        backgroundColor: '#ffffff',
-        style: {
-          margin: '0',
-          transform: 'scale(1)',
-          boxShadow: 'none',
-        },
-      });
-
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-
-      const imgProps = pdf.getImageProperties(dataUrl);
-      const imgWidth = pdfWidth;
-      const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
-
-      let heightLeft = imgHeight;
-      let position = 0;
-
-      // Add first page
-      pdf.addImage(dataUrl, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pdfHeight;
-
-      // Add subsequent pages if content is longer than one page
-      while (heightLeft > 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(dataUrl, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pdfHeight;
-      }
-
-      const today = new Date();
-      const year = today.getFullYear();
-      const month = today.getMonth() + 1;
-      const day = today.getDate();
-      const formattedMonth = String(month).padStart(2, '0');
-      const formattedDay = String(day).padStart(2, '0');
-      const dateString = `${year}-${formattedMonth}-${formattedDay}`;
-      pdf.save(`yiting-${fileName}-${dateString}.pdf`);
-    } catch (err) {
-      console.error('Failed to download PDF', err);
-    } finally {
-      setIsExporting(false);
-      onExportingChange?.(false);
-      setDownloadStatus('Downloading');
-    }
-  };
-
+function DownloadIcon({ className }: { className?: string }) {
   return (
-    <button
-      onClick={handleDownloadPdf}
-      disabled={isExporting}
-      className={`group flex items-center font-bold text-sm uppercase tracking-widest transition-all duration-300 min-w-[160px] justify-end ${
-        isExporting
-          ? 'text-gray-700 cursor-not-allowed'
-          : 'text-txt-darkBrown hover:text-[#5E7985]'
-      }`}
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
     >
-      {isExporting ? (
-        <>
-          {downloadStatus}
-          <span className="ml-2 flex items-center h-5">
-            <span className="animate-dot1">.</span>
-            <span className="animate-dot2">.</span>
-            <span className="animate-dot3">.</span>
-          </span>
-        </>
-      ) : (
-        <>
-          Download PDF
-          <span className="ml-2 text-lg group-hover:translate-x-1 transition-transform">
-            →
-          </span>
-        </>
-      )}
-    </button>
+      <path d="M12 3v12" />
+      <path d="M7 10l5 5 5-5" />
+      <path d="M5 20h14" />
+    </svg>
+  );
+}
+
+export const DownloadPDF: React.FC<DownloadPDFProps> = ({ href, label }) => {
+  return (
+    <a
+      href={href}
+      download
+      className="group inline-flex items-center justify-center gap-2 rounded-full border border-txt-brown/15 bg-white/70 px-4 py-2.5 text-xs md:text-sm font-bold text-txt-darkBrown shadow-sm transition-all duration-300 min-w-[190px] hover:-translate-y-0.5 hover:border-[#5E7985]/40 hover:text-[#5E7985] hover:shadow-md"
+    >
+      <DownloadIcon className="w-4 h-4 shrink-0 transition-transform group-hover:translate-y-0.5" />
+      {label}
+    </a>
   );
 };
