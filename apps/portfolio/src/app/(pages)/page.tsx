@@ -210,11 +210,11 @@ export default function Index() {
     const fadeDistance = 600;
     const progress = Math.min(1, Math.max(0, scrollY / fadeDistance));
 
-    const r = Math.round(241 + (251 - 241) * progress);
-    const g = Math.round(242 + (250 - 242) * progress);
-    const b = Math.round(202 + (241 - 202) * progress);
+    const red = Math.round(241 + (251 - 241) * progress);
+    const green = Math.round(242 + (250 - 242) * progress);
+    const blue = Math.round(202 + (241 - 202) * progress);
 
-    return `rgb(${r}, ${g}, ${b})`;
+    return `rgb(${red}, ${green}, ${blue})`;
   };
 
   const heroCards = [

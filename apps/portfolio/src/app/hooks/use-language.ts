@@ -7,9 +7,9 @@ export const useLanguage = () => {
   /**
    * Helper to pick the correct translation from an object with zh and en keys.
    */
-  const t = <T>(translations: { zh: T; en: T }): T => {
+  const translate = <T>(translations: { zh: T; en: T }): T => {
     return translations[language];
   };
 
-  return { language, isEn, t };
+  return { language, isEn, t: translate };
 };

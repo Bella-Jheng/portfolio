@@ -7,7 +7,7 @@ export function getProjectDetailApiResponse(
   lang: 'zh' | 'en' = 'zh',
 ): FullProject | null {
   const data = lang === 'en' ? PROJECTS_DATA_EN : PROJECTS_DATA_ZH;
-  const project = data.find((p) => p.link.includes(slug));
+  const project = data.find((entry) => entry.link.includes(slug));
   
   if (!project) return null;
 

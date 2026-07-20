@@ -72,19 +72,19 @@ const VideoSlide: React.FC<{ url: string; isActive: boolean }> = ({
   };
 
   const handleTimeUpdate = () => {
-    const v = videoRef.current;
-    if (v && v.duration) {
-      setProgress((v.currentTime / v.duration) * 100);
+    const video = videoRef.current;
+    if (video && video.duration) {
+      setProgress((video.currentTime / video.duration) * 100);
     }
   };
 
   const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
     e.stopPropagation();
-    const v = videoRef.current;
-    if (!v || !v.duration) return;
+    const video = videoRef.current;
+    if (!video || !video.duration) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const ratio = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
-    v.currentTime = ratio * v.duration;
+    video.currentTime = ratio * video.duration;
     setProgress(ratio * 100);
   };
 
