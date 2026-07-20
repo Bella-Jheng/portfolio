@@ -3,10 +3,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
-import { ArrowRight } from '@/public/icon';
-import { Resume } from '@/public/img';
+import { ArrowRight, Play } from '@/public/icon';
 import { ProjectSlider } from '../components/Common/project-slider';
 import { FlowerBackground } from '../components/Common/flower-background';
+import { Lightbox } from '../components/Common/light-box';
 import { useProjects } from '../api/project-list-api';
 import Link from 'next/link';
 import { useLoadingStore } from '../store/loading.store';
@@ -41,53 +41,92 @@ function HeroCard({
   href,
   onClick,
 }: HeroCardProps) {
-  const button = (
-    <button
-      onClick={onClick}
-      className="group inline-flex items-center gap-1.5 bg-txt-darkBrown text-[#FBFAF1] text-xs md:text-sm font-bold px-4 py-2 rounded-full hover:opacity-90 transition-opacity"
-    >
+  const ctaChip = (
+    <span className="inline-flex items-center gap-1.5 bg-txt-darkBrown text-[#FBFAF1] text-xs md:text-sm font-bold px-4 py-2 rounded-full transition-opacity group-hover:opacity-90">
       {cta}
       <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
-    </button>
+    </span>
   );
 
-  return (
-    <div
-      className={`relative ${CARD_SIZE} shrink-0 flex flex-col rounded-[28px] p-6 shadow-[8px_8px_0px_rgba(45,27,27,0.12)] md:z-10 transition-transform duration-300 hover:-translate-y-1 hover:rotate-0 ${rotate}`}
-      style={{ backgroundColor: bg }}
-    >
+  const content = (
+    <>
       <h3 className="text-xl md:text-2xl font-bold text-txt-brown mb-2.5">
         {title}
       </h3>
       <p className="text-xs md:text-sm text-txt-darkBrown/80 leading-relaxed flex-1">
         {desc}
       </p>
-      {href ? (
-        href.startsWith('mailto:') ? (
-          <a href={href}>{button}</a>
-        ) : (
-          <Link href={href}>{button}</Link>
-        )
-      ) : (
-        button
-      )}
+      {ctaChip}
+    </>
+  );
+
+  const cardClassName = `group relative ${CARD_SIZE} shrink-0 flex flex-col rounded-[28px] p-6 shadow-[8px_8px_0px_rgba(45,27,27,0.12)] md:z-10 transition-transform duration-300 hover:-translate-y-1 hover:rotate-0 cursor-pointer ${rotate}`;
+
+  if (href?.startsWith('mailto:')) {
+    return (
+      <a href={href} className={cardClassName} style={{ backgroundColor: bg }}>
+        {content}
+      </a>
+    );
+  }
+
+  if (href) {
+    return (
+      <Link href={href} className={cardClassName} style={{ backgroundColor: bg }}>
+        {content}
+      </Link>
+    );
+  }
+
+  return (
+    <div
+      onClick={onClick}
+      className={cardClassName}
+      style={{ backgroundColor: bg }}
+    >
+      {content}
     </div>
   );
 }
 
+const VIDEO_RESUME_URL = '/resume/yiting-video-resume.mp4';
+
 function PhotoCard() {
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+
   return (
-    <div
-      className={`relative ${CARD_SIZE} shrink-0 rounded-[28px] bg-white shadow-[8px_8px_0px_rgba(45,27,27,0.12)] p-3 md:p-4`}
-    >
-      <div className="rounded-[18px] overflow-hidden w-full h-full">
-        <img
-          src={Resume.src}
-          alt="Yiting"
-          className="w-full h-full object-cover"
-        />
-      </div>
-    </div>
+    <>
+      <button
+        type="button"
+        onClick={() => setIsLightboxOpen(true)}
+        aria-label="Play video resume"
+        className={`group relative ${CARD_SIZE} shrink-0 rounded-[28px] bg-white shadow-[8px_8px_0px_rgba(45,27,27,0.12)] p-3 md:p-4 cursor-pointer`}
+      >
+        <div className="relative rounded-[18px] overflow-hidden w-full h-full">
+          {!isLightboxOpen && (
+            <video
+              src={VIDEO_RESUME_URL}
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="w-full h-full object-cover"
+            />
+          )}
+          <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/30 transition-all duration-300">
+            <div className="w-12 h-12 flex items-center justify-center rounded-full bg-white/20 backdrop-blur-sm border border-white/30 text-white opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100 transition-all duration-300">
+              <Play className="w-6 h-6 ml-0.5" />
+            </div>
+          </div>
+        </div>
+      </button>
+
+      <Lightbox
+        isOpen={isLightboxOpen}
+        onClose={() => setIsLightboxOpen(false)}
+        media={[{ type: 'video', url: VIDEO_RESUME_URL }]}
+      />
+    </>
   );
 }
 
@@ -279,6 +318,7 @@ export default function Index() {
           <Swiper
             slidesPerView="auto"
             centeredSlides
+            initialSlide={1}
             spaceBetween={16}
             className="!px-6 !pb-2"
           >

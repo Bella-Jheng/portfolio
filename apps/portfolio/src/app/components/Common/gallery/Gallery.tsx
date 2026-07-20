@@ -23,6 +23,13 @@ interface ProjectGalleryProps {
   media: MediaItem[];
 }
 
+const getYouTubeId = (url: string) => {
+  const regExp =
+    /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  const match = url.match(regExp);
+  return match && match[2].length === 11 ? match[2] : null;
+};
+
 export const Gallery: React.FC<ProjectGalleryProps> = ({ media }) => {
   const [thumbsSwiper, setThumbsSwiper] = useState<SwiperType | null>(null);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
@@ -54,36 +61,54 @@ export const Gallery: React.FC<ProjectGalleryProps> = ({ media }) => {
           modules={[Navigation, Thumbs]}
           className="w-full aspect-[4/3] rounded-sm overflow-hidden bg-gray-100"
         >
-          {media.map((item, index) => (
-            <SwiperSlide key={index}>
-              <div
-                className="relative w-full h-full flex items-center justify-center cursor-zoom-in"
-                onClick={() => openLightbox(index)}
-              >
-                {item.type === 'image' ? (
-                  <img
-                    src={item.url}
-                    alt={`Project media ${index}`}
-                    className="w-full h-full object-contain object-center bg-gray-200"
-                  />
-                ) : (
-                  <div className="relative w-full h-full group">
-                    <img
-                      src={item.thumbnailUrl || item.url}
-                      alt={`Project media ${index} thumbnail`}
-                      className="w-full h-full object-contain object-center bg-gray-200"
-                    />
-                    {/* Video Mask / Play Button */}
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/40 group-hover:bg-black/50 transition-all duration-300">
-                      <div className="w-20 h-20 flex items-center justify-center rounded-full bg-white/20 backdrop-blur-sm border border-white/30 text-white transform group-hover:scale-110 transition-transform duration-300">
-                        <Play className="w-10 h-10 ml-1" />
-                      </div>
+          {media.map((item, index) => {
+            const youtubeId =
+              item.type === 'video' ? getYouTubeId(item.url) : null;
+
+            return (
+              <SwiperSlide key={index}>
+                {({ isActive }) =>
+                  item.type === 'video' && youtubeId && isActive ? (
+                    <div className="relative w-full h-full flex items-center justify-center bg-black">
+                      <iframe
+                        src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1`}
+                        className="w-full h-full"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
                     </div>
-                  </div>
-                )}
-              </div>
-            </SwiperSlide>
-          ))}
+                  ) : (
+                    <div
+                      className="relative w-full h-full flex items-center justify-center cursor-zoom-in"
+                      onClick={() => openLightbox(index)}
+                    >
+                      {item.type === 'image' ? (
+                        <img
+                          src={item.url}
+                          alt={`Project media ${index}`}
+                          className="w-full h-full object-contain object-center bg-gray-200"
+                        />
+                      ) : (
+                        <div className="relative w-full h-full group">
+                          <img
+                            src={item.thumbnailUrl || item.url}
+                            alt={`Project media ${index} thumbnail`}
+                            className="w-full h-full object-contain object-center bg-gray-200"
+                          />
+                          {/* Video Mask / Play Button */}
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/40 group-hover:bg-black/50 transition-all duration-300">
+                            <div className="w-20 h-20 flex items-center justify-center rounded-full bg-white/20 backdrop-blur-sm border border-white/30 text-white transform group-hover:scale-110 transition-transform duration-300">
+                              <Play className="w-10 h-10 ml-1" />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )
+                }
+              </SwiperSlide>
+            );
+          })}
         </Swiper>
       </div>
 

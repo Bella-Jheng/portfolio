@@ -217,13 +217,13 @@ export const PROJECTS_DATA_ZH: FullProject[] = [
       'Tailwind CSS',
     ],
     media: [
-      { type: 'image', url: XmasTree1.src },
-      { type: 'image', url: XmasTree2.src },
       {
         type: 'video',
         url: 'https://www.youtube.com/watch?v=bxVzMaaWvIo',
         thumbnailUrl: XmasTree3.src,
       },
+      { type: 'image', url: XmasTree1.src },
+      { type: 'image', url: XmasTree2.src },
     ],
     links: [
       {
@@ -340,12 +340,12 @@ export const PROJECTS_DATA_ZH: FullProject[] = [
       'API Integration',
     ],
     media: [
-      { type: 'image', url: NewBackoffice1.src },
       {
         type: 'video',
         url: 'https://www.youtube.com/watch?v=SSTAaGTBkQU',
         thumbnailUrl: NewBackoffice2.src,
       },
+      { type: 'image', url: NewBackoffice1.src },
     ],
     links: [
       {

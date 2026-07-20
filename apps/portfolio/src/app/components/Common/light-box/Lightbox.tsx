@@ -40,7 +40,8 @@ const VideoSlide: React.FC<{ url: string; isActive: boolean }> = ({
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isMuted, setIsMuted] = useState(true);
+  const [isMuted, setIsMuted] = useState(false);
+  const [progress, setProgress] = useState(0);
   const youtubeId = getYouTubeId(url);
 
   useEffect(() => {
@@ -70,6 +71,23 @@ const VideoSlide: React.FC<{ url: string; isActive: boolean }> = ({
     }
   };
 
+  const handleTimeUpdate = () => {
+    const v = videoRef.current;
+    if (v && v.duration) {
+      setProgress((v.currentTime / v.duration) * 100);
+    }
+  };
+
+  const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    const v = videoRef.current;
+    if (!v || !v.duration) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const ratio = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+    v.currentTime = ratio * v.duration;
+    setProgress(ratio * 100);
+  };
+
   if (youtubeId) {
     return (
       <div className="relative w-full h-full flex items-center justify-center">
@@ -96,6 +114,7 @@ const VideoSlide: React.FC<{ url: string; isActive: boolean }> = ({
         playsInline
         muted={isMuted}
         onClick={togglePlay}
+        onTimeUpdate={handleTimeUpdate}
       />
 
       {/* Play Button Overlay */}
@@ -121,6 +140,19 @@ const VideoSlide: React.FC<{ url: string; isActive: boolean }> = ({
           <VolumeUp className="w-6 h-6" />
         )}
       </button>
+
+      {/* Progress Bar */}
+      <div
+        onClick={handleSeek}
+        className="absolute bottom-0 left-0 right-0 z-10 h-2 flex items-center cursor-pointer group/progress"
+      >
+        <div className="relative w-full h-1 group-hover/progress:h-1.5 bg-white/25 transition-all duration-150">
+          <div
+            className="absolute inset-y-0 left-0 bg-white"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      </div>
     </div>
   );
 };
@@ -258,41 +290,45 @@ export const Lightbox: React.FC<LightboxProps> = ({
         </div>
 
         {/* Thumbnails Swiper */}
-        <div className="w-full mt-12 flex justify-center">
-          <div className="w-full max-w-2xl">
-            <Swiper
-              onSwiper={setThumbsSwiper}
-              initialSlide={initialIndex}
-              spaceBetween={10}
-              slidesPerView={'auto'}
-              centerInsufficientSlides={true}
-              freeMode={true}
-              watchSlidesProgress={true}
-              modules={[FreeMode, Navigation, Thumbs]}
-              className="w-full h-[60px]"
-            >
-              {media.map((item, index) => (
-                <SwiperSlide
-                  key={index}
-                  className="!w-[60px] !h-[60px] aspect-square cursor-pointer opacity-40 transition-opacity duration-300 [&.swiper-slide-thumb-active]:opacity-100 border-2 border-transparent [&.swiper-slide-thumb-active]:border-white rounded-[0.5rem] overflow-hidden"
-                >
-                  <div className="relative w-full h-full bg-gray-800">
-                    <img
-                      src={item.thumbnailUrl || item.url}
-                      alt={`Lightbox thumbnail ${index}`}
-                      className="w-full h-full object-cover object-center"
-                    />
-                    {item.type === 'video' && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                        <span className="text-xl">📹</span>
-                      </div>
-                    )}
-                  </div>
-                </SwiperSlide>
-              ))}
-            </Swiper>
+        {media.length > 1 && (
+          <div className="w-full mt-12 flex justify-center">
+            <div className="w-full max-w-2xl">
+              <Swiper
+                onSwiper={setThumbsSwiper}
+                initialSlide={initialIndex}
+                spaceBetween={10}
+                slidesPerView={'auto'}
+                centerInsufficientSlides={true}
+                freeMode={true}
+                watchSlidesProgress={true}
+                modules={[FreeMode, Navigation, Thumbs]}
+                className="w-full h-[60px]"
+              >
+                {media.map((item, index) => (
+                  <SwiperSlide
+                    key={index}
+                    className="!w-[60px] !h-[60px] aspect-square cursor-pointer opacity-40 transition-opacity duration-300 [&.swiper-slide-thumb-active]:opacity-100 border-2 border-transparent [&.swiper-slide-thumb-active]:border-white rounded-[0.5rem] overflow-hidden"
+                  >
+                    <div className="relative w-full h-full bg-gray-800">
+                      {(item.type === 'image' || item.thumbnailUrl) && (
+                        <img
+                          src={item.thumbnailUrl || item.url}
+                          alt={`Lightbox thumbnail ${index}`}
+                          className="w-full h-full object-cover object-center"
+                        />
+                      )}
+                      {item.type === 'video' && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                          <span className="text-xl">📹</span>
+                        </div>
+                      )}
+                    </div>
+                  </SwiperSlide>
+                ))}
+              </Swiper>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>,
     document.body,

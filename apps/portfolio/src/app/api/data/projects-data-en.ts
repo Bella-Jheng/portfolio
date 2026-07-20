@@ -190,13 +190,13 @@ export const PROJECTS_DATA_EN: FullProject[] = [
     tags: ['Interactive', 'State Design', 'Performance'],
     technologies: ['React', 'RTK Query', 'Zustand', 'Framer Motion', 'Tailwind CSS'],
     media: [
-      { type: 'image', url: XmasTree1.src },
-      { type: 'image', url: XmasTree2.src },
       {
         type: 'video',
         url: 'https://www.youtube.com/watch?v=bxVzMaaWvIo',
         thumbnailUrl: XmasTree3.src,
       },
+      { type: 'image', url: XmasTree1.src },
+      { type: 'image', url: XmasTree2.src },
     ],
     links: [
       {
@@ -306,8 +306,8 @@ export const PROJECTS_DATA_EN: FullProject[] = [
     tags: ['Internal Tool', 'Schema Design', 'Dynamic Component', 'CMS'],
     technologies: ['React', 'Nx', 'TypeScript', 'DND Kit', 'Tailwind CSS', 'API Integration'],
     media: [
-      { type: 'image', url: NewBackoffice1.src },
       { type: 'video', url: 'https://www.youtube.com/watch?v=SSTAaGTBkQU', thumbnailUrl: NewBackoffice2.src },
+      { type: 'image', url: NewBackoffice1.src },
     ],
     links: [
       { label: 'Document Intro', url: 'https://hackmd.io/@-pJOuWsHT5qfiLSWl-nBgQ/SJk21fAIge/edit', type: 'document' },
