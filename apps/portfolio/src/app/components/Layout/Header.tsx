@@ -9,7 +9,7 @@ import { useLanguageStore } from '../../store/language.store';
 export const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrollBgColor, setScrollBgColor] = useState('');
-  const { language, toggleLanguage } = useLanguageStore();
+  const { language, setLanguage } = useLanguageStore();
   const pathname = usePathname();
 
   const isEn = language === 'en';
@@ -39,11 +39,11 @@ export const Header: React.FC = () => {
       const progress = Math.min(1, Math.max(0, scrollY / fadeDistance));
 
       // Interpolate from #F1F2CA (241, 242, 202) to #FBFAF1 (251, 250, 241)
-      const r = Math.round(241 + (251 - 241) * progress);
-      const g = Math.round(242 + (250 - 242) * progress);
-      const b = Math.round(202 + (241 - 202) * progress);
+      const red = Math.round(241 + (251 - 241) * progress);
+      const green = Math.round(242 + (250 - 242) * progress);
+      const blue = Math.round(202 + (241 - 202) * progress);
 
-      setScrollBgColor(`rgb(${r}, ${g}, ${b})`);
+      setScrollBgColor(`rgb(${red}, ${green}, ${blue})`);
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -52,26 +52,26 @@ export const Header: React.FC = () => {
   }, [pathname]);
 
   const SwitchComponent = () => (
-    <button
-      onClick={toggleLanguage}
-      className="relative inline-flex h-8 w-[76px] flex-shrink-0 items-center rounded-full p-1 transition-all duration-300 focus:outline-none bg-[#E3E4C1] shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)] border border-[#d2d3ad]"
-      aria-label="Toggle Language"
+    <div
+      className="inline-flex flex-shrink-0 items-center rounded-full p-1 gap-1 bg-[#E3E4C1] shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)] border border-[#d2d3ad]"
+      role="group"
+      aria-label="Language"
     >
-      <span
-        className={`absolute z-10 left-0 w-1/2 text-center text-[13px] font-bold transition-colors duration-500 ${!isEn ? 'text-txt-brown' : 'text-[#a3a579]'}`}
-      >
-        EN
-      </span>
-      <span
-        className={`absolute z-10 right-0 w-1/2 text-center text-[13px] font-bold transition-colors duration-500 ${isEn ? 'text-txt-brown' : 'text-[#a3a579]'}`}
+      <button
+        onClick={() => setLanguage('zh')}
+        aria-pressed={!isEn}
+        className={`px-3 h-6 rounded-full text-[13px] font-bold transition-colors duration-300 focus:outline-none ${!isEn ? 'bg-txt-darkBrown text-[#FBFAF1]' : 'text-[#a3a579] hover:text-txt-brown'}`}
       >
         中
-      </span>
-      <span
-        className={`z-0 pointer-events-none inline-block h-[24px] w-[34px] transform rounded-full bg-[#FBFAF1] transition-all duration-700 ease-in-out shadow-[0_2px_4px_rgba(0,0,0,0.15)] ${isEn ? 'translate-x-[34px]' : 'translate-x-0'
-          }`}
-      />
-    </button>
+      </button>
+      <button
+        onClick={() => setLanguage('en')}
+        aria-pressed={isEn}
+        className={`px-3 h-6 rounded-full text-[13px] font-bold transition-colors duration-300 focus:outline-none ${isEn ? 'bg-txt-darkBrown text-[#FBFAF1]' : 'text-[#a3a579] hover:text-txt-brown'}`}
+      >
+        EN
+      </button>
+    </div>
   );
 
   return (
