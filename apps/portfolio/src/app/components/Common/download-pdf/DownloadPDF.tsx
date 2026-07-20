@@ -30,7 +30,7 @@ export const DownloadPDF: React.FC<DownloadPDFProps> = ({ href, label }) => {
     <a
       href={href}
       download
-      className="group inline-flex items-center justify-center gap-2 rounded-full border border-txt-brown/15 bg-white/70 px-4 py-2.5 text-xs md:text-sm font-bold text-txt-darkBrown shadow-sm transition-all duration-300 min-w-[190px] hover:-translate-y-0.5 hover:border-[#5E7985]/40 hover:text-[#5E7985] hover:shadow-md"
+      className="group inline-flex flex-1 sm:flex-none items-center justify-center gap-2 rounded-full border border-txt-brown/15 bg-white/70 px-3 sm:px-4 py-2.5 text-xs md:text-sm font-bold text-txt-darkBrown shadow-sm transition-all duration-300 sm:min-w-[190px] hover:-translate-y-0.5 hover:border-[#5E7985]/40 hover:text-[#5E7985] hover:shadow-md"
     >
       <DownloadIcon className="w-4 h-4 shrink-0 transition-transform group-hover:translate-y-0.5" />
       {label}

@@ -77,7 +77,7 @@ export default function ResumePage() {
             } ${rotatingIndex === index ? 'rotate-180' : ''}`}
         />
       ))}
-      <div className="max-w-6xl mx-auto mb-8 flex flex-col sm:flex-row justify-end gap-3 relative z-10">
+      <div className="max-w-6xl mx-auto mb-8 flex flex-row justify-end gap-3 relative z-10">
         <DownloadPDF
           href={RESUME_PDF_ZH}
           label={isEn ? 'Download Chinese Resume' : '下載中文履歷'}

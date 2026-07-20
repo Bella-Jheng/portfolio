@@ -20,7 +20,7 @@ const FLOWERS = [
     id: 'flower-3',
     type: 'black',
     className:
-      'top-[55%] left-[15%] md:top-[45%] md:left-[22%] md:w-8 w-6 md:h-8 h-6 opacity-70',
+      'hidden md:block top-[55%] left-[15%] md:top-[45%] md:left-[22%] md:w-8 w-6 md:h-8 h-6 opacity-70',
   },
   {
     id: 'flower-4',
@@ -32,37 +32,37 @@ const FLOWERS = [
     id: 'flower-5',
     type: 'black',
     className:
-      'top-[40%] right-[8%] md:top-[30%] md:right-[20%] md:w-10 w-8 md:h-10 h-8 opacity-80',
+      'hidden md:block top-[40%] right-[8%] md:top-[30%] md:right-[20%] md:w-10 w-8 md:h-10 h-8 opacity-80',
   },
   {
     id: 'flower-6',
     type: 'blue',
     className:
-      'top-[35%] left-[6%] md:top-[30%] md:right-[20%] w-16 h-16 md:w-20 md:h-20',
+      'hidden md:block top-[35%] left-[6%] md:top-[30%] md:right-[20%] w-16 h-16 md:w-20 md:h-20',
   },
   {
     id: 'flower-7',
     type: 'black',
     className:
-      'bottom-[30%] right-[10%] md:bottom-[35%] md:right-[18%] md:w-8 w-6 md:h-8 h-6 opacity-80',
+      'hidden md:block bottom-[30%] right-[10%] md:bottom-[35%] md:right-[18%] md:w-8 w-6 md:h-8 h-6 opacity-80',
   },
   {
     id: 'flower-8',
     type: 'black',
     className:
-      'bottom-[12%] right-[6%] md:bottom-[38%] md:left-[55%] md:w-10 w-8 md:h-10 h-8 opacity-80',
+      'hidden md:block bottom-[12%] right-[6%] md:bottom-[38%] md:left-[55%] md:w-10 w-8 md:h-10 h-8 opacity-80',
   },
   {
     id: 'flower-9',
     type: 'blue',
     className:
-      'bottom-[5%] right-[15%] md:top-[50%] md:right-[10%] w-6 h-6 md:w-16 md:h-16',
+      'hidden md:block bottom-[5%] right-[15%] md:top-[50%] md:right-[10%] w-6 h-6 md:w-16 md:h-16',
   },
   {
     id: 'flower-10',
     type: 'black',
     className:
-      'bottom-[42%] left-[5%] md:bottom-[50%] md:left-[15%] md:w-8 w-6 md:h-8 h-6 opacity-80',
+      'hidden md:block bottom-[42%] left-[5%] md:bottom-[50%] md:left-[15%] md:w-8 w-6 md:h-8 h-6 opacity-80',
   },
 ];
 

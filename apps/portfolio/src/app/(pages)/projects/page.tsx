@@ -105,10 +105,8 @@ function ProjectsContent() {
             activeCategory={categories[Object.keys(CATEGORY_MAP).indexOf(activeCategory)]}
             onCategoryChange={handleCategoryChange}
           />
-        </RevealOnScroll>
 
-        {/* Project Grid - 4 cards across on desktop */}
-        <RevealOnScroll>
+          {/* Project Grid - 4 cards across on desktop */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {isTabLoading
               ? Array.from({ length: 8 }).map((_, index) => (
