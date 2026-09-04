@@ -14,6 +14,9 @@
     },
     {
       "path": "./apps/bazi"
+    },
+    {
+      "path": "./apps/order"
     }
   ],
   "extends": "./tsconfig.base.json"

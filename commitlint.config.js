@@ -3,7 +3,7 @@
 
   規則：
   type 不可空白，需在 conventional 預設清單中（feat/fix/docs/style/refactor/perf/test/build/ci/chore/revert）
-  scope 不可空白，需為 root / apps/portfolio / apps/bazi，或 libs、libs/子路徑
+  scope 不可空白，需為 root / apps/portfolio / apps/bazi / apps/order，或 libs、libs/子路徑
   header（type(scope): subject）總長度不得超過 100 字
 */
 
@@ -21,7 +21,7 @@ module.exports = {
     {
       rules: {
         'custom-scope-enum': ({ scope }) => {
-          const allowedScopes = ['root', 'apps/portfolio', 'apps/bazi'];
+          const allowedScopes = ['root', 'apps/portfolio', 'apps/bazi', 'apps/order'];
 
           if (!scope || scope.trim().length === 0) return [false, 'scope 不可為空'];
           if (scope === 'libs' || scope.startsWith('libs/')) return [true];

@@ -1,0 +1,31 @@
+.row {
+  cursor: pointer;
+  border-bottom: 1px solid theme('colors.gray.200');
+  transition: background-color 0.15s ease;
+}
+
+.row:hover {
+  background-color: theme('colors.gray.50');
+}
+
+.row td {
+  padding: 0.75rem 1rem;
+}
+
+.rowSelected,
+.rowSelected:hover {
+  background-color: theme('colors.gray.100');
+  box-shadow: inset 3px 0 0 theme('colors.gray.900');
+}
+
+.card {
+  border: 1px solid theme('colors.gray.200');
+  border-radius: 0.75rem;
+  padding: 0.875rem 1rem;
+  cursor: pointer;
+}
+
+.cardSelected {
+  border-color: theme('colors.gray.900');
+  box-shadow: inset 3px 0 0 theme('colors.gray.900');
+}

@@ -1,0 +1,50 @@
+[
+  {
+    "id": "A20260625001",
+    "customerName": "王小明",
+    "source": "web",
+    "status": "pending",
+    "amount": 1280,
+    "createdAt": "2026-06-25T09:15:00+08:00",
+    "items": [
+      { "name": "韓式泡菜鍋", "qty": 2, "price": 180 },
+      { "name": "海鮮煎餅", "qty": 1, "price": 220 }
+    ]
+  },
+  {
+    "id": "A20260625002",
+    "customerName": "李雅婷",
+    "source": "app",
+    "status": "paid",
+    "amount": 760,
+    "createdAt": "2026-06-25T10:20:00+08:00",
+    "items": [
+      { "name": "石鍋拌飯", "qty": 2, "price": 160 },
+      { "name": "柚子茶", "qty": 2, "price": 90 }
+    ]
+  },
+  {
+    "id": "A20260625003",
+    "customerName": "陳柏翰",
+    "source": "pos",
+    "status": "cancelled",
+    "amount": 450,
+    "createdAt": "2026-06-25T11:05:00+08:00",
+    "items": [
+      { "name": "香蕉牛奶", "qty": 3, "price": 65 },
+      { "name": "海鮮煎餅", "qty": 1, "price": 220 }
+    ]
+  },
+  {
+    "id": "A20260625004",
+    "customerName": "林佳蓉",
+    "source": "web",
+    "status": "paid",
+    "amount": 1580,
+    "createdAt": "2026-06-25T12:30:00+08:00",
+    "items": [
+      { "name": "韓式泡菜鍋", "qty": 4, "price": 180 },
+      { "name": "柚子茶", "qty": 4, "price": 90 }
+    ]
+  }
+]
