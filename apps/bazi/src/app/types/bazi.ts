@@ -80,6 +80,20 @@ export const KNOWLEDGE_TAGS = {
   其他: ['通用', '天干', '地支', '基礎'],
 } as const;
 
+export interface StrongElementYear {
+  year: number;
+  stem: string;
+  branch: string;
+  isDoubleMatch: boolean;
+}
+
+export type YearFeeling = 'good' | 'bad';
+
+export interface StrengthCalibrationAnswer {
+  year: number;
+  feeling: YearFeeling;
+}
+
 export interface CalculateRequest {
   name?: string;
   gender?: Gender;
@@ -87,6 +101,7 @@ export interface CalculateRequest {
   birthMonth: number;
   birthDay: number;
   birthHour?: number;
+  strengthCalibration?: StrengthCalibrationAnswer[];
 }
 
 export interface AskQuestionRequest {

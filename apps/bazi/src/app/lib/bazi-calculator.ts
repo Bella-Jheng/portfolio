@@ -1,4 +1,4 @@
-import type { BaziPillars, Pillar } from '../types/bazi';
+import type { BaziPillars, Pillar, StrongElementYear, StrengthCalibrationAnswer } from '../types/bazi';
 
 export const STEMS   = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'];
 export const BRANCHES = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
@@ -205,6 +205,10 @@ export function calculateBaziPillars(
     day:   dayPillar,
     hour:  hourPillar,
   };
+}
+
+export function getDayMasterElement(pillars: BaziPillars): string {
+  return STEM_ELEMENTS[pillars.day.stem];
 }
 
 export function getDominantElements(pillars: BaziPillars): string[] {
@@ -432,6 +436,54 @@ export function calculateDayMasterStrength(pillars: BaziPillars): DayMasterStren
   if (ratio < 0.20) return '從弱';
   if (ratio >= 0.45) return '身強';
   return '身弱';
+}
+
+// ─── Strong-element year finder (for 身強/身弱校正問卷) ─────────────────────────
+// 候選年份：流年地支五行等於日主五行；天干也相同者（雙合）優先，其餘取最近年份
+export function findStrongElementYears(
+  pillars: BaziPillars,
+  birthYear: number,
+  currentYear: number,
+  limit = 5,
+): StrongElementYear[] {
+  const dayMasterElement = STEM_ELEMENTS[pillars.day.stem];
+
+  const candidates: StrongElementYear[] = [];
+  for (let year = birthYear; year <= currentYear; year++) {
+    const { stem, branch } = getAnnualPillar(year);
+    if (BRANCH_ELEMENTS[branch] !== dayMasterElement) continue;
+    candidates.push({ year, stem, branch, isDoubleMatch: STEM_ELEMENTS[stem] === dayMasterElement });
+  }
+
+  candidates.sort((a, b) => {
+    if (a.isDoubleMatch !== b.isDoubleMatch) return a.isDoubleMatch ? -1 : 1;
+    return b.year - a.year;
+  });
+
+  return candidates.slice(0, limit);
+}
+
+// ─── Strength recalibration from user feedback ───────────────────────────────
+// 使用者針對「元素特強年份」回報過得好/不好後，依此校正身強/身弱/從強/從弱
+const STRENGTH_ORDER: DayMasterStrength[] = ['從強', '身強', '身弱', '從弱'];
+
+export function recalibrateDayMasterStrength(
+  original: DayMasterStrength,
+  answers: StrengthCalibrationAnswer[],
+): DayMasterStrength {
+  if (answers.length === 0) return original;
+
+  const goodCount = answers.filter(answer => answer.feeling === 'good').length;
+  const badCount = answers.length - goodCount;
+  if (goodCount === badCount) return original;
+
+  const index = STRENGTH_ORDER.indexOf(original);
+  // 過得不好較多 → 該元素對日主是負擔 → 判斷傾向不變或往「更強」調整
+  // 過得好較多 → 該元素對日主有幫助 → 判斷傾向往鄰近「更弱」等級調整
+  const nextIndex = badCount > goodCount
+    ? Math.max(0, index - 1)
+    : Math.min(STRENGTH_ORDER.length - 1, index + 1);
+  return STRENGTH_ORDER[nextIndex];
 }
 
 // ─── Major fortune cycles (大運) ──────────────────────────────────────────────

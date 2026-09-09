@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     const createdBy = await extractUid(request);
     const isAdmin = !!ADMIN_UID && createdBy === ADMIN_UID;
     const body = (await request.json()) as CalculateRequest;
-    const { name, gender, birthYear, birthMonth, birthDay, birthHour } = body;
+    const { name, gender, birthYear, birthMonth, birthDay, birthHour, strengthCalibration } = body;
 
     if (!name?.trim()) {
       return NextResponse.json({ error: '請填寫姓名' }, { status: 400 });
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     const { id } = await readingService.createOrReuse({
       createdBy,
       isAdmin,
-      input: { name, gender, birthYear, birthMonth, birthDay, birthHour },
+      input: { name, gender, birthYear, birthMonth, birthDay, birthHour, strengthCalibration },
       hasBeenViewed: (readingId: string) => request.cookies.get(VIEWED_READING_COOKIE)?.value === readingId,
     });
 

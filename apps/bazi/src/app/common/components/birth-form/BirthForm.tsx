@@ -1,10 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { type Gender, type CalculateRequest } from '../../../types/bazi';
+import { type Gender, type CalculateRequest, type StrongElementYear } from '../../../types/bazi';
 import { BirthDateInput } from '../birth-date-input/BirthDateInput';
 import { Loading } from '../loading/Loading';
 import { useModalStore } from '../../../lib/modal-store';
+import { calculateBaziPillars, getDayMasterElement, findStrongElementYears } from '../../../lib/bazi-calculator';
+import { StrengthCalibrationModal } from './StrengthCalibrationModal';
 
 const inputClass =
   'w-full bg-[#FAF7F4] border border-[#EAE5DF] rounded-xl px-4 py-3 text-[#4A4A4A] placeholder:text-[#636363] focus:outline-none focus:border-[#FCD060] transition-colors text-sm';
@@ -18,6 +20,11 @@ interface BirthFormProps {
 export function BirthForm({ onSubmit, isPending = false, apiError }: BirthFormProps) {
   const [error, setError] = useState('');
   const { show } = useModalStore();
+  const [calibration, setCalibration] = useState<{
+    form: CalculateRequest;
+    element: string;
+    years: StrongElementYear[];
+  } | null>(null);
 
   const [form, setForm] = useState<CalculateRequest>({
     name: '',
@@ -60,9 +67,33 @@ export function BirthForm({ onSubmit, isPending = false, apiError }: BirthFormPr
           <p className="text-red-500 text-xs pt-1">⚠ 送出後即無法更改，請確認以上資料正確無誤。</p>
         </div>
       ),
-      onConfirm: () => onSubmit(form),
+      onConfirm: () => {
+        const pillars = calculateBaziPillars(form.birthYear, form.birthMonth, form.birthDay, form.birthHour);
+        const years = findStrongElementYears(pillars, form.birthYear, new Date().getFullYear());
+        if (years.length === 0) { onSubmit(form); return; }
+        setCalibration({ form, element: getDayMasterElement(pillars), years });
+      },
     });
   };
+
+  if (calibration) {
+    return (
+      <StrengthCalibrationModal
+        element={calibration.element}
+        years={calibration.years}
+        onComplete={(answers) => {
+          const finalForm = { ...calibration.form, strengthCalibration: answers };
+          setCalibration(null);
+          onSubmit(finalForm);
+        }}
+        onSkip={() => {
+          const { form: pendingForm } = calibration;
+          setCalibration(null);
+          onSubmit(pendingForm);
+        }}
+      />
+    );
+  }
 
   if (isPending) return <Loading />;
 

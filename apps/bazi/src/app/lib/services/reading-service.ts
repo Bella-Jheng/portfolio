@@ -9,11 +9,12 @@ import {
   getAnnualPillar,
   getMonthPillar,
   calculateDayMasterStrength,
+  recalibrateDayMasterStrength,
   STEMS,
   BRANCHES,
 } from '../bazi-calculator';
 import { resolveResubmitAction, type ExistingReadingInput, type IncomingReadingInput } from '../reading-resubmit';
-import type { BaziPillars, FortuneReading, Gender, QuestionAnswer } from '../../types/bazi';
+import type { BaziPillars, FortuneReading, Gender, QuestionAnswer, StrengthCalibrationAnswer } from '../../types/bazi';
 
 // 業務邏輯層拋出的預期錯誤（找不到資料、權限不足、超過額度等），route.ts 統一 catch 後轉成對應的 HTTP status
 export class ServiceError extends Error {
@@ -52,6 +53,7 @@ class ReadingService {
     birthMonth: number,
     birthDay: number,
     gender?: Gender,
+    strengthCalibration?: StrengthCalibrationAnswer[],
   ): Promise<ReadingGenerationContext> {
     const dominantElements = getDominantElements(pillars);
     const queryTags = [...dominantElements, '桃花', '財運', '健康', '事業', '運勢', '通用'];
@@ -84,7 +86,10 @@ class ReadingService {
       };
     }
 
-    const strength = calculateDayMasterStrength(pillars);
+    const baseStrength = calculateDayMasterStrength(pillars);
+    const strength = strengthCalibration?.length
+      ? recalibrateDayMasterStrength(baseStrength, strengthCalibration)
+      : baseStrength;
 
     return { knowledge, currentYear, majorFortuneInfo, strength };
   }
@@ -111,7 +116,14 @@ class ReadingService {
     }
 
     const pillars = calculateBaziPillars(input.birthYear, input.birthMonth, input.birthDay, input.birthHour);
-    const context = await this.buildGenerationContext(pillars, input.birthYear, input.birthMonth, input.birthDay, input.gender as Gender);
+    const context = await this.buildGenerationContext(
+      pillars,
+      input.birthYear,
+      input.birthMonth,
+      input.birthDay,
+      input.gender as Gender,
+      input.strengthCalibration,
+    );
     const fortune = await generateBaziReading({ ...input, gender: input.gender as Gender, pillars, ...context });
     const now = new Date().toISOString();
 
