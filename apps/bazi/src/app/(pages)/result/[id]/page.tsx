@@ -109,7 +109,7 @@ export default function ResultPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
+      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] bg-gradient-to-b from-[#F7E5BD] via-[#FFFDF6] to-white">
         <Loading message="載入命盤中…" />
       </div>
     );
