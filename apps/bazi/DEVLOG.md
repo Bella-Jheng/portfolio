@@ -12,6 +12,7 @@
 - [功能進度](#功能進度)
   - [核心功能](#核心功能)
   - [知識庫管理](#知識庫管理)
+  - [資安與基礎建設](#資安與基礎建設)
 - [系統架構](#系統架構)
   - [使用者算命流程](#使用者算命流程)
   - [AI Token 使用點](#ai-token-使用點)
@@ -40,6 +41,8 @@
   - [18. 一人一次命盤限制忽略修正資料，導致填錯重填後仍看到舊結果](#18-一人一次命盤限制忽略修正資料，導致填錯重填後仍看到舊結果)
   - [19. Firestore 讀寫散落在 9 個 route.ts，改成 Repository + Service 分層](#19-firestore-讀寫散落在-9-個-routets，改成-repository--service-分層)
   - [20. 建立 Vitest 測試框架：Node 版本相容性踩雷](#20-建立-vitest-測試框架：node-版本相容性踩雷)
+  - [21. 同一個 fixed 定位跑版 bug，在兩個獨立元件上各踩一次](#21-同一個-fixed-定位跑版-bug，在兩個獨立元件上各踩一次)
+  - [22. 資安強化：CSP 標頭、關閉正式站 source maps、XSS 防護、API 補身份驗證](#22-資安強化：csp-標頭、關閉正式站-source-maps、xss-防護、api-補身份驗證)
 - [待辦事項](#待辦事項)
 
 </details>
@@ -88,8 +91,12 @@
 | 2026-07-05 ~ 06 | 分享卡片功能：下載 PNG、行動裝置原生分享、五行貓咪圖轉 WebP + 長效快取 |
 | 2026-07-07 | 修復分享卡截圖「空白貓咪」多輪除錯、修正更正生日後結果過期的 bug、新增手機版卡片輪播與按需生成詳解 |
 | 2026-07-08 | 架構重構：Firestore 讀寫收斂為 Repository + Service 分層；建立 Vitest 測試框架並補上第一支排盤純函式測試 |
+| 2026-07-14 | SEO 標題文案調整 |
+| 2026-07-18 | 回饋機制加入狀態追蹤與管理員回覆；新增月運勢（流月）AI 分析分頁；首頁改版（功能介紹、使用流程） |
+| 2026-09-09 | 新增日主強弱校正問卷：讓使用者針對命盤中元素特強的流年回報「過得好／不好」，據此校正身強/身弱判斷 |
+| 2026-10-21 | 資安強化：加入全站 CSP 等安全標頭、關閉正式站 source maps、DOMPurify 防 XSS、補上兩支未驗證身份的 API |
 
-從第一個 commit 到部署成功約 **8 天**，密集開發集中在 5/27 ~ 5/28；截至 7/8，累積開發時程約 **50 天**，近期重心從功能擴充轉向架構收斂（Repository/Service 分層）與測試基礎建設。
+從第一個 commit 到部署成功約 **8 天**，密集開發集中在 5/27 ~ 5/28；7/8 之後重心轉向架構收斂與測試基礎建設。5 月下旬到 7 月中是主要衝刺期，9 月起轉為間歇性的功能擴充（校正問卷）與資安強化，非連續密集開發。
 
 ---
 
@@ -102,6 +109,10 @@
 - [x] Gemini AI 命理分析（四大主題：運勢、感情、健康、事業）
 - [x] 命盤結果頁面
 - [x] 結果持久化至 Firestore（可分享連結）
+- [x] 月運勢（流月）AI 分析分頁
+- [x] 日主強弱校正問卷（依流年感受回饋，微調身強/身弱判斷）
+- [x] 使用者回饋機制（意見提交、狀態追蹤、管理員回覆）
+- [x] 首頁改版（功能介紹、使用流程）
 
 ### 知識庫管理
 
@@ -113,6 +124,13 @@
 - [x] 拖曳上傳（Drag & Drop）
 - [x] AI 自動建議知識標籤
 - [x] 標籤式知識篩選（依日主五行 + 問題主題，非全量注入）
+
+### 資安與基礎建設
+
+- [x] 全站安全標頭（CSP、X-Frame-Options、X-Content-Type-Options、Referrer-Policy、Permissions-Policy）
+- [x] 正式站關閉 source maps，避免原始碼外洩
+- [x] AI 生成內容渲染前以 DOMPurify 清洗，防 XSS
+- [x] 會觸發付費 AI 呼叫的 API 端點補上身份驗證
 
 ---
 
@@ -875,6 +893,41 @@ it('1996/03/08 23:08 → 丙子 / 辛卯 / 乙巳 / 丙子', () => {
 - 挑測試框架版本不能只看功能，要先確認底層工具鏈（這裡是 rolldown/esbuild）對 Node 版本的硬性要求，尤其是主版本剛升級不久的套件（Vitest 4.x）常會把底層引擎也一併換代。
 - 遇到 npm optional dependency 缺失的錯誤，`rm -rf node_modules && npm i` 不是唯一解法——先評估「降級到相容版本」是不是風險更低、影響範圍更小的做法，尤其在 monorepo 裡整個重裝 `node_modules` 會牽動所有 app。
 - `.nvmrc` 應該在專案一開始就鎖定，而不是等到裝套件炸掉才回頭補——這次踩雷完全是因為本機 Node 版本跟套件需求不同步導致的。
+
+---
+
+### 21. 同一個 fixed 定位跑版 bug，在兩個獨立元件上各踩一次
+
+**現象：** `StrengthCalibrationModal`（#9 的校正問卷彈窗）彈出時跑版——彈窗被夾在表單卡片的寬度內，頁首、步驟列反而從旁邊露出來，而不是蓋滿整個畫面。
+
+**根本原因：** `StrengthCalibrationModal` 是在 `BirthForm` 裡直接 render 的，`BirthForm` 又被包在 `form/page.tsx` 帶有 framer-motion `initial`/`animate` 的 Form Card `motion.div` 裡。framer-motion 會在這個祖先元素加上 inline `transform`，而只要祖先有 `transform`，底下所有 `position: fixed` 的子元素就會變成「相對於這個祖先定位」，不再相對於整個視窗——`fixed inset-0` 因此只蓋住 Form Card 的範圍。
+
+**似曾相識：** 完全同樣的 bug 在 `FeedbackWidget`（被裝在 `ResultDisplay` 外層的 motion.div 裡）已經踩過一次，當時也是用 `createPortal` 修好，程式碼裡還留著對應的註解說明。這次踩的是另一個元件、另一個 motion.div，但本質是同一個坑。
+
+**解法：** 比照 `FeedbackWidget` 的做法，加上 `mounted` state（避免 SSR 階段 `document` 不存在），用 `createPortal` 把彈窗直接掛到 `document.body`，讓 `fixed` 定位真正以視窗為準，不受任何祖先的 transform 影響。
+
+**學到的事：** 「祖先有 `transform`/`filter`/`perspective` 會讓 `position: fixed` 的子元素改以該祖先為基準」是 CSS 的既定行為，framer-motion 的 `animate` prop 幾乎必然會加上 transform。專案裡只要是『獨立於頁面內容、需要蓋滿視窗』的彈窗（跟 `(pages)/layout.tsx` 頂層的 `Modal` 不同，那個不會被任何 motion.div 包住），只要可能被塞進帶動畫的祖先裡，就該預設用 `createPortal` 到 `document.body`，而不是每次跑版了才回頭修一次。
+
+---
+
+### 22. 資安強化：CSP 標頭、關閉正式站 source maps、XSS 防護、API 補身份驗證
+
+**問題發現：** 針對正式環境做一次資安盤點，發現三個獨立的風險點：
+
+1. `next.config.js` 的 `productionBrowserSourceMaps` 和 `experimental.serverSourceMaps` 都設為 `true`，等於正式站會把完整、未壓縮、含中文註解的原始碼透過 source map 送給任何打開 devtools 的訪客。
+2. AI 生成的 `fortune` 內容（`cycleAnalysisDetail`、`monthlyFortuneDetail`、`personality` 等）存進 Firestore 後，前端用 `dangerouslySetInnerHTML` 直接渲染，完全沒有清洗。問題在於 Firestore rules 目前允許任何登入者直接改寫資料庫內容，代表這段字串的來源不能假設一定安全。
+3. `/api/knowledge/suggest-tags` 與 `/api/result/[id]/generate-detail` 這兩支會實際呼叫付費 AI API 的端點完全沒有身份驗證，任何人不登入都能直接打，等於任何訪客都能無限消耗 AI 額度。
+
+**解法：**
+
+- `next.config.js` 把兩個 source map 設定都改回 `false`，並在 `headers()` 加上全站安全標頭：`X-Frame-Options`、`X-Content-Type-Options`、`Referrer-Policy`、`Permissions-Policy`，以及自訂 `Content-Security-Policy`（需放行 Google 登入與 Firebase 用到的網域：`accounts.google.com`、`*.googleapis.com`、`*.firebaseapp.com`，部署前務必實測一次登入流程，登入壞掉八成是漏放了某個網域）。
+- 新增 `lib/sanitize-html.ts`，包裝 `isomorphic-dompurify`，所有用 `dangerouslySetInnerHTML` 渲染 AI 生成內容的地方（`CycleAnalysisSlide`、`MonthlyFortuneSlide`、`PersonalitySummaryCard`、`StandardSlide`，共 6 個注入點）渲染前統一過一次 `sanitizeHtml`。
+- `suggest-tags` 比照既有 `verifyAdmin` pattern 補上管理員驗證（這支只有 `/knowledge` 管理頁在用）；`generate-detail` 補上「需登入」驗證，跟同層的 `askQuestion` 一致（日後要做訂閱/解鎖配額，可以在這裡擴充)。
+
+**學到的事：**
+- `dangerouslySetInnerHTML` 渲染的內容是否要清洗，不能只看「現在是誰在寫」，要看「寫入權限實際上有多寬鬆」——這裡是 Firestore rules 允許任何登入者寫入，就算目前只有 AI 會寫，也要當成不可信輸入處理。
+- 會觸發付費 API 呼叫的端點，身份驗證不是「之後可以補」的 TODO，是上線前的必要條件；這次盤點時發現兩支都已經能被未登入訪客直接打。
+- CSP 這類全站安全標頭容易在「加太嚴」和「漏放網域導致功能壞掉」之間抓不準，尤其 Google OAuth 這類涉及跨 origin iframe/redirect 的流程，一定要實際測過登入，不能只看 CSP 報不報錯。
 
 ---
 
