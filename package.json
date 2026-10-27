@@ -18,7 +18,7 @@
     "html-to-image": "^1.11.13",
     "i": "^0.3.7",
     "jspdf": "^4.0.0",
-    "next": "16.0.10",
+    "next": "16.4.2",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "vercel": "^50.18.2",
@@ -58,7 +58,7 @@
     "lint-staged": "^15.5.2",
     "msw": "^2.12.7",
     "nx": "22.1.0",
-    "postcss": "8.4.38",
+    "postcss": "8.5.31",
     "prettier": "~3.6.2",
     "sass": "1.62.1",
     "tailwindcss": "3.4.3",
@@ -76,5 +76,22 @@
     "apps/bazi/src/**/*.{ts,tsx}": [
       "eslint --fix --max-warnings=0 --config apps/bazi/eslint.config.mjs"
     ]
+  },
+  "allowScripts": {
+    "@firebase/util@1.15.1": true,
+    "sharp@0.32.6": true,
+    "sharp@0.35.5": true,
+    "@parcel/watcher@2.5.6": true,
+    "@swc/core@1.5.29": true,
+    "core-js@3.48.0": true,
+    "esbuild@0.27.0": true,
+    "esbuild@0.25.12": true,
+    "fsevents@2.3.3": true,
+    "less@4.5.1": true,
+    "msw@2.12.10": true,
+    "nx@22.1.0": true,
+    "onnxruntime-node@1.17.3": true,
+    "protobufjs@7.6.6": true,
+    "unrs-resolver@1.11.1": true
   }
 }
