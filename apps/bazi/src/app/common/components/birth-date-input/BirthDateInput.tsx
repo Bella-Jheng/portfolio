@@ -56,7 +56,6 @@ export function BirthDateInput({ value, onChange }: Props) {
 
   return (
     <div className="space-y-3">
-      <p className="text-[#636363] text-xs">※ 請填寫國曆生日</p>
       <div className="grid grid-cols-3 gap-3">
         {dateFields.map(({ label, key, min, max }) => (
           <label key={key} className="flex flex-col gap-1.5">
@@ -73,6 +72,8 @@ export function BirthDateInput({ value, onChange }: Props) {
           </label>
         ))}
       </div>
+
+      <p className="text-[#636363] text-xs">※ 請填寫國曆生日</p>
 
       <label className="flex flex-col gap-1.5">
         <span className={labelClass}>出生時辰（選填）</span>
