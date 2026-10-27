@@ -46,7 +46,15 @@ export async function GET(
     );
 
     const userId = await extractUid(request);
-    const isAdmin = !!userId && userId === ADMIN_UID;
+    if (!userId) {
+      return NextResponse.json({ error: '請先登入才能查看此命盤' }, { status: 401 });
+    }
+
+    const isAdmin = userId === ADMIN_UID;
+    if (!isAdmin && userId !== createdBy) {
+      return NextResponse.json({ error: '只有本人或管理員能查看此命盤' }, { status: 403 });
+    }
+
     const tz = resolveTimezone(request.headers.get('X-Timezone'));
     const remainingToday = userId && !isAdmin
       ? Math.max(0, 3 - (await readingsRepository.countTodayQuestionsForUser(userId, tz)))
