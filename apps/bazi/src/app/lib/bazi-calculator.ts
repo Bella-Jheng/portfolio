@@ -463,6 +463,15 @@ export function findStrongElementYears(
   return candidates.slice(0, limit);
 }
 
+// ─── Default strength when calibration is skipped/unanswered ─────────────────
+// 從強/從弱是較罕見、影響較大的判斷；使用者略過問卷或每一年都不確定（沒有任何回報）時，
+// 保守地退回相鄰的身強/身弱，避免在沒有使用者確認的情況下直接把從強/從弱當成最終結果送給 AI
+export function defaultDayMasterStrength(base: DayMasterStrength): DayMasterStrength {
+  if (base === '從強') return '身強';
+  if (base === '從弱') return '身弱';
+  return base; // 已經是身強/身弱，不需要調整
+}
+
 // ─── Strength recalibration from user feedback ───────────────────────────────
 // 使用者針對「元素特強年份」回報過得好/不好後，依此校正身強/身弱/從強/從弱
 const STRENGTH_ORDER: DayMasterStrength[] = ['從強', '身強', '身弱', '從弱'];

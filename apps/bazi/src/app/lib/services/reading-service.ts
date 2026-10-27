@@ -10,6 +10,7 @@ import {
   getMonthPillar,
   calculateDayMasterStrength,
   recalibrateDayMasterStrength,
+  defaultDayMasterStrength,
   STEMS,
   BRANCHES,
 } from '../bazi-calculator';
@@ -89,7 +90,7 @@ class ReadingService {
     const baseStrength = calculateDayMasterStrength(pillars);
     const strength = strengthCalibration?.length
       ? recalibrateDayMasterStrength(baseStrength, strengthCalibration)
-      : baseStrength;
+      : defaultDayMasterStrength(baseStrength);
 
     return { knowledge, currentYear, majorFortuneInfo, strength };
   }

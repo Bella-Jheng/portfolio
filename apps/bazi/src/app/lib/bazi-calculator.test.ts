@@ -4,6 +4,7 @@ import {
   getDayMasterElement,
   findStrongElementYears,
   recalibrateDayMasterStrength,
+  defaultDayMasterStrength,
 } from './bazi-calculator';
 import type { BaziPillars } from '../types/bazi';
 
@@ -80,5 +81,20 @@ describe('recalibrateDayMasterStrength', () => {
 
   it('clamps at the 從弱 boundary instead of overshooting', () => {
     expect(recalibrateDayMasterStrength('從弱', [{ year: 2020, feeling: 'good' }])).toBe('從弱');
+  });
+});
+
+describe('defaultDayMasterStrength', () => {
+  it('falls back from 從強 to 身強 when the user gave no calibration answers', () => {
+    expect(defaultDayMasterStrength('從強')).toBe('身強');
+  });
+
+  it('falls back from 從弱 to 身弱 when the user gave no calibration answers', () => {
+    expect(defaultDayMasterStrength('從弱')).toBe('身弱');
+  });
+
+  it('leaves 身強/身弱 unchanged since they are already the moderate verdicts', () => {
+    expect(defaultDayMasterStrength('身強')).toBe('身強');
+    expect(defaultDayMasterStrength('身弱')).toBe('身弱');
   });
 });
