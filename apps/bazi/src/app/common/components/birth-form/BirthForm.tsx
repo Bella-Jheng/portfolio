@@ -5,7 +5,7 @@ import { type Gender, type CalculateRequest, type StrongElementYear } from '../.
 import { BirthDateInput } from '../birth-date-input/BirthDateInput';
 import { Loading } from '../loading/Loading';
 import { useModalStore } from '../../../lib/modal-store';
-import { calculateBaziPillars, getDayMasterElement, findStrongElementYears } from '../../../lib/bazi-calculator';
+import { calculateBaziPillars, calculateDayMasterStrength, getDayMasterElement, findStrongElementYears } from '../../../lib/bazi-calculator';
 import { StrengthCalibrationModal } from './StrengthCalibrationModal';
 
 const inputClass =
@@ -69,7 +69,10 @@ export function BirthForm({ onSubmit, isPending = false, apiError }: BirthFormPr
       ),
       onConfirm: () => {
         const pillars = calculateBaziPillars(form.birthYear, form.birthMonth, form.birthDay, form.birthHour);
-        const years = findStrongElementYears(pillars, form.birthYear, new Date().getFullYear());
+        // 只有算出從強/從弱這種較極端、影響較大的判斷時才需要問卷校正；身強/身弱不用再問
+        const baseStrength = calculateDayMasterStrength(pillars);
+        const isExtreme = baseStrength === '從強' || baseStrength === '從弱';
+        const years = isExtreme ? findStrongElementYears(pillars, form.birthYear, new Date().getFullYear()) : [];
         if (years.length === 0) { onSubmit(form); return; }
         setCalibration({ form, element: getDayMasterElement(pillars), years });
       },
