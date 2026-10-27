@@ -7,6 +7,7 @@ import {
   calculateMajorFortune,
   getAnnualPillar,
 } from '../../../lib/bazi-calculator';
+import { sanitizeHtml } from '../../../lib/sanitize-html';
 
 interface CycleAnalysisSlideProps {
   reading: Reading;
@@ -66,12 +67,12 @@ export function CycleAnalysisSlide({ reading, theme, mobile }: CycleAnalysisSlid
       {reading.fortune.cycleAnalysisDetail ? (
         <div
           className={`${styles.htmlContent} ${mobile ? '' : 'overflow-y-auto'}`}
-          dangerouslySetInnerHTML={{ __html: reading.fortune.cycleAnalysisDetail }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(reading.fortune.cycleAnalysisDetail) }}
         />
       ) : (
         <div
           className={`${styles.htmlContent} ${mobile ? '' : 'overflow-y-auto'}`}
-          dangerouslySetInnerHTML={{ __html: reading.fortune.cycleAnalysis ?? '' }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(reading.fortune.cycleAnalysis ?? '') }}
         />
       )}
     </div>

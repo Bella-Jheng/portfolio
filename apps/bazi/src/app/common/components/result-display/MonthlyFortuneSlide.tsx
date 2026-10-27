@@ -2,6 +2,7 @@ import styles from '../../styles/bazi-content.module.css';
 import type { Reading } from '../../../types/bazi';
 import type { MagazineTheme } from './theme';
 import { getMonthPillar } from '../../../lib/bazi-calculator';
+import { sanitizeHtml } from '../../../lib/sanitize-html';
 
 interface MonthlyFortuneSlideProps {
   reading: Reading;
@@ -41,12 +42,12 @@ export function MonthlyFortuneSlide({ reading, theme, mobile }: MonthlyFortuneSl
       {reading.fortune.monthlyFortuneDetail ? (
         <div
           className={`${styles.htmlContent} ${mobile ? '' : 'overflow-y-auto'}`}
-          dangerouslySetInnerHTML={{ __html: reading.fortune.monthlyFortuneDetail }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(reading.fortune.monthlyFortuneDetail) }}
         />
       ) : (
         <div
           className={`${styles.htmlContent} ${mobile ? '' : 'overflow-y-auto'}`}
-          dangerouslySetInnerHTML={{ __html: reading.fortune.monthlyFortune ?? '' }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(reading.fortune.monthlyFortune ?? '') }}
         />
       )}
     </div>

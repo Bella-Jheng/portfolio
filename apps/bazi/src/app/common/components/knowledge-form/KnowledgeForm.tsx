@@ -97,9 +97,10 @@ export function KnowledgeForm() {
 
   const fetchSuggestedTags = async (title: string, content: string): Promise<string[]> => {
     try {
+      const token = await getToken();
       const res = await fetch('/api/knowledge/suggest-tags', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(token && { Authorization: `Bearer ${token}` }) },
         body: JSON.stringify({ title, content }),
       });
       if (!res.ok) return [];

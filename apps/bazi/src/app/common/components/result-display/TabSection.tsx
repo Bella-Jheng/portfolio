@@ -65,7 +65,7 @@ interface TabSectionProps {
 }
 
 export function TabSection({ reading, theme, activeTabIdx, onActiveTabChange, onUpdate }: TabSectionProps) {
-  const { isAdmin } = useAuth();
+  const { isAdmin, getToken } = useAuth();
   const activeIdx = activeTabIdx;
   const setActiveIdx = onActiveTabChange;
   const tabBarRef = useRef<HTMLDivElement>(null);
@@ -81,9 +81,11 @@ export function TabSection({ reading, theme, activeTabIdx, onActiveTabChange, on
   const handleGenerateDetail = async (section: DetailSection) => {
     setGenerating(true);
     try {
+      const token = await getToken();
+      if (!token) { alert('請先登入才能生成完整分析'); return; }
       const res = await fetch(`/api/result/${reading.id}/generate-detail`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ section }),
       });
       const data = await res.json();

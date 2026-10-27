@@ -1,6 +1,7 @@
 import styles from '../../styles/bazi-content.module.css';
 import type { Reading } from '../../../types/bazi';
 import type { MagazineTheme } from './theme';
+import { sanitizeHtml } from '../../../lib/sanitize-html';
 
 interface PersonalitySummaryCardProps {
   reading: Reading;
@@ -30,7 +31,7 @@ export function PersonalitySummaryCard({ reading, theme }: PersonalitySummaryCar
       {personality ? (
         <div
           className={`${styles.htmlContent} flex-1 overflow-y-auto relative z-10`}
-          dangerouslySetInnerHTML={{ __html: personality }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(personality) }}
         />
       ) : (
         <div className="flex-1 flex flex-col items-center justify-center gap-2 text-[#9A9088] relative z-10">

@@ -1,4 +1,5 @@
 import styles from '../../styles/bazi-content.module.css';
+import { sanitizeHtml } from '../../../lib/sanitize-html';
 
 interface StandardSlideProps {
   title: string;
@@ -43,7 +44,7 @@ export function StandardSlide({ title, emoji, content, detail, accentColor, tabN
       <div
         className={`${styles.htmlContent} pl-3 border-l-2`}
         style={{ borderColor: accentColor }}
-        dangerouslySetInnerHTML={{ __html: content }}
+        dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }}
       />
       {detail && (
         <div className="flex flex-col gap-3 pt-2">
@@ -52,7 +53,7 @@ export function StandardSlide({ title, emoji, content, detail, accentColor, tabN
             <span className="text-[10px] font-mono tracking-widest text-[#B0A898] uppercase shrink-0">完整分析</span>
             <div className="flex-1 border-t border-[#EAE5DF]" />
           </div>
-          <div className={styles.htmlContent} dangerouslySetInnerHTML={{ __html: detail }} />
+          <div className={styles.htmlContent} dangerouslySetInnerHTML={{ __html: sanitizeHtml(detail) }} />
         </div>
       )}
     </div>
