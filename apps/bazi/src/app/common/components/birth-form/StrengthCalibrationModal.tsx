@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import type { StrongElementYear, StrengthCalibrationAnswer, YearFeeling } from '../../../types/bazi';
 
 const ELEMENT_ACCENT: Record<string, string> = {
@@ -16,6 +17,12 @@ interface Props {
 
 export function StrengthCalibrationModal({ element, years, onComplete, onSkip }: Props) {
   const [answers, setAnswers] = useState<Record<number, YearFeeling>>({});
+  const [mounted, setMounted] = useState(false);
+
+  // BirthForm 被裝在 form/page.tsx 有 framer-motion transform 的祖先裡（Form Card 的 motion.div），
+  // 那個 transform 會讓 fixed 元素變成相對於它定位，而不是相對於真正的視窗，導致跑版。
+  // Portal 到 body 讓 fixed 定位真的以視窗為準。
+  useEffect(() => setMounted(true), []);
 
   const setFeeling = (year: number, feeling: YearFeeling) =>
     setAnswers((prev) => ({ ...prev, [year]: feeling }));
@@ -30,7 +37,9 @@ export function StrengthCalibrationModal({ element, years, onComplete, onSkip }:
 
   const accent = ELEMENT_ACCENT[element] ?? '#C4544A';
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center px-5 py-8">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
       <div className="relative bg-white border border-bz-border rounded-2xl p-7 max-w-md w-full space-y-5 shadow-xl max-h-[85vh] overflow-y-auto">
@@ -99,6 +108,7 @@ export function StrengthCalibrationModal({ element, years, onComplete, onSkip }:
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
