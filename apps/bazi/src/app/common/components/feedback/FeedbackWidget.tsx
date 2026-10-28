@@ -86,7 +86,7 @@ export function FeedbackWidget({ autoOpenSignal }: FeedbackWidgetProps) {
                 transition={{ duration: 0.3, ease: 'easeOut' }}
               >
                 <div className="relative bg-white text-[#4A4A4A] text-xs font-medium px-3 py-1.5 rounded-2xl border border-[#EAE5DF] shadow-md whitespace-nowrap">
-                  意見回饋
+                  許願池 🌠
                   <div className="absolute left-1/2 -translate-x-1/2 top-full -mt-1.5 w-3 h-3 bg-white border-r border-b border-[#EAE5DF] rotate-45" />
                 </div>
               </motion.div>
@@ -95,7 +95,7 @@ export function FeedbackWidget({ autoOpenSignal }: FeedbackWidgetProps) {
         </div>
         <motion.button
           onClick={() => handleOpen(false)}
-          aria-label="意見回饋"
+          aria-label="許願池"
           className="relative w-11 h-11 rounded-full bg-white shadow-lg border border-[#EAE5DF] flex items-center justify-center"
           animate={{ y: [0, -6, 0] }}
           transition={{ duration: 2.2, repeat: Infinity, repeatDelay: 1.6, ease: 'easeInOut' }}
@@ -146,22 +146,22 @@ export function FeedbackWidget({ autoOpenSignal }: FeedbackWidgetProps) {
                 <div className="flex items-center gap-2">
                   <Image src="/cats/bazi-cat-default.webp" alt="" width={28} height={28} />
                   <h3 className="text-[#4A4A4A] font-black text-sm tracking-wide">
-                    {nudge ? '你的支持是我最大的動力 💛' : '告訴我們你的想法'}
+                    {nudge ? '來許個願吧 🌠' : '許願池 🌠'}
                   </h3>
                 </div>
-                {nudge && !submitted && (
-                  <p className="text-xs text-[#6B6159] -mt-2">給點想法，讓我把網站做得更好</p>
+                {!submitted && (
+                  <p className="text-xs text-[#6B6159] -mt-2">想看什麼分析、想要什麼功能？每個願望我都會認真看，說不定下一版就實現！</p>
                 )}
 
                 {!user ? (
                   <div className="py-4 space-y-4 text-center">
-                    <p className="text-sm text-[#6B6159]">請先登入才能送出回饋</p>
+                    <p className="text-sm text-[#6B6159]">登入後就能許願囉</p>
                     <GoogleLoginButton variant="dark" className="w-full py-2.5 font-medium" />
                   </div>
                 ) : submitted ? (
                   <div className="py-6 text-center space-y-2">
-                    <p className="text-2xl">🎉</p>
-                    <p className="text-sm text-[#6B6159]">感謝你的回饋，我們會仔細閱讀！</p>
+                    <p className="text-2xl">🌟</p>
+                    <p className="text-sm text-[#6B6159]">願望已投進許願池！我會認真看每一個願望 ✨</p>
                     <button
                       onClick={() => setOpen(false)}
                       className="mt-2 w-full py-2.5 rounded-full border border-[#EAE5DF] text-[#4A4A4A] text-sm font-bold hover:bg-[#FAF7F4] transition-all"
@@ -175,7 +175,7 @@ export function FeedbackWidget({ autoOpenSignal }: FeedbackWidgetProps) {
                       value={message}
                       onChange={(event) => setMessage(event.target.value)}
                       rows={4}
-                      placeholder="有任何建議、問題或想說的話，都歡迎留言給我們"
+                      placeholder="例如：想看流年感情運、希望能存好幾個人的命盤…任何願望或建議都歡迎！"
                       className="w-full bg-transparent border border-[#EAE5DF] rounded-xl px-3 py-2.5 text-sm text-[#4A4A4A] placeholder:text-[#B0A898] focus:outline-none focus:border-[#4A4A4A]/40 resize-none"
                     />
                     {error && <p className="text-xs text-[#E87878]">{error}</p>}
@@ -184,7 +184,7 @@ export function FeedbackWidget({ autoOpenSignal }: FeedbackWidgetProps) {
                       disabled={submitting || !message.trim()}
                       className="w-full py-2.5 rounded-full bg-[#4A4A4A] text-white text-sm font-bold hover:bg-[#2D2420] transition-all disabled:opacity-40"
                     >
-                      {submitting ? '送出中…' : '送出回饋'}
+                      {submitting ? '投遞中…' : '投下願望 🪙'}
                     </button>
                   </>
                 )}

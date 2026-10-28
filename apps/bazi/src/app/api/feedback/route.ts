@@ -49,7 +49,7 @@ export async function GET() {
     return NextResponse.json(entries.map(toPublicEntry));
   } catch (error) {
     console.error('Get feedback error:', error);
-    return NextResponse.json({ error: '讀取回饋失敗' }, { status: 500 });
+    return NextResponse.json({ error: '讀取願望失敗' }, { status: 500 });
   }
 }
 
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
     const { message } = body as { message: string };
 
     if (!message?.trim()) {
-      return NextResponse.json({ error: '請輸入回饋內容' }, { status: 400 });
+      return NextResponse.json({ error: '請輸入你的願望' }, { status: 400 });
     }
 
     const id = uuidv4();
@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ id, message: message.trim(), createdAt: now }, { status: 201 });
   } catch (error) {
     console.error('Create feedback error:', error);
-    return NextResponse.json({ error: '送出回饋失敗' }, { status: 500 });
+    return NextResponse.json({ error: '許願失敗，請稍後再試' }, { status: 500 });
   }
 }
 
