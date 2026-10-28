@@ -121,7 +121,7 @@ function AdminReplyForm({ feedbackId }: { feedbackId: string }) {
         onKeyDown={(event) => {
           if (event.key === 'Enter') handleSubmit();
         }}
-        placeholder="回覆這則回饋…"
+        placeholder="回覆這個願望…"
         className="flex-1 bg-bz-paper border border-bz-border rounded-lg px-3 py-2 text-sm text-bz-brown placeholder:text-bz-muted focus:outline-none focus:border-bz-terra/50"
       />
       <button
@@ -145,14 +145,14 @@ export default function FeedbackPage() {
   return (
     <div className="max-w-3xl mx-auto px-5 py-12">
       <div className="space-y-2 mb-8">
-        <h1 className="text-bz-parchment font-serif text-3xl tracking-wider">意見回饋</h1>
-        <p className="text-bz-muted text-sm">大家透過回饋按鈕送出的訊息</p>
+        <h1 className="text-bz-parchment font-serif text-3xl tracking-wider">許願池</h1>
+        <p className="text-bz-muted text-sm">大家投進許願池的願望與建議</p>
       </div>
 
       {isLoading ? (
-        <p className="text-bz-muted text-sm">載入回饋中…</p>
+        <p className="text-bz-muted text-sm">載入願望中…</p>
       ) : entries.length === 0 ? (
-        <p className="text-bz-muted/60 text-sm text-center py-16">尚無回饋紀錄</p>
+        <p className="text-bz-muted/60 text-sm text-center py-16">許願池還空空的，來許第一個願吧！</p>
       ) : (
         <div className="space-y-3">
           {entries.map((entry) => (

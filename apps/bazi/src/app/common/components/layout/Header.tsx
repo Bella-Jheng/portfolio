@@ -100,7 +100,7 @@ export function Header() {
                     <NavLink mobile href="/test" active={pathname === '/test'} onClick={close}>排盤測試</NavLink>
                   </>
                 )}
-                <NavLink mobile href="/feedback" active={pathname === '/feedback'} onClick={close}>意見回饋</NavLink>
+                <NavLink mobile href="/feedback" active={pathname === '/feedback'} onClick={close}>許願池</NavLink>
               </div>
 
               {/* Auth */}
