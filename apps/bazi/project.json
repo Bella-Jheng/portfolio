@@ -9,6 +9,12 @@
       "options": {
         "port": 42420
       }
+    },
+    "build": {
+      // Nx 的本地快取機制在複製 .next 輸出目錄時，遇到裡面的 symlink 會出現已知 bug
+      // (nrwl/nx#34013)，在 Vercel 建置時會直接噴 EEXIST 讓部署失敗。Vercel 每次都是全新容器，
+      // Nx 本地快取在這裡本來就沒有跨 build 重複利用的價值，直接關掉繞開這個 bug。
+      "cache": false
     }
   }
 }
