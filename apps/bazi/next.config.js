@@ -35,6 +35,12 @@ const nextConfig = {
       {
         // 全站安全標頭。CSP 已放行 Google 登入(accounts.google.com)、Firebase(*.googleapis.com、*.firebaseapp.com)
         // 需要的網域，但部署前務必實際測一次登入，如果登入壞掉，八成是漏放了某個 Google/Firebase 網域。
+        //
+        // script-src 的 'unsafe-inline' 是必要的：Next.js App Router 本身會在頁面裡注入 inline <script>
+        // 做 hydration/RSC streaming，嚴格的 nonce-based CSP 雖然能擋掉 inline script，但官方文件明講這需要把
+        // 全站改成動態渲染（不能用 static generation、不能被 CDN 快取），代價太大。這裡唯一真正的 XSS 風險點
+        // （AI 生成內容用 dangerouslySetInnerHTML 渲染）已經用 isomorphic-dompurify 在內容層清洗過，
+        // CSP 這裡只是第二層保險，不靠它單獨擋 script。
         source: '/:path*',
         headers: [
           { key: 'X-Frame-Options', value: 'DENY' },
@@ -45,7 +51,7 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self'",
+              "script-src 'self' 'unsafe-inline'",
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https://lh3.googleusercontent.com",
               "font-src 'self' data:",
