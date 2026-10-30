@@ -177,47 +177,49 @@ export default function LandingPage() {
 
       {/* Author's note */}
       <section className="bg-gradient-to-b from-[#FFF8EC] to-white px-6 md:px-8 py-20 md:py-28">
-        <div className="max-w-2xl mx-auto text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-80px' }}
-            transition={{ duration: 0.9, ease: [0.23, 1, 0.32, 1] }}
-          >
-            <span className="block text-6xl md:text-7xl leading-none text-[#FCD060] select-none" aria-hidden>
-              “
-            </span>
-            <p className="mt-2 text-2xl md:text-3xl font-medium text-[#2D2420] tracking-wide">
-              隧道的洞口，就快到了
-            </p>
-          </motion.div>
+        <div className="max-w-5xl mx-auto">
+          <div className="max-w-2xl">
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-80px' }}
+              transition={{ duration: 0.9, ease: [0.23, 1, 0.32, 1] }}
+            >
+              <span className="block text-6xl md:text-7xl leading-none text-[#FCD060] select-none" aria-hidden>
+                “
+              </span>
+              <p className="mt-2 text-2xl md:text-3xl font-medium text-[#2D2420] tracking-wide">
+                隧道的洞口，就快到了
+              </p>
+            </motion.div>
 
-          <div className="mt-10 md:mt-12 space-y-7 text-sm md:text-base leading-loose text-[#6B5D57]">
-            {AUTHOR_NOTE.map((paragraph, index) => (
-              <motion.p
-                key={paragraph[0]}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-60px' }}
-                transition={{ delay: index * 0.08, duration: 0.8, ease: [0.23, 1, 0.32, 1] }}
-              >
-                {paragraph.map((line) => (
-                  <span key={line} className="block">{line}</span>
-                ))}
-              </motion.p>
-            ))}
+            <div className="mt-8 md:mt-10 space-y-5 text-sm md:text-base leading-relaxed text-[#6B5D57]">
+              {AUTHOR_NOTE.map((paragraph, index) => (
+                <motion.p
+                  key={paragraph[0]}
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: '-60px' }}
+                  transition={{ delay: index * 0.08, duration: 0.8, ease: [0.23, 1, 0.32, 1] }}
+                >
+                  {paragraph.map((line) => (
+                    <span key={line} className="block">{line}</span>
+                  ))}
+                </motion.p>
+              ))}
+            </div>
+
+            <motion.div
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.3, duration: 0.8 }}
+              className="mt-10 flex items-center gap-3"
+            >
+              <Image src="/cats/bazi-cat-default.webp" alt="" width={32} height={32} />
+              <p className="text-xs tracking-[0.3em] text-[#B9985A]">— 命格貓的作者</p>
+            </motion.div>
           </div>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.3, duration: 0.8 }}
-            className="mt-12 flex items-center justify-center gap-3"
-          >
-            <Image src="/cats/bazi-cat-default.webp" alt="" width={32} height={32} />
-            <p className="text-xs tracking-[0.3em] text-[#B9985A]">— 命格貓的作者</p>
-          </motion.div>
         </div>
       </section>
 
