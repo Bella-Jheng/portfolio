@@ -16,6 +16,14 @@ const STEPS = [
   { num: '03', emoji: '📖', title: '拿到完整報告', desc: '個性、財運、事業、感情、健康，連今年今月的運勢走向一次看清楚。' },
 ];
 
+// 作者的話：每一段是一個段落，段落內的每一行各自換行
+const AUTHOR_NOTE = [
+  ['起初，是在自己人生的低潮裡，', '陰錯陽差遇見了八字。', '沒想到越學越著迷，', '後來不只幫自己看，也開始幫朋友看。'],
+  ['對我來說，算命從來不是為了預言誰的命運，', '而是在你走到谷底的時候，輕輕告訴你：', '再撐一下下就好，隧道的洞口快到了。'],
+  ['在你覺得看不到希望時，給你一點光；', '在風雨來臨之前，讓你先做好準備。', '人生本來就有高有低，不會一直都是低谷。'],
+  ['這個網站幫助了我，也希望能幫助你。', '哪怕只是一點點安慰、一個小小的心理支柱，', '都希望在你低潮的時候，陪你多走一步。'],
+];
+
 const FEATURES = [
   { emoji: '🌊', title: '流年運勢', desc: '今年大運與流年如何互相牽動' },
   { emoji: '🌙', title: '流月運勢', desc: '這個月的氣場重點與提醒' },
@@ -166,6 +174,52 @@ export default function LandingPage() {
           </motion.h1>
         </div>
       </div>
+
+      {/* Author's note */}
+      <section className="bg-gradient-to-b from-[#FFF8EC] to-white px-6 md:px-8 py-20 md:py-28">
+        <div className="max-w-2xl mx-auto text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-80px' }}
+            transition={{ duration: 0.9, ease: [0.23, 1, 0.32, 1] }}
+          >
+            <span className="block text-6xl md:text-7xl leading-none text-[#FCD060] select-none" aria-hidden>
+              “
+            </span>
+            <p className="mt-2 text-2xl md:text-3xl font-medium text-[#2D2420] tracking-wide">
+              隧道的洞口，就快到了
+            </p>
+          </motion.div>
+
+          <div className="mt-10 md:mt-12 space-y-7 text-sm md:text-base leading-loose text-[#6B5D57]">
+            {AUTHOR_NOTE.map((paragraph, index) => (
+              <motion.p
+                key={paragraph[0]}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-60px' }}
+                transition={{ delay: index * 0.08, duration: 0.8, ease: [0.23, 1, 0.32, 1] }}
+              >
+                {paragraph.map((line) => (
+                  <span key={line} className="block">{line}</span>
+                ))}
+              </motion.p>
+            ))}
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.3, duration: 0.8 }}
+            className="mt-12 flex items-center justify-center gap-3"
+          >
+            <Image src="/cats/bazi-cat-default.webp" alt="" width={32} height={32} />
+            <p className="text-xs tracking-[0.3em] text-[#B9985A]">— 命格貓的作者</p>
+          </motion.div>
+        </div>
+      </section>
 
       {/* How it works */}
       <section className="bg-white px-6 md:px-8 py-16 md:py-24">
