@@ -18,6 +18,67 @@ const STATUS_META: Record<FeedbackStatus, { label: string; dot: string }> = {
   resolved: { label: '已處理', dot: 'bg-green-500' },
 };
 
+// 近期更新：依類型分組，新的更新加在各組最前面
+const UPDATE_GROUPS = [
+  {
+    emoji: '✨',
+    title: '新功能',
+    items: [
+      { date: '10/30', text: '首頁新增「作者的話」，分享命格貓誕生的初衷' },
+      { date: '10/28', text: '意見回饋升級成「許願池」，想要什麼功能都歡迎來許願' },
+      { date: '09/09', text: '新增命盤強弱校準問卷：回答幾個過去年份的感受，讓命盤判斷更貼近你本人' },
+    ],
+  },
+  {
+    emoji: '🎨',
+    title: '體驗優化',
+    items: [
+      { date: '10/28', text: '填寫生日時加上「請填寫國曆生日」提示，避免誤填農曆' },
+      { date: '10/28', text: '校準問卷只在命盤特別強或特別弱時才出現，跳過也會用中和的判斷，不影響結果' },
+      { date: '10/28', text: '送出後直接進入結果頁，不再閃一下載入畫面' },
+      { date: '10/28', text: '修正校準問卷視窗在部分裝置上排版跑掉的問題' },
+    ],
+  },
+  {
+    emoji: '🔒',
+    title: '安全與隱私',
+    items: [
+      { date: '11/02', text: '排盤、提問與完整分析都需要登入，且只有命盤本人能操作' },
+      { date: '11/02', text: '每日提問次數統一以台灣時間計算' },
+      { date: '10/28', text: '加強網站安全防護，命盤結果頁不會被搜尋引擎收錄' },
+      { date: '10/28', text: 'AI 產生的內容會先經過安全過濾才顯示' },
+    ],
+  },
+];
+
+function RecentUpdates() {
+  return (
+    <details open className="group border border-bz-gold/20 rounded-xl px-6 py-4 mb-8">
+      <summary className="flex items-center justify-between cursor-pointer list-none">
+        <span className="text-bz-parchment text-sm font-medium tracking-wide">🌟 近期更新：你的願望，我們正在實現</span>
+        <span className="text-bz-muted text-xs transition-transform group-open:rotate-180">▼</span>
+      </summary>
+      <div className="mt-4 space-y-5">
+        {UPDATE_GROUPS.map((group) => (
+          <div key={group.title} className="space-y-2">
+            <p className="text-bz-parchment text-sm font-medium">
+              {group.emoji} {group.title}
+            </p>
+            <ul className="space-y-1.5">
+              {group.items.map((item) => (
+                <li key={item.text} className="flex gap-3 text-sm text-bz-muted">
+                  <span className="shrink-0 text-xs text-bz-muted/60 pt-0.5 tabular-nums">{item.date}</span>
+                  <span>{item.text}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </details>
+  );
+}
+
 function FeedbackStatusBadge({ status }: { status: FeedbackStatus }) {
   const meta = STATUS_META[status] ?? STATUS_META.unprocessed;
   return (
@@ -148,6 +209,8 @@ export default function FeedbackPage() {
         <h1 className="text-bz-parchment font-serif text-3xl tracking-wider">許願池</h1>
         <p className="text-bz-muted text-sm">大家投進許願池的願望與建議</p>
       </div>
+
+      <RecentUpdates />
 
       {isLoading ? (
         <p className="text-bz-muted text-sm">載入願望中…</p>
