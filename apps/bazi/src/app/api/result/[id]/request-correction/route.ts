@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAdminAuth } from '../../../../lib/firebase';
 import { readingService, ServiceError } from '../../../../lib/services/reading-service';
 
+const ADMIN_UID = process.env.ADMIN_UID ?? '';
+
 async function extractUid(request: NextRequest): Promise<string | null> {
   const token = request.headers.get('Authorization')?.replace('Bearer ', '');
   if (!token) return null;
@@ -27,7 +29,7 @@ export async function POST(
     const body = await request.json();
     const { year, month, day, hour } = body as { year: number; month: number; day: number; hour: number | null };
 
-    await readingService.requestCorrection({ id, uid, year, month, day, hour });
+    await readingService.requestCorrection({ id, uid, isAdmin: !!ADMIN_UID && uid === ADMIN_UID, year, month, day, hour });
 
     return NextResponse.json({ ok: true });
   } catch (error) {

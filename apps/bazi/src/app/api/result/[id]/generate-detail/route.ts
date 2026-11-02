@@ -3,6 +3,8 @@ import { getAdminAuth } from '../../../../lib/firebase';
 import { readingService, ServiceError } from '../../../../lib/services/reading-service';
 import type { DetailSection } from '../../../../lib/anthropic';
 
+const ADMIN_UID = process.env.ADMIN_UID ?? '';
+
 const VALID_SECTIONS: DetailSection[] = ['wealth', 'career', 'romance', 'health', 'remedy', 'cycleAnalysis', 'monthlyFortune', 'tenGodAnalysis'];
 
 async function extractUid(request: NextRequest): Promise<string | null> {
@@ -35,7 +37,7 @@ export async function POST(
       return NextResponse.json({ error: '無效的項目' }, { status: 400 });
     }
 
-    const { fortune } = await readingService.generateDetail({ id, section });
+    const { fortune } = await readingService.generateDetail({ id, section, userId: uid, isAdmin: !!ADMIN_UID && uid === ADMIN_UID });
 
     return NextResponse.json({ fortune });
   } catch (error) {
