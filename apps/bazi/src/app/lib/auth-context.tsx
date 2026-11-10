@@ -42,7 +42,7 @@ function expireSession() {
   signOut(auth);
   useModalStore.getState().show({
     title: '登入已過期',
-    message: '為了保護你的資料，登入超過 48 小時會自動登出，請重新登入。',
+    message: '為了保護你的資料，登入超過 7 天會自動登出，請重新登入。',
     confirmLabel: '知道了',
     onConfirm: () => undefined,
   });
@@ -80,14 +80,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const unsub = onAuthStateChanged(auth, (authUser) => {
       clearTimeout(expiryTimer);
 
-      // 距離最後一次登入超過 48 小時就強制登出；還沒到的話，排一個計時器在到期時登出（網頁一直開著的情況）
+      // 距離最後一次登入超過 7 天就強制登出；還沒到的話，排一個計時器在到期時登出（網頁一直開著的情況）
       if (authUser) {
         const remainingMs = getSessionRemainingMs(Date.parse(authUser.metadata.lastSignInTime ?? ''));
         if (!(remainingMs > 0)) {
           expireSession();
           return;
         }
-        // setTimeout 上限約 24.8 天，48 小時在範圍內
+        // setTimeout 上限約 24.8 天，7 天在範圍內
         expiryTimer = setTimeout(expireSession, remainingMs);
       }
 
