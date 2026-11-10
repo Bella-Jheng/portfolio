@@ -13,7 +13,7 @@ export function Modal() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-5">
+    <div className="fixed inset-0 z-[9500] flex items-center justify-center px-5">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={close} />
       <div className="relative bg-white border border-bz-border rounded-2xl p-7 max-w-sm w-full space-y-5 shadow-xl">
         <h3 className="text-bz-brown font-serif text-lg tracking-wide">{title}</h3>

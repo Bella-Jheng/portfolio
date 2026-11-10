@@ -21,7 +21,7 @@ function showLoginError(code?: string) {
     message:
       code === 'auth/popup-blocked'
         ? '瀏覽器擋下了登入視窗，請允許此網站開啟彈出視窗後再試一次。'
-        : '登入時發生問題，請稍後再試。',
+        : `登入時發生問題，請稍後再試。${code ? `（錯誤代碼：${code}）` : ''}`,
     confirmLabel: '知道了',
     onConfirm: () => undefined,
   });

@@ -19,9 +19,11 @@ interface Props {
 export function GoogleLoginButton({ variant = 'primary', className = '', onBeforeLogin }: Props) {
   const { login } = useAuth();
 
+  // 先呼叫 login 再做其他事（例如關閉選單），讓開啟 Google 登入視窗緊跟在使用者點擊之後，
+  // 和可以正常登入的「開始測算」流程順序一致；iOS Safari 對非直接由點擊開啟的視窗會擋下
   const handleClick = () => {
-    onBeforeLogin?.();
     login();
+    onBeforeLogin?.();
   };
 
   return (
