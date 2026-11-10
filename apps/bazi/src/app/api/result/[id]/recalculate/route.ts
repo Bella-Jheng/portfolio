@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminAuth } from '../../../../lib/firebase';
+import { verifyIdToken } from '../../../../lib/verify-id-token';
 import { readingsRepository } from '../../../../lib/repositories/readings-repository';
 import { readingService, ServiceError } from '../../../../lib/services/reading-service';
 import type { QuestionAnswer } from '../../../../types/bazi';
@@ -10,7 +10,7 @@ async function verifyAdmin(request: NextRequest): Promise<boolean> {
   const token = request.headers.get('Authorization')?.replace('Bearer ', '');
   if (!token || !ADMIN_UID) return false;
   try {
-    const decoded = await getAdminAuth().verifyIdToken(token);
+    const decoded = await verifyIdToken(token);
     return decoded.uid === ADMIN_UID;
   } catch {
     return false;

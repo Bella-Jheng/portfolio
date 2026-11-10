@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminAuth } from '../../../../lib/firebase';
+import { verifyIdToken } from '../../../../lib/verify-id-token';
 import { readingService, ServiceError } from '../../../../lib/services/reading-service';
 import type { DetailSection } from '../../../../lib/anthropic';
 
@@ -11,7 +11,7 @@ async function extractUid(request: NextRequest): Promise<string | null> {
   const token = request.headers.get('Authorization')?.replace('Bearer ', '');
   if (!token) return null;
   try {
-    const decoded = await getAdminAuth().verifyIdToken(token);
+    const decoded = await verifyIdToken(token);
     return decoded.uid;
   } catch {
     return null;

@@ -1,15 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminAuth } from '../../lib/firebase';
+import { verifyIdToken } from '../../lib/verify-id-token';
 import { readingService } from '../../lib/services/reading-service';
 import { VIEWED_READING_COOKIE } from '../../lib/cookies';
 import type { CalculateRequest } from '../../types/bazi';
 
 async function extractUid(request: NextRequest): Promise<string | null> {
-  const auth = getAdminAuth();
   const token = request.headers.get('Authorization')?.replace('Bearer ', '');
   if (!token) return null;
   try {
-    const decoded = await auth.verifyIdToken(token);
+    const decoded = await verifyIdToken(token);
     return decoded.uid;
   } catch {
     return null;
