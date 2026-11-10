@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminAuth } from '../../../lib/firebase';
+import { verifyIdToken } from '../../../lib/verify-id-token';
 import { readingsRepository } from '../../../lib/repositories/readings-repository';
 import { readingService, ServiceError } from '../../../lib/services/reading-service';
 import { VIEWED_READING_COOKIE } from '../../../lib/cookies';
@@ -11,23 +11,15 @@ async function extractUid(request: NextRequest): Promise<string | null> {
   const token = request.headers.get('Authorization')?.replace('Bearer ', '');
   if (!token) return null;
   try {
-    const decoded = await getAdminAuth().verifyIdToken(token);
+    const decoded = await verifyIdToken(token);
     return decoded.uid;
   } catch {
     return null;
   }
 }
 
-function resolveTimezone(header: string | null): string {
-  const fallback = 'Asia/Taipei';
-  if (!header) return fallback;
-  try {
-    Intl.DateTimeFormat('sv-SE', { timeZone: header });
-    return header;
-  } catch {
-    return fallback;
-  }
-}
+// 每日提問上限固定以台灣時間計算「今天」，不採用前端送來的時區，避免改時區就能重置額度
+const QUESTION_LIMIT_TZ = 'Asia/Taipei';
 
 export async function GET(
   request: NextRequest,
@@ -55,7 +47,7 @@ export async function GET(
       return NextResponse.json({ error: '只有本人或管理員能查看此命盤' }, { status: 403 });
     }
 
-    const tz = resolveTimezone(request.headers.get('X-Timezone'));
+    const tz = QUESTION_LIMIT_TZ;
     const remainingToday = userId && !isAdmin
       ? Math.max(0, 3 - (await readingsRepository.countTodayQuestionsForUser(userId, tz)))
       : null;
@@ -104,7 +96,7 @@ export async function POST(
     }
 
     const isAdmin = userId === ADMIN_UID;
-    const tz = resolveTimezone(request.headers.get('X-Timezone'));
+    const tz = QUESTION_LIMIT_TZ;
 
     const result = await readingService.askQuestion({ id, question, userId, isAdmin, adminQuestion, tz });
 

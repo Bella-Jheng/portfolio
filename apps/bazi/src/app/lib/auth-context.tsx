@@ -6,9 +6,26 @@ import { onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { auth, googleProvider } from './firebase-client';
 import { isLineBrowser, openInExternalBrowser } from './detect-browser';
+import { useModalStore } from './modal-store';
+import { getSessionRemainingMs } from './session';
 
 const ADMIN_UID = process.env.NEXT_PUBLIC_ADMIN_UID ?? '';
 const REDIRECT_KEY = 'loginRedirect';
+
+// 使用者自己關掉登入視窗，不需要提示錯誤
+const IGNORED_LOGIN_ERRORS = ['auth/popup-closed-by-user', 'auth/cancelled-popup-request'];
+
+function showLoginError(code?: string) {
+  useModalStore.getState().show({
+    title: '登入失敗',
+    message:
+      code === 'auth/popup-blocked'
+        ? '瀏覽器擋下了登入視窗，請允許此網站開啟彈出視窗後再試一次。'
+        : `登入時發生問題，請稍後再試。${code ? `（錯誤代碼：${code}）` : ''}`,
+    confirmLabel: '知道了',
+    onConfirm: () => undefined,
+  });
+}
 
 interface AuthContextValue {
   user: User | null;
@@ -19,6 +36,16 @@ interface AuthContextValue {
   login: (redirectTo?: string) => Promise<void>;
   logout: () => Promise<void>;
   getToken: () => Promise<string | null>;
+}
+
+function expireSession() {
+  signOut(auth);
+  useModalStore.getState().show({
+    title: '登入已過期',
+    message: '為了保護你的資料，登入超過 7 天會自動登出，請重新登入。',
+    confirmLabel: '知道了',
+    onConfirm: () => undefined,
+  });
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -48,7 +75,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
+    let expiryTimer: ReturnType<typeof setTimeout> | undefined;
+
     const unsub = onAuthStateChanged(auth, (authUser) => {
+      clearTimeout(expiryTimer);
+
+      // 距離最後一次登入超過 7 天就強制登出；還沒到的話，排一個計時器在到期時登出（網頁一直開著的情況）
+      if (authUser) {
+        const remainingMs = getSessionRemainingMs(Date.parse(authUser.metadata.lastSignInTime ?? ''));
+        if (!(remainingMs > 0)) {
+          expireSession();
+          return;
+        }
+        // setTimeout 上限約 24.8 天，7 天在範圍內
+        expiryTimer = setTimeout(expireSession, remainingMs);
+      }
+
       setUser(authUser);
       setLoading(false);
       if (authUser) {
@@ -57,7 +99,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setReadingId(null);
       }
     });
-    return unsub;
+    return () => {
+      unsub();
+      clearTimeout(expiryTimer);
+    };
   }, [fetchReading]);
 
   // After a fresh login (null → User), consume the pending redirect if any.
@@ -78,7 +123,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       openInExternalBrowser();
       return;
     }
-    await signInWithPopup(auth, googleProvider);
+    try {
+      await signInWithPopup(auth, googleProvider);
+    } catch (error) {
+      const code = (error as { code?: string })?.code;
+      if (code && IGNORED_LOGIN_ERRORS.includes(code)) return;
+      console.error('Login error:', error);
+      showLoginError(code);
+    }
   };
 
   const logout = async () => {

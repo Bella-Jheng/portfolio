@@ -51,7 +51,8 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline'",
+              // apis.google.com：Firebase 的 Google 登入（signInWithPopup）會先載入 gapi 腳本，少了它登入按鈕會毫無反應
+              "script-src 'self' 'unsafe-inline' https://apis.google.com",
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https://lh3.googleusercontent.com",
               "font-src 'self' data:",

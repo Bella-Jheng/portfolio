@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminAuth } from '../../lib/firebase';
+import { verifyIdToken } from '../../lib/verify-id-token';
 import { knowledgeRepository } from '../../lib/repositories/knowledge-repository';
 
 import { v4 as uuidv4 } from 'uuid';
@@ -10,7 +10,7 @@ async function verifyAdmin(request: NextRequest): Promise<boolean> {
   const token = request.headers.get('Authorization')?.replace('Bearer ', '');
   if (!token || !ADMIN_UID) return false;
   try {
-    const decoded = await getAdminAuth().verifyIdToken(token);
+    const decoded = await verifyIdToken(token);
     return decoded.uid === ADMIN_UID;
   } catch (error) {
     console.error('[verifyAdmin] failed:', error);

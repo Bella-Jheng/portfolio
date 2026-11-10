@@ -1,15 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminAuth } from '../../lib/firebase';
+import { verifyIdToken } from '../../lib/verify-id-token';
 import { readingService } from '../../lib/services/reading-service';
 import { VIEWED_READING_COOKIE } from '../../lib/cookies';
 import type { CalculateRequest } from '../../types/bazi';
 
 async function extractUid(request: NextRequest): Promise<string | null> {
-  const auth = getAdminAuth();
   const token = request.headers.get('Authorization')?.replace('Bearer ', '');
   if (!token) return null;
   try {
-    const decoded = await auth.verifyIdToken(token);
+    const decoded = await verifyIdToken(token);
     return decoded.uid;
   } catch {
     return null;
@@ -21,6 +20,10 @@ const ADMIN_UID = process.env.ADMIN_UID ?? '';
 export async function POST(request: NextRequest) {
   try {
     const createdBy = await extractUid(request);
+    // 排盤會呼叫付費的 AI 服務，必須登入才能使用，避免被未登入的請求大量呼叫
+    if (!createdBy) {
+      return NextResponse.json({ error: '請先登入' }, { status: 401 });
+    }
     const isAdmin = !!ADMIN_UID && createdBy === ADMIN_UID;
     const body = (await request.json()) as CalculateRequest;
     const { name, gender, birthYear, birthMonth, birthDay, birthHour, strengthCalibration } = body;

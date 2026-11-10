@@ -29,6 +29,13 @@ export class ServiceError extends Error {
   }
 }
 
+// 命盤只能由建立者本人或管理員操作；管理員建立的命盤 createdBy 為 null，因此只有管理員能操作
+function assertCanAccessReading(data: ReadingDoc, userId: string, isAdmin: boolean) {
+  if (!isAdmin && data.createdBy !== userId) {
+    throw new ServiceError(403, '只有本人或管理員能操作此命盤');
+  }
+}
+
 export interface MajorFortuneInfo {
   currentCycle: string;
   currentAnnual: string;
@@ -222,6 +229,7 @@ class ReadingService {
 
     const data = await readingsRepository.getById(id);
     if (!data) throw new ServiceError(404, '找不到此命盤');
+    assertCanAccessReading(data, userId, isAdmin);
 
     if (adminQuestion && !isAdmin) throw new ServiceError(403, '無權限');
 
@@ -271,10 +279,16 @@ class ReadingService {
     return { answer, questions: sanitizeQuestions(updatedQuestions), remainingToday: remaining };
   }
 
-  async generateDetail(params: { id: string; section: DetailSection }): Promise<{ fortune: FortuneReading }> {
-    const { id, section } = params;
+  async generateDetail(params: {
+    id: string;
+    section: DetailSection;
+    userId: string;
+    isAdmin: boolean;
+  }): Promise<{ fortune: FortuneReading }> {
+    const { id, section, userId, isAdmin } = params;
     const data = await readingsRepository.getById(id);
     if (!data) throw new ServiceError(404, '找不到此命盤');
+    assertCanAccessReading(data, userId, isAdmin);
 
     const { birthYear, birthMonth, birthDay, birthHour, name, gender, pillars, fortune } = data as unknown as {
       birthYear: number; birthMonth: number; birthDay: number; birthHour?: number;
@@ -303,14 +317,16 @@ class ReadingService {
   async requestCorrection(params: {
     id: string;
     uid: string;
+    isAdmin: boolean;
     year: number;
     month: number;
     day: number;
     hour: number | null;
   }): Promise<void> {
-    const { id, uid, year, month, day, hour } = params;
+    const { id, uid, isAdmin, year, month, day, hour } = params;
     const data = await readingsRepository.getById(id);
     if (!data) throw new ServiceError(404, '找不到此命盤');
+    assertCanAccessReading(data, uid, isAdmin);
     if (data.correctionUsed) throw new ServiceError(400, '已使用過更改日期功能，每筆命盤僅限一次');
 
     await readingsRepository.update(id, {
