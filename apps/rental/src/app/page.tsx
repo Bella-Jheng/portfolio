@@ -45,7 +45,7 @@ function Home() {
           {hydrated && <MapView listings={filtered} selectedId={selectedId} onSelect={setSelectedId} />}
         </div>
       ) : (
-        <div className="absolute inset-x-0 top-0 bottom-[var(--nav-h)] overflow-y-auto pt-[136px]">
+        <div className="absolute inset-0 overflow-y-auto pb-[var(--nav-h)] pt-[136px]">
           {hydrated && <ListView listings={filtered} total={listings.length} />}
         </div>
       )}

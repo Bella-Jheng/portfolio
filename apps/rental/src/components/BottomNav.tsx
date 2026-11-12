@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import clsx from 'clsx';
 import { ListIcon, PinIcon, PlusIcon, SettingsIcon } from './icons';
+import { useHideOnScrollDown } from '../lib/use-scroll-direction';
 
 // 新增頁與私訊頁底部有自己的操作按鈕，不顯示導覽列
 function hiddenOn(pathname: string): boolean {
@@ -23,6 +24,8 @@ export function BottomNav() {
 function Nav() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  // 往下捲動時收起來讓出畫面，往上捲動時再出現；換頁時重新顯示
+  const scrolledAway = useHideOnScrollDown(`${pathname}?${searchParams.toString()}`);
   if (hiddenOn(pathname)) return null;
 
   const onHome = pathname === '/';
@@ -31,7 +34,11 @@ function Nav() {
   return (
     <nav
       aria-label="主要導覽"
-      className="fixed inset-x-0 bottom-0 z-20 mx-auto grid h-[var(--nav-h)] max-w-[480px] grid-cols-4 border-t border-[#EFE4D6] bg-white pb-[env(safe-area-inset-bottom)]"
+      className={clsx(
+        'fixed inset-x-0 bottom-0 z-20 mx-auto grid h-[var(--nav-h)] max-w-[480px] grid-cols-4 border-t border-[#EFE4D6] bg-white pb-[env(safe-area-inset-bottom)] transition-transform duration-300',
+        // 中間的新增鈕凸出導覽列上緣，要多移一點才會完全藏起來
+        scrolledAway && 'translate-y-[calc(100%+24px)]',
+      )}
     >
       <NavItem href="/" active={onHome && !onList} icon={<PinIcon size={22} />} label="地圖" />
       <NavItem href="/?view=list" active={onList} icon={<ListIcon size={22} />} label="清單" />
