@@ -12,8 +12,10 @@ body {
 }
 
 :root {
-  /* 底部導覽列（BottomNav）的高度，含 iPhone 底部安全區域；需要避開導覽列的地方都用這個 */
-  --nav-h: calc(64px + env(safe-area-inset-bottom));
+  /* 底部導覽列（BottomNav）是懸浮的膠囊：距離畫面底部 --nav-gap（至少 12px，iPhone 會用安全區域高度） */
+  --nav-gap: max(12px, env(safe-area-inset-bottom));
+  /* 需要避開導覽列的地方都用這個：膠囊高度 64px + 底部間距 + 上方留白 8px */
+  --nav-h: calc(64px + var(--nav-gap) + 8px);
 }
 
 @layer components {

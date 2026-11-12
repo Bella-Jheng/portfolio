@@ -36,17 +36,20 @@ function Nav() {
   return (
     <nav
       aria-label="主要導覽"
+      // 參考 LINE：懸浮在畫面上的圓角膠囊，目前所在的項目用淡色圓角底標示
       className={clsx(
-        'fixed inset-x-0 bottom-0 z-20 mx-auto grid h-[var(--nav-h)] max-w-[480px] grid-cols-5 border-t border-[#EFE4D6] bg-white pb-[env(safe-area-inset-bottom)] transition-transform duration-300',
-        // 中間的新增鈕凸出導覽列上緣，要多移一點才會完全藏起來
-        scrolledAway && 'translate-y-[calc(100%+24px)]',
+        'fixed inset-x-0 bottom-[var(--nav-gap)] z-20 mx-auto grid h-16 w-[calc(100%-24px)] max-w-[456px] grid-cols-5 gap-1 rounded-[32px] bg-white/90 p-1.5 shadow-[0_6px_24px_rgba(58,42,32,.18)] backdrop-blur-md transition-transform duration-300',
+        scrolledAway && 'translate-y-[calc(100%+var(--nav-gap)+16px)]',
       )}
     >
       <NavItem href="/" active={onHome && !viewParam} icon={<PinIcon size={22} />} label="地圖" />
       <NavItem href="/?view=list" active={onList} icon={<ListIcon size={22} />} label="清單" />
-      <Link href="/add" className="flex flex-col items-center justify-center gap-0.5 text-[11px] text-ink">
-        <span className="-mt-5 flex h-12 w-12 items-center justify-center rounded-full bg-brand text-white shadow-[0_4px_12px_rgba(58,42,32,.3)]">
-          <PlusIcon size={24} strokeWidth={2.4} />
+      <Link
+        href="/add"
+        className="flex flex-col items-center justify-center gap-0.5 rounded-[26px] text-[11px] font-medium text-ink"
+      >
+        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand text-white">
+          <PlusIcon size={18} strokeWidth={2.6} />
         </span>
         新增
       </Link>
@@ -61,7 +64,10 @@ function NavItem({ href, active, icon, label }: { href: string; active: boolean;
     <Link
       href={href}
       aria-current={active ? 'page' : undefined}
-      className={clsx('flex flex-col items-center justify-center gap-0.5 text-[11px]', active ? 'text-brand' : 'text-sub')}
+      className={clsx(
+        'flex flex-col items-center justify-center gap-0.5 rounded-[26px] text-[11px] transition-colors',
+        active ? 'bg-brand-soft font-medium text-brand' : 'text-sub',
+      )}
     >
       {icon}
       {label}
