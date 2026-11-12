@@ -9,7 +9,7 @@ import { useGeocode } from '../../../lib/geocode';
 import { STATUSES, STATUS_META, type Listing, type ParsedField } from '../../../lib/types';
 import { copyText, igHandle, igHref, lineHref, lineIsPhone, mapsSearchHref, telHref } from '../../../lib/contact';
 import { resizeCoverImage } from '../../../lib/image';
-import { PROFILE_TEMPLATE_ID, TEMPLATES } from '../../../lib/templates';
+import { PROFILE_TEMPLATE_ID, TEMPLATES, buildMessage } from '../../../lib/templates';
 import { usePreferences } from '../../../lib/preferences';
 import { EditableRow } from '../../../components/EditableRow';
 import { MAPS_KEY } from '../../../components/Providers';
@@ -455,21 +455,21 @@ function CoverSection({ listing: l }: { listing: Listing }) {
 
 function MessageSection({ listing: l }: { listing: Listing }) {
   const [templateId, setTemplateId] = useState(TEMPLATES[0].id);
-  const [text, setText] = useState(() => TEMPLATES[0].build(l));
+  const [text, setText] = useState(() => buildMessage(TEMPLATES[0], l));
   const [flash, setFlash] = useState<string | null>(null);
-  const setProfileMessage = usePreferences((s) => s.setProfileMessage);
+  const setTemplate = usePreferences((s) => s.setTemplate);
   const isProfile = templateId === PROFILE_TEMPLATE_ID;
 
   // 個人資訊範本：邊打邊存成使用者自己的公版，下一間物件會直接帶入
   const changeText = (value: string) => {
     setText(value);
-    if (isProfile) setProfileMessage(value);
+    if (isProfile) setTemplate(PROFILE_TEMPLATE_ID, value);
   };
 
   const pickTemplate = (id: string) => {
     const template = TEMPLATES.find((t) => t.id === id) ?? TEMPLATES[0];
     setTemplateId(template.id);
-    setText(template.build(l));
+    setText(buildMessage(template, l));
   };
 
   const copy = async () => {
@@ -529,8 +529,8 @@ function MessageSection({ listing: l }: { listing: Listing }) {
       />
       <p className="text-xs text-sub">
         {isProfile
-          ? '填過的內容會自動記住，下一間物件也會帶入；也可以到「個人設定」修改。'
-          : '租金、物件編號會自動帶入；[ ] 裡的字記得換掉。'}
+          ? '填過的內容會自動記住，下一間物件也會帶入；也可以到「設定」修改。'
+          : '租金、物件編號會自動帶入；[ ] 裡的字記得換掉。範本內容可以到「設定」修改。'}
       </p>
     </section>
   );

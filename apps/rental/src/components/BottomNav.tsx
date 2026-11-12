@@ -48,7 +48,7 @@ function Nav() {
         </span>
         新增
       </Link>
-      <NavItem href="/settings" active={pathname === '/settings'} icon={<SettingsIcon size={22} />} label="個人設定" />
+      <NavItem href="/settings" active={pathname === '/settings'} icon={<SettingsIcon size={22} />} label="設定" />
     </nav>
   );
 }
