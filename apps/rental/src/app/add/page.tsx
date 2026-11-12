@@ -5,10 +5,10 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import clsx from 'clsx';
 import { emptyListing, useListings } from '../../lib/store';
-import { resizeImage } from '../../lib/image';
+import { resizeCoverImage, resizeImage } from '../../lib/image';
 import { useGeocode } from '../../lib/geocode';
 import { SOURCE_LABEL, type ParseResult, type Source } from '../../lib/types';
-import { BackIcon, CloseIcon, PlusIcon, SparkIcon } from '../../components/icons';
+import { BackIcon, CloseIcon, ImageIcon, PlusIcon, SparkIcon } from '../../components/icons';
 
 const MAX_IMAGES = 6;
 const CODE_KEY = 'rental-helper:access-code';
@@ -23,8 +23,10 @@ export default function AddPage() {
   const add = useListings((s) => s.add);
   const geocode = useGeocode();
   const inputRef = useRef<HTMLInputElement>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
 
   const [picked, setPicked] = useState<Picked[]>([]);
+  const [cover, setCover] = useState<Picked | null>(null);
   const [sameListing, setSameListing] = useState(true);
   const [source, setSource] = useState<Source>('591');
   const [busy, setBusy] = useState<string | null>(null);
@@ -43,7 +45,29 @@ export default function AddPage() {
   // 離開頁面時釋放預覽圖
   const pickedRef = useRef(picked);
   pickedRef.current = picked;
-  useEffect(() => () => pickedRef.current.forEach((p) => URL.revokeObjectURL(p.url)), []);
+  const coverRef = useRef(cover);
+  coverRef.current = cover;
+  useEffect(
+    () => () => {
+      pickedRef.current.forEach((p) => URL.revokeObjectURL(p.url));
+      if (coverRef.current) URL.revokeObjectURL(coverRef.current.url);
+    },
+    [],
+  );
+
+  const onCoverFile = (file: File | undefined) => {
+    if (!file || !file.type.startsWith('image/')) return;
+    if (cover) URL.revokeObjectURL(cover.url);
+    setCover({ file, url: URL.createObjectURL(file) });
+  };
+
+  const removeCover = () => {
+    if (cover) URL.revokeObjectURL(cover.url);
+    setCover(null);
+  };
+
+  // 首圖只屬於一間物件：截圖拆成多筆時不套用
+  const coverApplies = sameListing || picked.length <= 1;
 
   const onFiles = (files: FileList | null) => {
     if (!files) return;
@@ -77,7 +101,7 @@ export default function AddPage() {
     return { result: data, thumbnail: thumb.dataUrl };
   }
 
-  async function createFrom(result: ParseResult, thumbnail: string) {
+  async function createFrom(result: ParseResult, thumbnail: string, coverImage?: string) {
     const loc = await geocode(result.address);
     const listing = emptyListing({
       source,
@@ -94,8 +118,10 @@ export default function AddPage() {
       contactRole: result.contactRole,
       phones: result.phones,
       lineIds: result.lineIds,
+      igIds: result.igIds ?? [],
       uncertain: result.uncertain,
       thumbnail,
+      coverImage,
       ...(loc ?? {}),
     });
     add(listing);
@@ -112,11 +138,12 @@ export default function AddPage() {
         /* ignore */
       }
       const groups = sameListing ? [picked.map((p) => p.file)] : picked.map((p) => [p.file]);
+      const coverImage = cover && coverApplies ? await resizeCoverImage(cover.file) : undefined;
       let last = null;
       for (let i = 0; i < groups.length; i++) {
         setBusy(groups.length > 1 ? `解析中 ${i + 1} / ${groups.length}…` : '解析中…');
         const { result, thumbnail } = await parseGroup(groups[i]);
-        last = await createFrom(result, thumbnail);
+        last = await createFrom(result, thumbnail, coverImage);
       }
       if (groups.length === 1 && last) router.replace(`/listing/${last.id}`);
       else router.replace('/');
@@ -126,8 +153,9 @@ export default function AddPage() {
     }
   }
 
-  function manual() {
-    const listing = emptyListing({ source });
+  async function manual() {
+    const coverImage = cover ? await resizeCoverImage(cover.file) : undefined;
+    const listing = emptyListing({ source, coverImage });
     add(listing);
     router.replace(`/listing/${listing.id}`);
   }
@@ -186,6 +214,48 @@ export default function AddPage() {
               <PlusIcon size={picked.length === 0 ? 28 : 18} />
               {picked.length === 0 ? '從相簿選截圖（最多 6 張）' : '從相簿再加截圖'}
             </button>
+          )}
+        </section>
+
+        <section className="flex flex-col gap-2.5">
+          <div>
+            <h2 className="text-[15px] font-bold">首圖（選填）</h2>
+            <p className="text-[13px] text-sub">放一張房子的照片，方便之後一眼認出是哪間；不會拿去給 AI 解析。</p>
+          </div>
+          <input
+            ref={coverInputRef}
+            type="file"
+            accept="image/*"
+            hidden
+            onChange={(e) => {
+              onCoverFile(e.target.files?.[0]);
+              e.target.value = '';
+            }}
+          />
+          {cover ? (
+            <div className="relative overflow-hidden rounded-xl bg-[#DDE3EA]">
+              <img src={cover.url} alt="首圖" className="aspect-[4/3] w-full object-cover" />
+              <button
+                type="button"
+                aria-label="移除首圖"
+                onClick={removeCover}
+                className="absolute right-1.5 top-1.5 flex h-8 w-8 items-center justify-center rounded-full bg-ink/70 text-white"
+              >
+                <CloseIcon size={16} />
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => coverInputRef.current?.click()}
+              className="flex h-12 items-center justify-center gap-1.5 rounded-xl border-[1.5px] border-dashed border-[#9AA4B0] text-sm"
+            >
+              <ImageIcon size={18} />
+              選一張房子照片
+            </button>
+          )}
+          {cover && !coverApplies && (
+            <p className="text-[13px] text-warn-text">截圖拆成多筆物件時不會套用首圖，可以之後在各物件頁面再加。</p>
           )}
         </section>
 
@@ -251,7 +321,7 @@ export default function AddPage() {
         )}
 
         <aside className="rounded-2xl bg-brand-soft p-3.5 text-[13px] leading-relaxed text-[#0F3F3A]">
-          截圖時讓<b>地址</b>、<b>物件編號</b>和<b>聯絡電話／LINE</b> 入鏡，解析會更準。
+          截圖時讓<b>地址</b>、<b>物件編號</b>和<b>聯絡電話／LINE／IG</b> 入鏡，解析會更準。
         </aside>
 
         {error && (

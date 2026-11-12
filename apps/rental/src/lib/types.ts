@@ -1,12 +1,13 @@
-export type Status = 'contacting' | 'viewed' | 'favorite' | 'rented';
+export type Status = 'not_contacted' | 'contacted' | 'viewed' | 'favorite' | 'rented';
 
-export const STATUSES: Status[] = ['contacting', 'viewed', 'favorite', 'rented'];
+export const STATUSES: Status[] = ['not_contacted', 'contacted', 'viewed', 'favorite', 'rented'];
 
 export const STATUS_META: Record<
   Status,
   { label: string; color: string; softBg: string; softText: string }
 > = {
-  contacting: { label: '聯絡中', color: '#2563EB', softBg: '#E0ECFB', softText: '#1E4E8C' },
+  not_contacted: { label: '尚未聯絡', color: '#D97706', softBg: '#FEF3C7', softText: '#92400E' },
+  contacted: { label: '已聯絡', color: '#2563EB', softBg: '#E0ECFB', softText: '#1E4E8C' },
   viewed: { label: '已看房', color: '#0F766E', softBg: '#E6F4F1', softText: '#0F5E57' },
   favorite: { label: '最想要', color: '#DB2777', softBg: '#FCE7F3', softText: '#9D174D' },
   rented: { label: '已出租', color: '#6B7480', softBg: '#EEF1F4', softText: '#3D4652' },
@@ -39,6 +40,7 @@ export type ParsedField =
   | 'contactName'
   | 'phones'
   | 'lineIds'
+  | 'igIds'
   | 'listingNo';
 
 export interface Listing {
@@ -62,8 +64,10 @@ export interface Listing {
   contactRole: string;
   phones: string[];
   lineIds: string[];
+  igIds: string[];
   notes: Note[];
-  thumbnail?: string; // 縮小過的 data URL
+  thumbnail?: string; // 截圖縮小過的 data URL
+  coverImage?: string; // 首圖：房子的照片（跟截圖分開），縮小過的 data URL
   uncertain: ParsedField[];
 }
 
@@ -82,5 +86,6 @@ export interface ParseResult {
   contactRole: string;
   phones: string[];
   lineIds: string[];
+  igIds: string[];
   uncertain: ParsedField[];
 }

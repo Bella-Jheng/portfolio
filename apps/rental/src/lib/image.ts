@@ -20,3 +20,9 @@ export async function resizeImage(
   const dataUrl = canvas.toDataURL('image/jpeg', quality);
   return { dataUrl, base64: dataUrl.split(',')[1] ?? '', mimeType: 'image/jpeg' };
 }
+
+/** 首圖（房子照片）：縮到最長邊 1024、品質 0.78，控制在約 100–200KB，避免塞爆 localStorage */
+export async function resizeCoverImage(file: Blob): Promise<string> {
+  const { dataUrl } = await resizeImage(file, 1024, 0.78);
+  return dataUrl;
+}

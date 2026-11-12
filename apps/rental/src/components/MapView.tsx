@@ -153,13 +153,15 @@ function SelectedCard({ listing: l }: { listing: Listing }) {
 }
 
 export function Thumb({ listing, size }: { listing: Listing; size: number }) {
-  return listing.thumbnail ? (
+  // 有首圖就用房子照片，沒有才用截圖
+  const src = listing.coverImage ?? listing.thumbnail;
+  return src ? (
     <img
-      src={listing.thumbnail}
+      src={src}
       alt=""
       width={size}
       height={size}
-      className="shrink-0 rounded-xl object-cover object-top"
+      className={`shrink-0 rounded-xl object-cover ${listing.coverImage ? 'object-center' : 'object-top'}`}
       style={{ width: size, height: size }}
     />
   ) : (
