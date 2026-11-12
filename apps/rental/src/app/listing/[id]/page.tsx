@@ -55,6 +55,8 @@ function ListingDetail({ listing: l }: { listing: Listing }) {
 
   const isUncertain = (f: ParsedField) => l.uncertain.includes(f);
   const save = (field: ParsedField, patch: Partial<Listing>) => update(l.id, patch, [field]);
+  // 內容沒問題、不用改：只把 AI 不確定的標記拿掉
+  const confirm = (field: ParsedField) => update(l.id, {}, [field]);
 
   const saveAddress = async (address: string) => {
     save('address', { address, lat: undefined, lng: undefined });
@@ -78,9 +80,18 @@ function ListingDetail({ listing: l }: { listing: Listing }) {
 
       <main className="flex flex-1 flex-col gap-3 px-4 pb-[calc(var(--nav-h)+24px)] pt-1">
         {l.uncertain.length > 0 && (
-          <p className="mx-1 text-[13px] text-sub">
-            <span className="font-medium text-warn-text">黃色欄位</span>是 AI 沒把握的，請再確認一次。
-          </p>
+          <div className="mx-1 flex items-start justify-between gap-3 text-[13px] text-sub">
+            <p>
+              <span className="font-medium text-warn-text">黃色欄位</span>是 AI 沒把握的：內容正確就按「沒問題」，不對就按鉛筆修改。
+            </p>
+            <button
+              type="button"
+              onClick={() => update(l.id, {}, l.uncertain)}
+              className="shrink-0 font-medium text-brand underline"
+            >
+              全部沒問題
+            </button>
+          </div>
         )}
 
         <CoverSection listing={l} />
@@ -111,12 +122,12 @@ function ListingDetail({ listing: l }: { listing: Listing }) {
 
         {/* 物件資訊 */}
         <section className="card flex flex-col px-3.5 py-1">
-          <EditableRow label="標題" value={l.title} uncertain={isUncertain('title')} onSave={(v) => save('title', { title: v })} />
+          <EditableRow label="標題" value={l.title} uncertain={isUncertain('title')} onConfirm={() => confirm('title')} onSave={(v) => save('title', { title: v })} />
           <EditableRow
             label="租金（每月）"
             value={l.rent != null ? String(l.rent) : ''}
             inputMode="numeric"
-            uncertain={isUncertain('rent')}
+            uncertain={isUncertain('rent')} onConfirm={() => confirm('rent')}
             onSave={(v) => {
               const n = parseInt(v.replace(/[^\d]/g, ''), 10);
               save('rent', { rent: Number.isFinite(n) ? n : undefined });
@@ -127,17 +138,19 @@ function ListingDetail({ listing: l }: { listing: Listing }) {
             value={l.address}
             uncertain={isUncertain('address') || (!located && !!l.address)}
             uncertainHint={!located && l.address ? (locating ? '定位中…' : '地圖上找不到，請補完整') : '只有大概位置'}
+            // 「地圖上找不到」要補地址才能解決，只有 AI 沒把握時才能按沒問題
+            onConfirm={isUncertain('address') ? () => confirm('address') : undefined}
             onSave={saveAddress}
           />
-          <EditableRow label="房型" value={l.layout} uncertain={isUncertain('layout')} onSave={(v) => save('layout', { layout: v })} />
-          <EditableRow label="坪數" value={l.size} uncertain={isUncertain('size')} onSave={(v) => save('size', { size: v })} />
-          <EditableRow label="樓層" value={l.floor} uncertain={isUncertain('floor')} onSave={(v) => save('floor', { floor: v })} />
-          <EditableRow label="費用與條件" value={l.fees} uncertain={isUncertain('fees')} onSave={(v) => save('fees', { fees: v })} />
-          <EditableRow label="寵物" value={l.pets} uncertain={isUncertain('pets')} onSave={(v) => save('pets', { pets: v })} />
+          <EditableRow label="房型" value={l.layout} uncertain={isUncertain('layout')} onConfirm={() => confirm('layout')} onSave={(v) => save('layout', { layout: v })} />
+          <EditableRow label="坪數" value={l.size} uncertain={isUncertain('size')} onConfirm={() => confirm('size')} onSave={(v) => save('size', { size: v })} />
+          <EditableRow label="樓層" value={l.floor} uncertain={isUncertain('floor')} onConfirm={() => confirm('floor')} onSave={(v) => save('floor', { floor: v })} />
+          <EditableRow label="費用與條件" value={l.fees} uncertain={isUncertain('fees')} onConfirm={() => confirm('fees')} onSave={(v) => save('fees', { fees: v })} />
+          <EditableRow label="寵物" value={l.pets} uncertain={isUncertain('pets')} onConfirm={() => confirm('pets')} onSave={(v) => save('pets', { pets: v })} />
           <EditableRow
             label="物件編號"
             value={l.listingNo}
-            uncertain={isUncertain('listingNo')}
+            uncertain={isUncertain('listingNo')} onConfirm={() => confirm('listingNo')}
             uncertainHint="截圖裡沒找到"
             onSave={(v) => save('listingNo', { listingNo: v })}
           />
@@ -223,6 +236,7 @@ function ContactSection({ listing: l }: { listing: Listing }) {
         value={[l.contactName, l.contactRole].filter(Boolean).join(' · ')}
         placeholder="例如：王小姐 · 代管"
         uncertain={l.uncertain.includes('contactName')}
+          onConfirm={() => update(l.id, {}, ['contactName'])}
         onSave={(v) => {
           const [name, ...role] = v.split(/[·・,，]/).map((s) => s.trim());
           update(l.id, { contactName: name ?? '', contactRole: role.join(' ') }, ['contactName']);
@@ -236,6 +250,7 @@ function ContactSection({ listing: l }: { listing: Listing }) {
           value={phone}
           inputMode="tel"
           uncertain={l.uncertain.includes('phones')}
+          onConfirm={() => update(l.id, {}, ['phones'])}
           leading={<ContactBadge kind="phone" />}
           trailing={
             <a
@@ -257,6 +272,7 @@ function ContactSection({ listing: l }: { listing: Listing }) {
             label={byPhone ? 'LINE（用電話號碼加）' : 'LINE ID'}
             value={lineId}
             uncertain={l.uncertain.includes('lineIds')}
+          onConfirm={() => update(l.id, {}, ['lineIds'])}
             leading={<ContactBadge kind="line" />}
             trailing={
               <a
@@ -280,6 +296,7 @@ function ContactSection({ listing: l }: { listing: Listing }) {
           label="IG"
           value={igId}
           uncertain={l.uncertain.includes('igIds')}
+          onConfirm={() => update(l.id, {}, ['igIds'])}
           leading={<ContactBadge kind="ig" />}
           trailing={
             <a

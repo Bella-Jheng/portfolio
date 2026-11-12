@@ -1,6 +1,7 @@
 'use client';
 
 import clsx from 'clsx';
+import { CheckIcon } from './icons';
 import type { ParsedField, ParseResult } from '../lib/types';
 
 /** AI 解析完、還沒儲存的草稿。電話／LINE／IG 用文字存，方便直接打逗號輸入多筆 */
@@ -105,20 +106,34 @@ export function ListingDraftForm({
       {FIELDS.map(({ key, label, parsed, inputMode, hint }) => {
         const uncertain = parsed != null && draft.uncertain.includes(parsed);
         return (
-          <label key={key} className={clsx('flex flex-col gap-1', uncertain && '-mx-2 rounded-xl bg-warn-bg p-2')}>
-            <span className={clsx('text-xs', uncertain ? 'text-warn-text' : 'text-sub')}>
-              {label}
-              {uncertain && ' · 請確認'}
-              {hint && !uncertain && <span className="text-sub/70"> · {hint}</span>}
-            </span>
+          <div key={key} className={clsx('flex flex-col gap-1', uncertain && '-mx-2 rounded-xl bg-warn-bg p-2')}>
+            <div className="flex items-center justify-between gap-2">
+              <label htmlFor={`draft-${key}`} className={clsx('text-xs', uncertain ? 'text-warn-text' : 'text-sub')}>
+                {label}
+                {uncertain && ' · 請確認'}
+                {hint && !uncertain && <span className="text-sub/70"> · {hint}</span>}
+              </label>
+              {uncertain && (
+                // 內容正確不用改，按這個就把黃色標記拿掉
+                <button
+                  type="button"
+                  onClick={() => onChange({ ...draft, uncertain: draft.uncertain.filter((f) => f !== parsed) })}
+                  className="flex h-7 shrink-0 items-center gap-1 rounded-full bg-white px-2.5 text-xs font-medium text-warn-text"
+                >
+                  <CheckIcon size={13} />
+                  沒問題
+                </button>
+              )}
+            </div>
             <input
+              id={`draft-${key}`}
               className="field-input"
               value={draft[key]}
               inputMode={inputMode}
               type={inputMode === 'tel' ? 'tel' : 'text'}
               onChange={(e) => setField(key, e.target.value, parsed)}
             />
-          </label>
+          </div>
         );
       })}
     </section>

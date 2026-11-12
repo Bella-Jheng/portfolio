@@ -65,6 +65,11 @@ export const InstagramIcon = (p: IconProps) => (
     <circle cx="17.5" cy="6.5" r="0.6" fill="currentColor" />
   </Icon>
 );
+export const CheckIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="m5 12.5 4.5 4.5L19 7.5" />
+  </Icon>
+);
 export const ListIcon = (p: IconProps) => (
   <Icon {...p}>
     <path d="M9 6h11M9 12h11M9 18h11" />

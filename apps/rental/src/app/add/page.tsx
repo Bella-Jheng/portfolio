@@ -190,7 +190,7 @@ export default function AddPage() {
         <main className="flex flex-1 flex-col gap-4 px-5 pb-10 pt-2">
           <p className="text-[13px] text-sub">
             還沒儲存喔！請確認 AI 整理的內容，<span className="font-medium text-warn-text">黃色欄位</span>是 AI
-            沒把握的，修改完按下方「儲存」。
+            沒把握的，確認正確就按「沒問題」，不對就直接修改，最後按下方「儲存」。
           </p>
 
           {drafts.map((draft, i) => (
