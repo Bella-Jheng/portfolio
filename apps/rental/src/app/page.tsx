@@ -1,15 +1,15 @@
 'use client';
 
-import { Suspense, useEffect, useMemo, useState } from 'react';
+import { Suspense, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useListings, useHydrated } from '../lib/store';
 import { STATUSES, type Status } from '../lib/types';
 import { FilterChips } from '../components/FilterChips';
 import { ListView } from '../components/ListView';
 import { MapView } from '../components/MapView';
-import { ViewToggle, type View } from '../components/ViewToggle';
 
-const VIEW_KEY = 'rental-helper:view';
+// 地圖／清單由網址決定（底部導覽列的「地圖」連到 /，「清單」連到 /?view=list）
+type View = 'map' | 'list';
 
 export default function HomePage() {
   // useSearchParams 需要包在 Suspense 裡
@@ -24,33 +24,9 @@ function Home() {
   const hydrated = useHydrated();
   const searchParams = useSearchParams();
   const listings = useListings((s) => s.listings);
-  const [view, setView] = useState<View>('map');
+  const view: View = searchParams.get('view') === 'list' ? 'list' : 'map';
   const [active, setActive] = useState<Set<Status>>(() => new Set(STATUSES));
   const [selectedId, setSelectedId] = useState<string | null>(null);
-
-  useEffect(() => {
-    try {
-      const saved = sessionStorage.getItem(VIEW_KEY);
-      if (saved === 'map' || saved === 'list') setView(saved);
-    } catch {
-      /* 無痕模式之類的讀不到就算了 */
-    }
-  }, []);
-
-  // 底部導覽列「回到地圖」會帶 ?view=map，就算原本停在清單也切回地圖
-  const viewParam = searchParams.get('view');
-  useEffect(() => {
-    if (viewParam === 'map') changeView('map');
-  }, [viewParam]);
-
-  const changeView = (v: View) => {
-    setView(v);
-    try {
-      sessionStorage.setItem(VIEW_KEY, v);
-    } catch {
-      /* ignore */
-    }
-  };
 
   const toggle = (s: Status) =>
     setActive((prev) => {
@@ -82,13 +58,12 @@ function Home() {
         <div className="flex items-center gap-2">
           <div
             className={`flex h-11 flex-1 items-center rounded-full px-4 ${
-              view === 'map' ? 'bg-white shadow-[0_2px_8px_rgba(23,32,43,.12)]' : ''
+              view === 'map' ? 'bg-white shadow-[0_2px_8px_rgba(58,42,32,.12)]' : ''
             }`}
           >
             <h1 className="text-lg font-bold">租屋小幫手</h1>
             <span className="ml-2 text-sm text-sub">{hydrated ? `${listings.length} 間` : ''}</span>
           </div>
-          <ViewToggle view={view} onChange={changeView} />
         </div>
         <FilterChips listings={listings} active={active} onToggle={toggle} floating={view === 'map'} />
       </header>

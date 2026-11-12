@@ -50,7 +50,7 @@ export function EditableRow({
     <div
       className={clsx(
         'flex items-center gap-2 py-1.5',
-        uncertain ? '-mx-2.5 my-1 rounded-xl bg-warn-bg px-2.5' : 'border-b border-[#EEF1F4] last:border-b-0',
+        uncertain ? '-mx-2.5 my-1 rounded-xl bg-warn-bg px-2.5' : 'border-b border-[#F3EBE0] last:border-b-0',
       )}
     >
       {leading}

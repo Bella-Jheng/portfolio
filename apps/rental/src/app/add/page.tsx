@@ -248,7 +248,7 @@ export default function AddPage() {
           {picked.length > 0 && (
             <ul className="grid grid-cols-3 gap-2.5">
               {picked.map((p, i) => (
-                <li key={p.url} className="relative aspect-[9/16] overflow-hidden rounded-xl bg-[#DDE3EA]">
+                <li key={p.url} className="relative aspect-[9/16] overflow-hidden rounded-xl bg-[#EDE2D3]">
                   <img src={p.url} alt={`截圖 ${i + 1}`} className="h-full w-full object-cover object-top" />
                   <button
                     type="button"
@@ -278,7 +278,7 @@ export default function AddPage() {
               type="button"
               onClick={() => inputRef.current?.click()}
               className={clsx(
-                'flex items-center justify-center gap-1.5 rounded-xl border-[1.5px] border-dashed border-[#9AA4B0] text-sm',
+                'flex items-center justify-center gap-1.5 rounded-xl border-[1.5px] border-dashed border-[#C4AE97] text-sm',
                 picked.length === 0 ? 'h-40 flex-col text-base' : 'h-12',
               )}
             >
@@ -304,7 +304,7 @@ export default function AddPage() {
             }}
           />
           {cover ? (
-            <div className="relative overflow-hidden rounded-xl bg-[#DDE3EA]">
+            <div className="relative overflow-hidden rounded-xl bg-[#EDE2D3]">
               <img src={cover.url} alt="首圖" className="aspect-[4/3] w-full object-cover" />
               <button
                 type="button"
@@ -319,7 +319,7 @@ export default function AddPage() {
             <button
               type="button"
               onClick={() => coverInputRef.current?.click()}
-              className="flex h-12 items-center justify-center gap-1.5 rounded-xl border-[1.5px] border-dashed border-[#9AA4B0] text-sm"
+              className="flex h-12 items-center justify-center gap-1.5 rounded-xl border-[1.5px] border-dashed border-[#C4AE97] text-sm"
             >
               <ImageIcon size={18} />
               選一張房子照片
@@ -344,7 +344,7 @@ export default function AddPage() {
               onClick={() => setSameListing((v) => !v)}
               className={clsx(
                 'relative h-8 w-[52px] shrink-0 rounded-full transition-colors',
-                sameListing ? 'bg-brand' : 'bg-[#C5CCD4]',
+                sameListing ? 'bg-brand' : 'bg-[#D8C8B6]',
               )}
             >
               <span
@@ -355,7 +355,7 @@ export default function AddPage() {
               />
             </button>
           </div>
-          <div className="h-px bg-[#E3E8EE]" />
+          <div className="h-px bg-[#EFE4D6]" />
           <div className="flex flex-col gap-1.5">
             <p className="text-[15px] font-medium">來源</p>
             <div className="flex gap-2">
@@ -385,7 +385,7 @@ export default function AddPage() {
           </p>
         )}
 
-        <aside className="rounded-2xl bg-brand-soft p-3.5 text-[13px] leading-relaxed text-[#0F3F3A]">
+        <aside className="rounded-2xl bg-brand-soft p-3.5 text-[13px] leading-relaxed text-[#6B3418]">
           截圖時讓<b>地址</b>、<b>物件編號</b>和<b>聯絡電話／LINE／IG</b> 入鏡，解析會更準。
         </aside>
 
@@ -400,7 +400,7 @@ export default function AddPage() {
         </button>
       </main>
 
-      <div className="safe-bottom fixed inset-x-0 bottom-0 mx-auto max-w-[480px] border-t border-[#E3E8EE] bg-ground px-5 pt-4">
+      <div className="safe-bottom fixed inset-x-0 bottom-0 mx-auto max-w-[480px] border-t border-[#EFE4D6] bg-ground px-5 pt-4">
         {user || authLoading || !authConfigured ? (
           <button
             type="button"

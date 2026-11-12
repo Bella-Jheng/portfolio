@@ -7,17 +7,18 @@ module.exports = {
     },
     extend: {
       colors: {
-        ink: '#17202B',
-        sub: '#5B6573',
-        line: '#D5DAE0',
-        ground: '#F4F6F8',
-        brand: { DEFAULT: '#0F766E', dark: '#115E59', soft: '#E6F4F1' },
+        // 暖色系：像家一樣的奶油白底、陶土紅屋頂、深可可色文字
+        ink: '#3A2A20',
+        sub: '#7D6B5D',
+        line: '#E8DCCB',
+        ground: '#FBF5EC',
+        brand: { DEFAULT: '#C2643A', dark: '#A34F2B', soft: '#F8E6D9' },
         status: {
           not_contacted: '#D97706',
-          contacted: '#2563EB',
-          viewed: '#0F766E',
-          favorite: '#DB2777',
-          rented: '#6B7480',
+          contacted: '#3B6EA8',
+          viewed: '#5A8A4F',
+          favorite: '#D9467A',
+          rented: '#9C8B7D',
         },
         warn: { bg: '#FEF3C7', text: '#8A3B0A' },
       },

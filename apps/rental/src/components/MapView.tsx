@@ -65,8 +65,8 @@ export function MapView({
                     padding: isSelected ? '7px 13px' : '5px 10px',
                     fontSize: isSelected ? 15 : 13,
                     boxShadow: isSelected
-                      ? '0 0 0 3px #fff, 0 4px 12px rgba(23,32,43,.3)'
-                      : '0 2px 6px rgba(23,32,43,.25)',
+                      ? '0 0 0 3px #fff, 0 4px 12px rgba(58,42,32,.3)'
+                      : '0 2px 6px rgba(58,42,32,.25)',
                   }}
                 >
                   {l.status === 'favorite' && <HeartIcon />}
@@ -119,7 +119,7 @@ function FitBounds({ listings }: { listings: Listing[] }) {
 function SelectedCard({ listing: l }: { listing: Listing }) {
   const latest = l.notes[0];
   return (
-    <article className="card absolute bottom-3 left-3 right-3 flex flex-col gap-3 p-3.5 shadow-[0_6px_20px_rgba(23,32,43,.2)]">
+    <article className="card absolute bottom-3 left-3 right-3 flex flex-col gap-3 p-3.5 shadow-[0_6px_20px_rgba(58,42,32,.2)]">
       <Link href={`/listing/${l.id}`} className="flex gap-3">
         <Thumb listing={l} size={72} />
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
@@ -132,7 +132,7 @@ function SelectedCard({ listing: l }: { listing: Listing }) {
         </div>
       </Link>
       {latest && (
-        <p className="flex items-center gap-1.5 truncate rounded-lg bg-ground px-2.5 py-2 text-[13px] text-[#3D4652]">
+        <p className="flex items-center gap-1.5 truncate rounded-lg bg-ground px-2.5 py-2 text-[13px] text-[#5C4A3D]">
           <NoteIcon size={14} className="shrink-0" />
           <span className="truncate">{latest.text}</span>
         </p>
@@ -166,7 +166,7 @@ export function Thumb({ listing, size }: { listing: Listing; size: number }) {
     />
   ) : (
     <div
-      className="flex shrink-0 items-center justify-center rounded-xl bg-[#E3E8EE] text-sub"
+      className="flex shrink-0 items-center justify-center rounded-xl bg-[#EFE4D6] text-sub"
       style={{ width: size, height: size }}
     >
       <ImageIcon size={22} />
