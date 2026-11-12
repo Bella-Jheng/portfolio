@@ -111,7 +111,7 @@ function ListingDetail({ listing: l }: { listing: Listing }) {
                 style={
                   on
                     ? { background: meta.color, color: '#fff' }
-                    : { background: '#FFFFFF', color: meta.softText, border: '1px solid #E8DCCB' }
+                    : { background: '#FFFFFF', color: meta.softText, border: '1px solid #E4E0D8' }
                 }
               >
                 {meta.label}
@@ -227,7 +227,7 @@ function ContactSection({ listing: l }: { listing: Listing }) {
       <div className="mb-1 flex items-center justify-between">
         <h2 className="text-[15px] font-bold">聯絡方式</h2>
         {(l.phones.length > 0 || l.lineIds.length > 0 || l.igIds.length > 0) && (
-          <span className="rounded-full bg-brand-soft px-2 py-0.5 text-xs text-[#8A4321]">從截圖解析</span>
+          <span className="rounded-full bg-brand-soft px-2 py-0.5 text-xs text-[#553A2A]">從截圖解析</span>
         )}
       </div>
 
@@ -360,9 +360,9 @@ function ContactBadge({ kind }: { kind: ContactKind }) {
     <span
       className={clsx(
         'flex h-9 w-9 shrink-0 items-center justify-center rounded-full',
-        kind === 'phone' && 'bg-[#E3ECF6] text-[#2C5282]',
+        kind === 'phone' && 'bg-[#E3ECEC] text-[#2F5157]',
         kind === 'line' && 'bg-[#DDF5E4] text-[#14632F]',
-        kind === 'ig' && 'bg-[#FCE7F3] text-[#9D174D]',
+        kind === 'ig' && 'bg-[#F6E6EA] text-[#8C3A4E]',
       )}
     >
       {kind === 'phone' && <PhoneIcon size={18} />}
@@ -415,7 +415,7 @@ function CoverSection({ listing: l }: { listing: Listing }) {
         }}
       />
       {l.coverImage ? (
-        <div className="relative overflow-hidden rounded-2xl bg-[#EDE2D3]">
+        <div className="relative overflow-hidden rounded-2xl bg-[#E9E5DE]">
           <img src={l.coverImage} alt="房子照片" className="aspect-[4/3] w-full object-cover" />
           <div className="absolute bottom-2 right-2 flex gap-2">
             <button
@@ -438,7 +438,7 @@ function CoverSection({ listing: l }: { listing: Listing }) {
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
-          className="flex h-28 flex-col items-center justify-center gap-1 rounded-2xl border-[1.5px] border-dashed border-[#C4AE97] text-sm text-sub"
+          className="flex h-28 flex-col items-center justify-center gap-1 rounded-2xl border-[1.5px] border-dashed border-[#B9B3A8] text-sm text-sub"
         >
           <ImageIcon size={24} />
           {busy ? '處理中…' : '新增首圖（房子照片）'}

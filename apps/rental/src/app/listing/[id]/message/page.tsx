@@ -102,7 +102,7 @@ function Composer({ listing: l }: { listing: Listing }) {
         </section>
       </main>
 
-      <div className="safe-bottom fixed inset-x-0 bottom-0 mx-auto flex max-w-[480px] flex-col gap-2.5 border-t border-[#EFE4D6] bg-ground px-5 pt-3.5">
+      <div className="safe-bottom fixed inset-x-0 bottom-0 mx-auto flex max-w-[480px] flex-col gap-2.5 border-t border-[#ECE8E1] bg-ground px-5 pt-3.5">
         {flash && (
           <p role="status" className="text-center text-sm text-brand">
             {flash}

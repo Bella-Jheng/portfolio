@@ -29,8 +29,8 @@ export function FilterChips({
             className={clsx(
               'flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-3 text-[13px] transition',
               // 選中的狀態用奶油色突出，沒選的是白色
-              on ? 'border-[#EADBC6] bg-cream' : 'border-line bg-white opacity-50',
-              floating && 'shadow-[0_1px_4px_rgba(58,42,32,.15)]',
+              on ? 'border-[#DDD6CA] bg-cream' : 'border-line bg-white opacity-50',
+              floating && 'shadow-[0_1px_4px_rgba(46,48,51,.15)]',
             )}
           >
             <StatusDot status={s} />

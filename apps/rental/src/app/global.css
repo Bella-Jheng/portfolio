@@ -32,7 +32,7 @@ body {
     @apply btn border border-line bg-white text-ink hover:bg-cream;
   }
   .card {
-    @apply rounded-2xl border border-card-line bg-white shadow-[0_1px_3px_rgba(58,42,32,.06)];
+    @apply rounded-2xl border border-card-line bg-white shadow-[0_1px_3px_rgba(46,48,51,.06)];
   }
   .field-input {
     @apply h-11 w-full rounded-xl border border-line bg-white px-3 text-[15px] text-ink outline-none focus:border-brand;

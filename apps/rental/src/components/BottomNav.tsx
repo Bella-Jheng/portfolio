@@ -38,7 +38,7 @@ function Nav() {
       aria-label="主要導覽"
       // 參考 LINE：懸浮在畫面上的圓角膠囊，目前所在的項目用淡色圓角底標示
       className={clsx(
-        'fixed inset-x-0 bottom-[var(--nav-gap)] z-20 mx-auto grid h-16 w-[calc(100%-24px)] max-w-[456px] grid-cols-5 gap-1 rounded-[32px] border border-card-line bg-white/95 p-1.5 shadow-[0_6px_24px_rgba(58,42,32,.18)] backdrop-blur-md transition-transform duration-300',
+        'fixed inset-x-0 bottom-[var(--nav-gap)] z-20 mx-auto grid h-16 w-[calc(100%-24px)] max-w-[456px] grid-cols-5 gap-1 rounded-[32px] border border-card-line bg-white/95 p-1.5 shadow-[0_6px_24px_rgba(46,48,51,.18)] backdrop-blur-md transition-transform duration-300',
         scrolledAway && 'translate-y-[calc(100%+var(--nav-gap)+16px)]',
       )}
     >

@@ -6,11 +6,11 @@ export const STATUS_META: Record<
   Status,
   { label: string; color: string; softBg: string; softText: string }
 > = {
-  not_contacted: { label: '尚未聯絡', color: '#D97706', softBg: '#FEF3C7', softText: '#92400E' },
-  contacted: { label: '已聯絡', color: '#3B6EA8', softBg: '#E3ECF6', softText: '#2C5282' },
-  viewed: { label: '已看房', color: '#5A8A4F', softBg: '#E8F1E3', softText: '#3F6B36' },
-  favorite: { label: '最想要', color: '#D9467A', softBg: '#FCE7F3', softText: '#9D174D' },
-  rented: { label: '已出租', color: '#9C8B7D', softBg: '#F1EAE1', softText: '#5C4A3D' },
+  not_contacted: { label: '尚未聯絡', color: '#C98A2E', softBg: '#FEF3C7', softText: '#92400E' },
+  contacted: { label: '已聯絡', color: '#3F6A73', softBg: '#E3ECEC', softText: '#2F5157' },
+  viewed: { label: '已看房', color: '#5B7F52', softBg: '#E8F1E3', softText: '#3F6B36' },
+  favorite: { label: '最想要', color: '#B8556B', softBg: '#F6E6EA', softText: '#8C3A4E' },
+  rented: { label: '已出租', color: '#9A958D', softBg: '#EFEDE9', softText: '#4D4B47' },
 };
 
 export type Source = '591' | 'fb' | 'other';

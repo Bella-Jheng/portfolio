@@ -39,7 +39,7 @@ export function ListView({
             <article
               className={clsx(
                 'flex flex-col gap-3 rounded-2xl p-3.5',
-                rented ? 'border border-card-line bg-[#FAF8F5]' : 'border border-card-line bg-white shadow-[0_1px_3px_rgba(58,42,32,.06)]',
+                rented ? 'border border-card-line bg-[#F7F6F3]' : 'border border-card-line bg-white shadow-[0_1px_3px_rgba(46,48,51,.06)]',
               )}
             >
               <Link href={`/listing/${l.id}`} className="flex gap-3">
@@ -56,7 +56,7 @@ export function ListView({
                   <div className="flex flex-wrap gap-1.5">
                     <StatusChip status={l.status} />
                     {l.pets && (
-                      <span className="rounded-full bg-[#F3EBE0] px-2.5 py-0.5 text-xs text-[#5C4A3D]">{l.pets}</span>
+                      <span className="rounded-full bg-[#F1EEE8] px-2.5 py-0.5 text-xs text-[#4D4B47]">{l.pets}</span>
                     )}
                     {l.uncertain.length > 0 && (
                       <span className="rounded-full bg-warn-bg px-2.5 py-0.5 text-xs text-warn-text">待確認</span>
@@ -65,7 +65,7 @@ export function ListView({
                 </div>
               </Link>
               {latest && (
-                <p className="flex items-center gap-1.5 rounded-lg bg-cream px-2.5 py-2 text-[13px] text-[#5C4A3D]">
+                <p className="flex items-center gap-1.5 rounded-lg bg-cream px-2.5 py-2 text-[13px] text-[#4D4B47]">
                   <NoteIcon size={14} className="shrink-0" />
                   <span className="truncate">{latest.text}</span>
                 </p>
