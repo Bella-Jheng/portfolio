@@ -7,16 +7,16 @@ module.exports = {
     },
     extend: {
       colors: {
-        // 配色取自一間北歐風租屋：白牆為主、胡桃木地板當主色、炭灰文字；
-        // cream 是燕麥色地毯，只當重點（選中的項目、可編輯的文字框、備註）；
+        // 配色取自一間北歐風租屋：純白為主、胡桃木地板當主色、炭灰文字；
+        // 淺色一律用無色偏的中性灰，避免畫面看起來泛黃（cream 只是沿用的名稱，實際是淺灰）；
         // 狀態色：檯燈暖黃、灰藍綠牆、植物綠、霧玫瑰、暖灰
         ink: '#2E3033',
-        sub: '#74716B',
-        line: '#E4E0D8',
+        sub: '#707070',
+        line: '#E2E2E2',
         ground: '#FFFFFF',
-        cream: { DEFAULT: '#F3F0EA', deep: '#E9E4DA' },
-        card: { line: '#ECE8E1' },
-        brand: { DEFAULT: '#6B4A36', dark: '#553A2A', soft: '#EFE7E0' },
+        cream: { DEFAULT: '#F4F4F4', deep: '#EAEAEA' },
+        card: { line: '#EAEAEA' },
+        brand: { DEFAULT: '#6B4A36', dark: '#553A2A', soft: '#F4F4F4' },
         status: {
           not_contacted: '#C98A2E',
           contacted: '#3F6A73',

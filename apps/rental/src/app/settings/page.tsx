@@ -86,7 +86,7 @@ export default function SettingsPage() {
                     value={templates[t.id] ?? t.defaultText}
                     onChange={(e) => setTemplate(t.id, e.target.value)}
                     rows={t.id === PROFILE_TEMPLATE_ID ? 16 : 5}
-                    className="w-full resize-none rounded-xl bg-cream p-3 text-[15px] leading-7 outline-none focus:ring-2 focus:ring-brand"
+                    className="w-full resize-none rounded-xl border border-line bg-white p-3 text-[15px] leading-7 outline-none focus:ring-2 focus:ring-brand"
                   />
                 </div>
               );

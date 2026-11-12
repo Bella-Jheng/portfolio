@@ -114,7 +114,7 @@ function ListingDetail({ listing: l }: { listing: Listing }) {
                 style={
                   on
                     ? { background: meta.color, color: '#fff' }
-                    : { background: '#FFFFFF', color: meta.softText, border: '1px solid #E4E0D8' }
+                    : { background: '#FFFFFF', color: meta.softText, border: '1px solid #E2E2E2' }
                 }
               >
                 {meta.label}
@@ -418,7 +418,7 @@ function CoverSection({ listing: l }: { listing: Listing }) {
         }}
       />
       {l.coverImage ? (
-        <div className="relative overflow-hidden rounded-2xl bg-[#E9E5DE]">
+        <div className="relative overflow-hidden rounded-2xl bg-[#EFEFEF]">
           <img src={l.coverImage} alt="房子照片" className="aspect-[4/3] w-full object-cover" />
           <div className="absolute bottom-2 right-2 flex gap-2">
             <button
@@ -441,7 +441,7 @@ function CoverSection({ listing: l }: { listing: Listing }) {
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
-          className="flex h-28 flex-col items-center justify-center gap-1 rounded-2xl border-[1.5px] border-dashed border-[#B9B3A8] text-sm text-sub"
+          className="flex h-28 flex-col items-center justify-center gap-1 rounded-2xl border-[1.5px] border-dashed border-[#BDBDBD] text-sm text-sub"
         >
           <ImageIcon size={24} />
           {busy ? '處理中…' : '新增首圖（房子照片）'}
@@ -512,7 +512,7 @@ function MessageSection({ listing: l }: { listing: Listing }) {
           onChange={(e) => changeText(e.target.value)}
           rows={isProfile ? 16 : 7}
           // 右下角留空間給複製按鈕，避免蓋住最後一行字
-          className="block w-full resize-none rounded-xl bg-cream p-3 pb-12 text-[15px] leading-7 outline-none focus:ring-2 focus:ring-brand"
+          className="block w-full resize-none rounded-xl border border-line bg-white p-3 pb-12 text-[15px] leading-7 outline-none focus:ring-2 focus:ring-brand"
         />
         <div className="absolute bottom-2 right-2 flex items-center gap-1.5">
           {flash && (
