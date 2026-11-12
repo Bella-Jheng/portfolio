@@ -29,10 +29,10 @@ body {
     @apply btn bg-ink text-white hover:bg-black;
   }
   .btn-outline {
-    @apply btn border border-line bg-cream text-ink hover:bg-cream-deep;
+    @apply btn border border-line bg-white text-ink hover:bg-cream;
   }
   .card {
-    @apply rounded-2xl bg-cream;
+    @apply rounded-2xl border border-card-line bg-white shadow-[0_1px_3px_rgba(58,42,32,.06)];
   }
   .field-input {
     @apply h-11 w-full rounded-xl border border-line bg-white px-3 text-[15px] text-ink outline-none focus:border-brand;

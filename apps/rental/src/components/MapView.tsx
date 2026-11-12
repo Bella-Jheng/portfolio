@@ -132,7 +132,7 @@ function SelectedCard({ listing: l }: { listing: Listing }) {
         </div>
       </Link>
       {latest && (
-        <p className="flex items-center gap-1.5 truncate rounded-lg bg-white px-2.5 py-2 text-[13px] text-[#5C4A3D]">
+        <p className="flex items-center gap-1.5 truncate rounded-lg bg-cream px-2.5 py-2 text-[13px] text-[#5C4A3D]">
           <NoteIcon size={14} className="shrink-0" />
           <span className="truncate">{latest.text}</span>
         </p>

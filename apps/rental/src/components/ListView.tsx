@@ -39,7 +39,7 @@ export function ListView({
             <article
               className={clsx(
                 'flex flex-col gap-3 rounded-2xl p-3.5',
-                rented ? 'border border-line bg-white' : 'bg-cream',
+                rented ? 'border border-card-line bg-[#FAF8F5]' : 'border border-card-line bg-white shadow-[0_1px_3px_rgba(58,42,32,.06)]',
               )}
             >
               <Link href={`/listing/${l.id}`} className="flex gap-3">
@@ -65,7 +65,7 @@ export function ListView({
                 </div>
               </Link>
               {latest && (
-                <p className="flex items-center gap-1.5 rounded-lg bg-white px-2.5 py-2 text-[13px] text-[#5C4A3D]">
+                <p className="flex items-center gap-1.5 rounded-lg bg-cream px-2.5 py-2 text-[13px] text-[#5C4A3D]">
                   <NoteIcon size={14} className="shrink-0" />
                   <span className="truncate">{latest.text}</span>
                 </p>

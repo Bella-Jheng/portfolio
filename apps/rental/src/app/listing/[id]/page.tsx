@@ -111,7 +111,7 @@ function ListingDetail({ listing: l }: { listing: Listing }) {
                 style={
                   on
                     ? { background: meta.color, color: '#fff' }
-                    : { background: '#FBF5EC', color: meta.softText, border: '1px solid #E8DCCB' }
+                    : { background: '#FFFFFF', color: meta.softText, border: '1px solid #E8DCCB' }
                 }
               >
                 {meta.label}
@@ -525,7 +525,7 @@ function MessageSection({ listing: l }: { listing: Listing }) {
         value={text}
         onChange={(e) => changeText(e.target.value)}
         rows={isProfile ? 16 : 7}
-        className="w-full resize-none rounded-xl bg-white p-3 text-[15px] leading-7 outline-none focus:ring-2 focus:ring-brand"
+        className="w-full resize-none rounded-xl bg-cream p-3 text-[15px] leading-7 outline-none focus:ring-2 focus:ring-brand"
       />
       <p className="text-xs text-sub">
         {isProfile
@@ -576,7 +576,7 @@ function NotesSection({ listing: l }: { listing: Listing }) {
         </ul>
       )}
       <form
-        className="flex h-11 items-center gap-2 rounded-xl bg-white pl-3"
+        className="flex h-11 items-center gap-2 rounded-xl bg-cream pl-3"
         onSubmit={(e) => {
           e.preventDefault();
           submit();

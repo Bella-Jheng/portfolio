@@ -27,9 +27,10 @@ export function FilterChips({
             aria-pressed={on}
             onClick={() => onToggle(s)}
             className={clsx(
-              'flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3 text-[13px] transition-opacity',
-              floating ? 'bg-cream shadow-[0_1px_4px_rgba(58,42,32,.15)]' : 'bg-cream',
-              !on && 'opacity-45',
+              'flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-3 text-[13px] transition',
+              // 選中的狀態用奶油色突出，沒選的是白色
+              on ? 'border-[#EADBC6] bg-cream' : 'border-line bg-white opacity-50',
+              floating && 'shadow-[0_1px_4px_rgba(58,42,32,.15)]',
             )}
           >
             <StatusDot status={s} />

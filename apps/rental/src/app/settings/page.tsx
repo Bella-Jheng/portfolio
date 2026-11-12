@@ -58,7 +58,7 @@ export default function SettingsPage() {
               在物件頁的私訊選範本時會帶入這裡的內容。
               {TEMPLATE_VARIABLES.map((v) => (
                 <span key={v.token} className="block">
-                  <code className="rounded bg-white px-1 text-ink">{v.token}</code> 會換成{v.description}
+                  <code className="rounded bg-cream px-1 text-ink">{v.token}</code> 會換成{v.description}
                 </span>
               ))}
             </p>
@@ -86,7 +86,7 @@ export default function SettingsPage() {
                     value={templates[t.id] ?? t.defaultText}
                     onChange={(e) => setTemplate(t.id, e.target.value)}
                     rows={t.id === PROFILE_TEMPLATE_ID ? 16 : 5}
-                    className="w-full resize-none rounded-xl bg-white p-3 text-[15px] leading-7 outline-none focus:ring-2 focus:ring-brand"
+                    className="w-full resize-none rounded-xl bg-cream p-3 text-[15px] leading-7 outline-none focus:ring-2 focus:ring-brand"
                   />
                 </div>
               );
