@@ -25,7 +25,8 @@ npx nx build rental
 | `GOOGLE_AI_API_KEY` | Gemini 解析截圖，可以跟 apps/bazi 共用同一把 |
 | `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | 地圖顯示和地址轉座標，要啟用 Maps JavaScript API 和 Geocoding API，並限制 HTTP referrer |
 | `NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID` | Advanced Marker 需要 Map ID；沒填會用 `DEMO_MAP_ID`（只適合開發） |
-| `APP_ACCESS_CODE` | 建議設定。設了之後要輸入存取碼才能呼叫 AI，避免網址外流後被別人消耗額度 |
+| `NEXT_PUBLIC_FIREBASE_API_KEY`、`NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`、`NEXT_PUBLIC_FIREBASE_PROJECT_ID` | Google 登入（Firebase Authentication），可以跟 apps/bazi 共用同一個專案；要在 Firebase 的 Authorized domains 加上這個網站的網域 |
+| `ALLOWED_EMAILS` | 允許使用 AI 解析的 Google 帳號，逗號分隔。後端會驗證登入憑證，只有名單裡的帳號能呼叫 AI，避免網址外流後被別人消耗額度 |
 
 沒有設定 Maps key 也能用清單、解析和私訊，只是不會顯示地圖。
 

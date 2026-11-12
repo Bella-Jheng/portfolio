@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI, SchemaType, type ResponseSchema } from '@google/generative-ai';
 import type { ParsedField, ParseResult } from '../../../lib/types';
+import { verifyUser } from '../../../lib/verify-user';
 
 export const maxDuration = 60;
 
@@ -84,9 +85,10 @@ const PROMPT = `你是台灣租屋資訊整理助手。以下是同一間出租�
 - 一律使用繁體中文。`;
 
 export async function POST(request: NextRequest) {
-  const accessCode = process.env.APP_ACCESS_CODE;
-  if (accessCode && request.headers.get('x-access-code') !== accessCode) {
-    return NextResponse.json({ error: '存取碼錯誤' }, { status: 401 });
+  // 只有允許名單裡的 Google 帳號能呼叫 AI，避免網址外流後被別人消耗額度
+  const user = await verifyUser(request.headers.get('authorization'));
+  if (!user.ok) {
+    return NextResponse.json({ error: user.error }, { status: user.status });
   }
 
   const apiKey = process.env.GOOGLE_AI_API_KEY;

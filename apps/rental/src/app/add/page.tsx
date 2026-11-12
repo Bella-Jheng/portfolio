@@ -17,9 +17,9 @@ import {
   type DraftValues,
 } from '../../components/ListingDraftForm';
 import { igHandle } from '../../lib/contact';
+import { useAuth } from '../../lib/auth';
 
 const MAX_IMAGES = 6;
-const CODE_KEY = 'rental-helper:access-code';
 
 interface Picked {
   file: File;
@@ -35,6 +35,7 @@ export default function AddPage() {
   const router = useRouter();
   const add = useListings((s) => s.add);
   const geocode = useGeocode();
+  const { user, loading: authLoading, configured: authConfigured, login, getToken } = useAuth();
   const inputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
 
@@ -46,16 +47,6 @@ export default function AddPage() {
   // AI 解析完先放在草稿讓使用者確認、修改，按「儲存」才真的建立物件
   const [drafts, setDrafts] = useState<Draft[] | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [needCode, setNeedCode] = useState(false);
-  const [code, setCode] = useState('');
-
-  useEffect(() => {
-    try {
-      setCode(localStorage.getItem(CODE_KEY) ?? '');
-    } catch {
-      /* ignore */
-    }
-  }, []);
 
   // 離開頁面時釋放預覽圖
   const pickedRef = useRef(picked);
@@ -102,15 +93,13 @@ export default function AddPage() {
   async function parseGroup(files: File[]): Promise<{ result: ParseResult; thumbnail: string }> {
     const images = await Promise.all(files.map((f) => resizeImage(f, 1600)));
     const thumb = await resizeImage(files[0], 240, 0.7);
+    const token = await getToken();
+    if (!token) throw new Error('請先用 Google 登入');
     const res = await fetch('/api/parse', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-access-code': code },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ images: images.map((i) => ({ mimeType: i.mimeType, data: i.base64 })) }),
     });
-    if (res.status === 401) {
-      setNeedCode(true);
-      throw new Error('請輸入存取碼');
-    }
     const data = (await res.json()) as ParseResult & { error?: string };
     if (!res.ok) throw new Error(data.error ?? '解析失敗');
     return { result: data, thumbnail: thumb.dataUrl };
@@ -148,11 +137,6 @@ export default function AddPage() {
     if (picked.length === 0 || busy) return;
     setError(null);
     try {
-      try {
-        localStorage.setItem(CODE_KEY, code);
-      } catch {
-        /* ignore */
-      }
       const groups = sameListing ? [picked.map((p) => p.file)] : picked.map((p) => [p.file]);
       const parsed: Draft[] = [];
       for (let i = 0; i < groups.length; i++) {
@@ -393,18 +377,12 @@ export default function AddPage() {
           </div>
         </section>
 
-        {needCode && (
-          <label className="card flex flex-col gap-2 p-4">
-            <span className="text-[15px] font-medium">存取碼</span>
-            <span className="text-[13px] text-sub">這個網站有設存取碼，輸入一次之後會記在這台裝置。</span>
-            <input
-              className="field-input"
-              type="password"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              autoComplete="off"
-            />
-          </label>
+        {!authLoading && !user && (
+          <p className="card p-4 text-[13px] leading-relaxed text-sub">
+            {authConfigured
+              ? 'AI 解析需要先用 Google 登入，只有被允許的帳號可以使用。沒有登入也可以手動新增。'
+              : '這個網站還沒設定 Google 登入，暫時不能用 AI 解析，可以先手動新增。'}
+          </p>
         )}
 
         <aside className="rounded-2xl bg-brand-soft p-3.5 text-[13px] leading-relaxed text-[#0F3F3A]">
@@ -423,15 +401,26 @@ export default function AddPage() {
       </main>
 
       <div className="safe-bottom fixed inset-x-0 bottom-0 mx-auto max-w-[480px] border-t border-[#E3E8EE] bg-ground px-5 pt-4">
-        <button
-          type="button"
-          onClick={start}
-          disabled={picked.length === 0 || busy != null}
-          className="btn-primary h-14 w-full rounded-2xl text-base font-bold"
-        >
-          <SparkIcon size={20} />
-          {busy ?? '開始解析'}
-        </button>
+        {user || authLoading || !authConfigured ? (
+          <button
+            type="button"
+            onClick={start}
+            disabled={picked.length === 0 || busy != null || !user}
+            className="btn-primary h-14 w-full rounded-2xl text-base font-bold"
+          >
+            <SparkIcon size={20} />
+            {busy ?? '開始解析'}
+          </button>
+        ) : (
+          <button
+            type="button"
+            // 直接在點擊裡呼叫登入，iOS Safari 才不會擋下 Google 登入視窗
+            onClick={async () => setError(await login())}
+            className="btn-dark h-14 w-full rounded-2xl text-base font-bold"
+          >
+            Google 登入後開始解析
+          </button>
+        )}
       </div>
     </div>
   );
