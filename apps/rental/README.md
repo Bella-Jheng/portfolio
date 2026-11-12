@@ -31,12 +31,13 @@ npx nx build rental
 
 ## 部署（Vercel）
 
-跟 apps/bazi 一樣，在 Vercel 新增一個 Project 指向這個 repo：
+Build 設定已經寫在 `vercel.json`，在 Vercel 匯入時只要設定兩件事：
 
-- Root Directory：`apps/rental`
-- Build Command：`cd ../.. && npx nx build rental`
-- Output Directory：`.next`
-- 在 Environment Variables 填入上面的變數
+1. Vercel → Add New → Project → Import `Bella-Jheng/portfolio`
+2. **Root Directory** 選 `apps/rental`，Framework 會自動抓成 Next.js
+3. 在 Environment Variables 填入上面的變數，按 Deploy
+
+之後每個 PR 都會自動產生 Preview 網址。
 
 ## 資料存在哪裡
 
