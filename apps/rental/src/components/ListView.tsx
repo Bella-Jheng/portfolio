@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import clsx from 'clsx';
 import type { Listing } from '../lib/types';
-import { formatRent, mapsSearchHref } from '../lib/contact';
+import { formatRent, formatShortDate, mapsSearchHref } from '../lib/contact';
 import { StatusChip } from './StatusChip';
 import { Thumb } from './MapView';
 import { ChatIcon, NoteIcon, PinIcon } from './icons';
@@ -39,15 +39,18 @@ export function ListView({
             <article
               className={clsx(
                 'flex flex-col gap-3 rounded-2xl p-3.5',
-                rented ? 'border border-[#EFE4D6] bg-[#F7F1E8]' : 'bg-white',
+                'border border-card-line bg-white', rented ? 'opacity-70' : 'shadow-[0_1px_3px_rgba(46,48,51,.06)]',
               )}
             >
               <Link href={`/listing/${l.id}`} className="flex gap-3">
                 <Thumb listing={l} size={84} />
-                <div className="flex min-w-0 flex-col gap-1">
-                  <h2 className={clsx('truncate text-base font-bold', rented && 'text-sub')}>
-                    {l.title || '（未命名物件）'}
-                  </h2>
+                <div className="flex min-w-0 flex-1 flex-col gap-1">
+                  <div className="flex items-baseline justify-between gap-2">
+                    <h2 className={clsx('truncate text-base font-bold', rented && 'text-sub')}>
+                      {l.title || '（未命名物件）'}
+                    </h2>
+                    <span className="shrink-0 text-xs text-sub">{formatShortDate(l.createdAt)} 建立</span>
+                  </div>
                   <p className="truncate text-[13px] text-sub">{l.address || '地址未填'}</p>
                   <p className={clsx('text-lg font-bold', rented && 'text-sub line-through')}>
                     {formatRent(l.rent)}
@@ -56,7 +59,7 @@ export function ListView({
                   <div className="flex flex-wrap gap-1.5">
                     <StatusChip status={l.status} />
                     {l.pets && (
-                      <span className="rounded-full bg-[#F3EBE0] px-2.5 py-0.5 text-xs text-[#5C4A3D]">{l.pets}</span>
+                      <span className="rounded-full border border-line bg-white px-2.5 py-0.5 text-xs text-[#4A4A4A]">{l.pets}</span>
                     )}
                     {l.uncertain.length > 0 && (
                       <span className="rounded-full bg-warn-bg px-2.5 py-0.5 text-xs text-warn-text">待確認</span>
@@ -65,7 +68,7 @@ export function ListView({
                 </div>
               </Link>
               {latest && (
-                <p className="flex items-center gap-1.5 rounded-lg bg-ground px-2.5 py-2 text-[13px] text-[#5C4A3D]">
+                <p className="flex items-center gap-1.5 rounded-lg border border-line bg-white px-2.5 py-2 text-[13px] text-[#4A4A4A]">
                   <NoteIcon size={14} className="shrink-0" />
                   <span className="truncate">{latest.text}</span>
                 </p>

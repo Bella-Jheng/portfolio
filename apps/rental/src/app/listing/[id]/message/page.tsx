@@ -96,13 +96,13 @@ function Composer({ listing: l }: { listing: Listing }) {
             value={text}
             onChange={(e) => setText(e.target.value)}
             rows={8}
-            className="w-full resize-none rounded-xl bg-ground p-3.5 text-[15px] leading-7 outline-none focus:ring-2 focus:ring-brand"
+            className="w-full resize-none rounded-xl border border-line bg-white p-3.5 text-[15px] leading-7 outline-none focus:ring-2 focus:ring-brand"
           />
           <p className="text-xs text-sub">聯絡人、租金、物件編號會自動帶入；[ ] 裡的字記得換掉。</p>
         </section>
       </main>
 
-      <div className="safe-bottom fixed inset-x-0 bottom-0 mx-auto flex max-w-[480px] flex-col gap-2.5 border-t border-[#EFE4D6] bg-ground px-5 pt-3.5">
+      <div className="safe-bottom fixed inset-x-0 bottom-0 mx-auto flex max-w-[480px] flex-col gap-2.5 border-t border-[#EAEAEA] bg-ground px-5 pt-3.5">
         {flash && (
           <p role="status" className="text-center text-sm text-brand">
             {flash}

@@ -7,18 +7,22 @@ module.exports = {
     },
     extend: {
       colors: {
-        // 暖色系：像家一樣的奶油白底、陶土紅屋頂、深可可色文字
-        ink: '#3A2A20',
-        sub: '#7D6B5D',
-        line: '#E8DCCB',
-        ground: '#FBF5EC',
-        brand: { DEFAULT: '#C2643A', dark: '#A34F2B', soft: '#F8E6D9' },
+        // 配色取自一間北歐風租屋：純白為主、胡桃木地板當主色、炭灰文字；
+        // 除了輸入框之外，底色一律純白；區塊靠細邊框區分。cream 只用在輸入框（淺灰底，提示可以打字）；
+        // 狀態色：檯燈暖黃、灰藍綠牆、植物綠、霧玫瑰、暖灰
+        ink: '#2E3033',
+        sub: '#707070',
+        line: '#E2E2E2',
+        ground: '#FFFFFF',
+        cream: { DEFAULT: '#F4F4F4', deep: '#EAEAEA' },
+        card: { line: '#EAEAEA' },
+        brand: { DEFAULT: '#6B4A36', dark: '#553A2A', soft: '#F4F4F4' },
         status: {
-          not_contacted: '#D97706',
-          contacted: '#3B6EA8',
-          viewed: '#5A8A4F',
-          favorite: '#D9467A',
-          rented: '#9C8B7D',
+          not_contacted: '#C98A2E',
+          contacted: '#3F6A73',
+          viewed: '#5B7F52',
+          favorite: '#B8556B',
+          rented: '#9A958D',
         },
         warn: { bg: '#FEF3C7', text: '#8A3B0A' },
       },

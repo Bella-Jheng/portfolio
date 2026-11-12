@@ -7,7 +7,7 @@ import clsx from 'clsx';
 import { useHydrated, useListings } from '../../../lib/store';
 import { useGeocode } from '../../../lib/geocode';
 import { STATUSES, STATUS_META, type Listing, type ParsedField } from '../../../lib/types';
-import { copyText, igHandle, igHref, lineHref, lineIsPhone, mapsSearchHref, telHref } from '../../../lib/contact';
+import { copyText, formatDateTime, igHandle, igHref, lineHref, lineIsPhone, mapsSearchHref, telHref } from '../../../lib/contact';
 import { resizeCoverImage } from '../../../lib/image';
 import { PROFILE_TEMPLATE_ID, TEMPLATES, buildMessage } from '../../../lib/templates';
 import { usePreferences } from '../../../lib/preferences';
@@ -75,7 +75,10 @@ function ListingDetail({ listing: l }: { listing: Listing }) {
         <Link href="/" aria-label="返回" className="flex h-11 w-11 items-center justify-center">
           <BackIcon size={22} />
         </Link>
-        <h1 className="truncate text-xl font-bold">{l.title || '物件資訊'}</h1>
+        <div className="min-w-0">
+          <h1 className="truncate text-xl font-bold">{l.title || '物件資訊'}</h1>
+          <p className="text-xs text-sub">建立於 {formatDateTime(l.createdAt)}</p>
+        </div>
       </header>
 
       <main className="flex flex-1 flex-col gap-3 px-4 pb-[calc(var(--nav-h)+24px)] pt-1">
@@ -111,7 +114,7 @@ function ListingDetail({ listing: l }: { listing: Listing }) {
                 style={
                   on
                     ? { background: meta.color, color: '#fff' }
-                    : { background: '#fff', color: meta.softText, border: '1px solid #E8DCCB' }
+                    : { background: '#FFFFFF', color: meta.softText, border: '1px solid #E2E2E2' }
                 }
               >
                 {meta.label}
@@ -227,7 +230,7 @@ function ContactSection({ listing: l }: { listing: Listing }) {
       <div className="mb-1 flex items-center justify-between">
         <h2 className="text-[15px] font-bold">聯絡方式</h2>
         {(l.phones.length > 0 || l.lineIds.length > 0 || l.igIds.length > 0) && (
-          <span className="rounded-full bg-brand-soft px-2 py-0.5 text-xs text-[#8A4321]">從截圖解析</span>
+          <span className="rounded-full border border-line bg-white px-2 py-0.5 text-xs text-[#553A2A]">從截圖解析</span>
         )}
       </div>
 
@@ -360,9 +363,9 @@ function ContactBadge({ kind }: { kind: ContactKind }) {
     <span
       className={clsx(
         'flex h-9 w-9 shrink-0 items-center justify-center rounded-full',
-        kind === 'phone' && 'bg-[#E3ECF6] text-[#2C5282]',
+        kind === 'phone' && 'bg-[#E3ECEC] text-[#2F5157]',
         kind === 'line' && 'bg-[#DDF5E4] text-[#14632F]',
-        kind === 'ig' && 'bg-[#FCE7F3] text-[#9D174D]',
+        kind === 'ig' && 'bg-[#F6E6EA] text-[#8C3A4E]',
       )}
     >
       {kind === 'phone' && <PhoneIcon size={18} />}
@@ -415,7 +418,7 @@ function CoverSection({ listing: l }: { listing: Listing }) {
         }}
       />
       {l.coverImage ? (
-        <div className="relative overflow-hidden rounded-2xl bg-[#EDE2D3]">
+        <div className="relative overflow-hidden rounded-2xl border border-line bg-white">
           <img src={l.coverImage} alt="房子照片" className="aspect-[4/3] w-full object-cover" />
           <div className="absolute bottom-2 right-2 flex gap-2">
             <button
@@ -438,7 +441,7 @@ function CoverSection({ listing: l }: { listing: Listing }) {
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
-          className="flex h-28 flex-col items-center justify-center gap-1 rounded-2xl border-[1.5px] border-dashed border-[#C4AE97] text-sm text-sub"
+          className="flex h-28 flex-col items-center justify-center gap-1 rounded-2xl border-[1.5px] border-dashed border-[#BDBDBD] text-sm text-sub"
         >
           <ImageIcon size={24} />
           {busy ? '處理中…' : '新增首圖（房子照片）'}
@@ -479,28 +482,10 @@ function MessageSection({ listing: l }: { listing: Listing }) {
 
   return (
     <section id="message" className="card flex flex-col gap-2.5 p-3.5">
-      <div className="flex items-center justify-between">
-        <h2 className="flex items-center gap-1.5 text-[15px] font-bold">
-          <ChatIcon size={16} />
-          私訊
-        </h2>
-        <div className="flex items-center gap-1">
-          {flash && (
-            <span role="status" className="text-[13px] text-brand">
-              {flash}
-            </span>
-          )}
-          <button
-            type="button"
-            onClick={copy}
-            aria-label="複製訊息"
-            title="複製訊息"
-            className="flex h-9 w-9 items-center justify-center rounded-full text-brand hover:bg-brand-soft"
-          >
-            <CopyIcon size={18} />
-          </button>
-        </div>
-      </div>
+      <h2 className="flex items-center gap-1.5 text-[15px] font-bold">
+        <ChatIcon size={16} />
+        私訊
+      </h2>
       <div className="flex flex-wrap gap-1.5">
         {TEMPLATES.map((t) => (
           <button
@@ -520,13 +505,32 @@ function MessageSection({ listing: l }: { listing: Listing }) {
       <label htmlFor="message-text" className="sr-only">
         私訊內容
       </label>
-      <textarea
-        id="message-text"
-        value={text}
-        onChange={(e) => changeText(e.target.value)}
-        rows={isProfile ? 16 : 7}
-        className="w-full resize-none rounded-xl bg-ground p-3 text-[15px] leading-7 outline-none focus:ring-2 focus:ring-brand"
-      />
+      <div className="relative">
+        <textarea
+          id="message-text"
+          value={text}
+          onChange={(e) => changeText(e.target.value)}
+          rows={isProfile ? 16 : 7}
+          // 右下角留空間給複製按鈕，避免蓋住最後一行字
+          className="block w-full resize-none rounded-xl border border-line bg-white p-3 pb-12 text-[15px] leading-7 outline-none focus:ring-2 focus:ring-brand"
+        />
+        <div className="absolute bottom-2 right-2 flex items-center gap-1.5">
+          {flash && (
+            <span role="status" className="rounded-full bg-white/90 px-2 py-0.5 text-[13px] text-brand">
+              {flash}
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={copy}
+            aria-label="複製這段訊息"
+            title="複製這段訊息"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-brand shadow-[0_1px_3px_rgba(46,48,51,.15)]"
+          >
+            <CopyIcon size={18} />
+          </button>
+        </div>
+      </div>
       <p className="text-xs text-sub">
         {isProfile
           ? '填過的內容會自動記住，下一間物件也會帶入；也可以到「設定」修改。'
@@ -576,7 +580,7 @@ function NotesSection({ listing: l }: { listing: Listing }) {
         </ul>
       )}
       <form
-        className="flex h-11 items-center gap-2 rounded-xl bg-ground pl-3"
+        className="flex h-11 items-center gap-2 rounded-xl bg-cream pl-3"
         onSubmit={(e) => {
           e.preventDefault();
           submit();
