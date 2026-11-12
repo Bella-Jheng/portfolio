@@ -9,7 +9,8 @@ import { useGeocode } from '../../../lib/geocode';
 import { STATUSES, STATUS_META, type Listing, type ParsedField } from '../../../lib/types';
 import { copyText, igHandle, igHref, lineHref, lineIsPhone, mapsSearchHref, telHref } from '../../../lib/contact';
 import { resizeCoverImage } from '../../../lib/image';
-import { TEMPLATES } from '../../../lib/templates';
+import { PROFILE_TEMPLATE_ID, TEMPLATES } from '../../../lib/templates';
+import { usePreferences } from '../../../lib/preferences';
 import { EditableRow } from '../../../components/EditableRow';
 import { MAPS_KEY } from '../../../components/Providers';
 import {
@@ -439,6 +440,14 @@ function MessageSection({ listing: l }: { listing: Listing }) {
   const [templateId, setTemplateId] = useState(TEMPLATES[0].id);
   const [text, setText] = useState(() => TEMPLATES[0].build(l));
   const [flash, setFlash] = useState<string | null>(null);
+  const setProfileMessage = usePreferences((s) => s.setProfileMessage);
+  const isProfile = templateId === PROFILE_TEMPLATE_ID;
+
+  // 個人資訊範本：邊打邊存成使用者自己的公版，下一間物件會直接帶入
+  const changeText = (value: string) => {
+    setText(value);
+    if (isProfile) setProfileMessage(value);
+  };
 
   const pickTemplate = (id: string) => {
     const template = TEMPLATES.find((t) => t.id === id) ?? TEMPLATES[0];
@@ -479,11 +488,15 @@ function MessageSection({ listing: l }: { listing: Listing }) {
       <textarea
         id="message-text"
         value={text}
-        onChange={(e) => setText(e.target.value)}
-        rows={7}
+        onChange={(e) => changeText(e.target.value)}
+        rows={isProfile ? 16 : 7}
         className="w-full resize-none rounded-xl bg-ground p-3 text-[15px] leading-7 outline-none focus:ring-2 focus:ring-brand"
       />
-      <p className="text-xs text-sub">聯絡人、租金、物件編號會自動帶入；[ ] 裡的字記得換掉。</p>
+      <p className="text-xs text-sub">
+        {isProfile
+          ? '填過的內容會自動記住，下一間物件也會帶入；也可以到「個人設定」修改。'
+          : '聯絡人、租金、物件編號會自動帶入；[ ] 裡的字記得換掉。'}
+      </p>
       <button type="button" onClick={copy} className="btn-primary h-12 w-full rounded-xl text-[15px] font-bold">
         <CopyIcon size={18} />
         複製訊息
