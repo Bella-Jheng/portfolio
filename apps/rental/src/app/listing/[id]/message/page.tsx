@@ -6,7 +6,7 @@ import { useParams } from 'next/navigation';
 import clsx from 'clsx';
 import { useHydrated, useListings } from '../../../../lib/store';
 import { TEMPLATES } from '../../../../lib/templates';
-import { copyText, lineHref, lineIsPhone, telHref } from '../../../../lib/contact';
+import { copyText, igDmHref, lineHref, lineIsPhone, telHref } from '../../../../lib/contact';
 import type { Listing } from '../../../../lib/types';
 import { BackIcon, CopyIcon } from '../../../../components/icons';
 
@@ -49,6 +49,7 @@ function Composer({ listing: l }: { listing: Listing }) {
   const copy = async () => say((await copyText(text)) ? '已複製訊息' : '複製失敗，請長按文字手動複製');
 
   const lineId = l.lineIds[0];
+  const igId = l.igIds[0];
   const phone = l.phones[0];
 
   return (
@@ -125,6 +126,18 @@ function Composer({ listing: l }: { listing: Listing }) {
             >
               複製並開 LINE
             </a>
+          ) : igId ? (
+            <a
+              href={igDmHref(igId)}
+              target="_blank"
+              rel="noreferrer"
+              onClick={async () => {
+                if (await copyText(text)) say('已複製訊息，到 IG 私訊貼上');
+              }}
+              className="btn-outline h-12 rounded-[14px]"
+            >
+              複製並開 IG
+            </a>
           ) : phone ? (
             <a href={telHref(phone)} className="btn-outline h-12 rounded-[14px]">
               撥打 {phone}
@@ -137,12 +150,12 @@ function Composer({ listing: l }: { listing: Listing }) {
           <button
             type="button"
             onClick={() => {
-              setStatus(l.id, 'contacting');
-              say('已標記為聯絡中');
+              setStatus(l.id, 'contacted');
+              say('已標記為已聯絡');
             }}
             className="btn-outline h-12 rounded-[14px]"
           >
-            標記聯絡中
+            標記已聯絡
           </button>
         </div>
       </div>

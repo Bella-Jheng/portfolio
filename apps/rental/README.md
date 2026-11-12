@@ -4,7 +4,7 @@
 
 ## 功能
 
-- **地圖首頁**：每間房間以價格標籤顯示，依狀態上色：聯絡中（藍）、已看房（綠）、最想要（粉，有愛心）、已出租（灰）；上方可篩選狀態、切換地圖或清單
+- **地圖首頁**：每間房間以價格標籤顯示，依狀態上色：尚未聯絡（橘）、已聯絡（藍）、已看房（綠）、最想要（粉，有愛心）、已出租（灰）；上方可篩選狀態、切換地圖或清單
 - **上傳截圖解析**：一次最多 6 張，可以設定「同一間物件」或「每張各一間」；AI 沒把握的欄位會用黃色標出
 - **詳細頁**：所有欄位都能就地編輯；電話可直接撥打，LINE ID 可直接開 LINE（官方帳號 @ID、一般 ID、「LINE 同電話」三種情況都有處理）
 - **備註**：依日期記錄，最新一條會顯示在地圖和清單卡片上
@@ -25,7 +25,8 @@ npx nx build rental
 | `GOOGLE_AI_API_KEY` | Gemini 解析截圖，可以跟 apps/bazi 共用同一把 |
 | `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | 地圖顯示和地址轉座標，要啟用 Maps JavaScript API 和 Geocoding API，並限制 HTTP referrer |
 | `NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID` | Advanced Marker 需要 Map ID；沒填會用 `DEMO_MAP_ID`（只適合開發） |
-| `APP_ACCESS_CODE` | 建議設定。設了之後要輸入存取碼才能呼叫 AI，避免網址外流後被別人消耗額度 |
+| `NEXT_PUBLIC_FIREBASE_API_KEY`、`NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`、`NEXT_PUBLIC_FIREBASE_PROJECT_ID` | Google 登入（Firebase Authentication），可以跟 apps/bazi 共用同一個專案；要在 Firebase 的 Authorized domains 加上這個網站的網域 |
+| `ALLOWED_EMAILS` | 允許使用 AI 解析的 Google 帳號，逗號分隔。後端會驗證登入憑證，只有名單裡的帳號能呼叫 AI，避免網址外流後被別人消耗額度 |
 
 沒有設定 Maps key 也能用清單、解析和私訊，只是不會顯示地圖。
 

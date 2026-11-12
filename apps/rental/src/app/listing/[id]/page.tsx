@@ -1,19 +1,25 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import clsx from 'clsx';
 import { useHydrated, useListings } from '../../../lib/store';
 import { useGeocode } from '../../../lib/geocode';
 import { STATUSES, STATUS_META, type Listing, type ParsedField } from '../../../lib/types';
-import { copyText, lineHref, lineIsPhone, mapsSearchHref, telHref } from '../../../lib/contact';
+import { copyText, igHandle, igHref, lineHref, lineIsPhone, mapsSearchHref, telHref } from '../../../lib/contact';
+import { resizeCoverImage } from '../../../lib/image';
+import { PROFILE_TEMPLATE_ID, TEMPLATES } from '../../../lib/templates';
+import { usePreferences } from '../../../lib/preferences';
 import { EditableRow } from '../../../components/EditableRow';
 import { MAPS_KEY } from '../../../components/Providers';
 import {
   BackIcon,
   ChatIcon,
+  CopyIcon,
   ExternalIcon,
+  ImageIcon,
+  InstagramIcon,
   LineIcon,
   NoteIcon,
   PhoneIcon,
@@ -70,15 +76,17 @@ function ListingDetail({ listing: l }: { listing: Listing }) {
         <h1 className="truncate text-xl font-bold">{l.title || '物件資訊'}</h1>
       </header>
 
-      <main className="flex flex-1 flex-col gap-3 px-4 pb-32 pt-1">
+      <main className="flex flex-1 flex-col gap-3 px-4 pb-[calc(var(--nav-h)+24px)] pt-1">
         {l.uncertain.length > 0 && (
           <p className="mx-1 text-[13px] text-sub">
             <span className="font-medium text-warn-text">黃色欄位</span>是 AI 沒把握的，請再確認一次。
           </p>
         )}
 
+        <CoverSection listing={l} />
+
         {/* 狀態 */}
-        <section aria-label="狀態" className="grid grid-cols-4 gap-1.5">
+        <section aria-label="狀態" className="grid grid-cols-5 gap-1">
           {STATUSES.map((s) => {
             const meta = STATUS_META[s];
             const on = l.status === s;
@@ -88,7 +96,7 @@ function ListingDetail({ listing: l }: { listing: Listing }) {
                 type="button"
                 aria-pressed={on}
                 onClick={() => setStatus(l.id, s)}
-                className="h-10 rounded-full text-[13px] font-medium transition-colors"
+                className="h-10 rounded-full px-0.5 text-[13px] font-medium transition-colors"
                 style={
                   on
                     ? { background: meta.color, color: '#fff' }
@@ -136,6 +144,7 @@ function ListingDetail({ listing: l }: { listing: Listing }) {
         </section>
 
         <ContactSection listing={l} />
+        <MessageSection listing={l} />
         <NotesSection listing={l} />
 
         <a
@@ -179,22 +188,16 @@ function ListingDetail({ listing: l }: { listing: Listing }) {
         </div>
       </main>
 
-      <div className="safe-bottom fixed inset-x-0 bottom-0 mx-auto max-w-[480px] border-t border-[#E3E8EE] bg-ground px-5 pt-3.5">
-        <Link href={`/listing/${l.id}/message`} className="btn-primary h-14 w-full rounded-2xl text-base font-bold">
-          <ChatIcon size={20} />
-          產生私訊
-        </Link>
-      </div>
     </div>
   );
 }
 
 function ContactSection({ listing: l }: { listing: Listing }) {
   const update = useListings((s) => s.update);
-  const [newField, setNewField] = useState<'phone' | 'line' | null>(null);
+  const [newField, setNewField] = useState<ContactKind | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
 
-  const setList = (key: 'phones' | 'lineIds', index: number, value: string) => {
+  const setList = (key: 'phones' | 'lineIds' | 'igIds', index: number, value: string) => {
     const list = [...l[key]];
     if (index >= list.length) list.push(value);
     else list[index] = value;
@@ -210,7 +213,7 @@ function ContactSection({ listing: l }: { listing: Listing }) {
     <section className="card flex flex-col gap-1 p-3.5">
       <div className="mb-1 flex items-center justify-between">
         <h2 className="text-[15px] font-bold">聯絡方式</h2>
-        {(l.phones.length > 0 || l.lineIds.length > 0) && (
+        {(l.phones.length > 0 || l.lineIds.length > 0 || l.igIds.length > 0) && (
           <span className="rounded-full bg-brand-soft px-2 py-0.5 text-xs text-[#0F5E57]">從截圖解析</span>
         )}
       </div>
@@ -237,7 +240,7 @@ function ContactSection({ listing: l }: { listing: Listing }) {
           trailing={
             <a
               href={telHref(phone)}
-              className="flex h-10 shrink-0 items-center rounded-full bg-status-contacting px-3.5 text-sm font-medium text-white"
+              className="flex h-10 shrink-0 items-center rounded-full bg-status-contacted px-3.5 text-sm font-medium text-white"
             >
               撥打
             </a>
@@ -271,55 +274,239 @@ function ContactSection({ listing: l }: { listing: Listing }) {
         );
       })}
 
+      {l.igIds.map((igId, i) => (
+        <EditableRow
+          key={`i-${i}-${igId}`}
+          label="IG"
+          value={igId}
+          uncertain={l.uncertain.includes('igIds')}
+          leading={<ContactBadge kind="ig" />}
+          trailing={
+            <a
+              href={igHref(igId)}
+              target="_blank"
+              rel="noreferrer"
+              className="flex h-10 shrink-0 items-center rounded-full bg-[#C13584] px-3.5 text-sm font-medium text-white"
+            >
+              開 IG
+            </a>
+          }
+          onSave={(v) => setList('igIds', i, igHandle(v))}
+        />
+      ))}
+
       {copied && <p className="text-xs text-sub">已複製 {copied}，在 LINE「加入好友 → 搜尋 → 電話號碼」貼上</p>}
 
       {newField && (
         <EditableRow
-          label={newField === 'phone' ? '新電話' : '新 LINE ID'}
+          label={NEW_CONTACT[newField].label}
           value=""
           inputMode={newField === 'phone' ? 'tel' : 'text'}
           startEditing
           leading={<ContactBadge kind={newField} />}
           onSave={(v) => {
-            if (v) setList(newField === 'phone' ? 'phones' : 'lineIds', Number.MAX_SAFE_INTEGER, v);
+            const value = newField === 'ig' ? igHandle(v) : v;
+            if (value) setList(NEW_CONTACT[newField].key, Number.MAX_SAFE_INTEGER, value);
             setNewField(null);
           }}
         />
       )}
 
-      <div className="flex gap-4 pt-1">
-        <button
-          type="button"
-          onClick={() => setNewField('phone')}
-          className="flex h-11 items-center gap-1.5 text-sm font-medium text-brand"
-        >
-          <PlusIcon size={16} />
-          新增電話
-        </button>
-        <button
-          type="button"
-          onClick={() => setNewField('line')}
-          className="flex h-11 items-center gap-1.5 text-sm font-medium text-brand"
-        >
-          <PlusIcon size={16} />
-          新增 LINE
-        </button>
+      <div className="flex flex-wrap gap-x-4 pt-1">
+        {(Object.keys(NEW_CONTACT) as ContactKind[]).map((kind) => (
+          <button
+            key={kind}
+            type="button"
+            onClick={() => setNewField(kind)}
+            className="flex h-11 items-center gap-1.5 text-sm font-medium text-brand"
+          >
+            <PlusIcon size={16} />
+            {NEW_CONTACT[kind].button}
+          </button>
+        ))}
       </div>
       <p className="text-xs text-sub">把欄位清空再儲存就會刪掉那一筆。</p>
     </section>
   );
 }
 
-function ContactBadge({ kind }: { kind: 'phone' | 'line' }) {
+type ContactKind = 'phone' | 'line' | 'ig';
+
+const NEW_CONTACT: Record<ContactKind, { key: 'phones' | 'lineIds' | 'igIds'; label: string; button: string }> = {
+  phone: { key: 'phones', label: '新電話', button: '新增電話' },
+  line: { key: 'lineIds', label: '新 LINE ID', button: '新增 LINE' },
+  ig: { key: 'igIds', label: '新 IG 帳號', button: '新增 IG' },
+};
+
+function ContactBadge({ kind }: { kind: ContactKind }) {
   return (
     <span
       className={clsx(
         'flex h-9 w-9 shrink-0 items-center justify-center rounded-full',
-        kind === 'phone' ? 'bg-[#E0ECFB] text-[#1E4E8C]' : 'bg-[#DDF5E4] text-[#14632F]',
+        kind === 'phone' && 'bg-[#E0ECFB] text-[#1E4E8C]',
+        kind === 'line' && 'bg-[#DDF5E4] text-[#14632F]',
+        kind === 'ig' && 'bg-[#FCE7F3] text-[#9D174D]',
       )}
     >
-      {kind === 'phone' ? <PhoneIcon size={18} /> : <LineIcon size={18} />}
+      {kind === 'phone' && <PhoneIcon size={18} />}
+      {kind === 'line' && <LineIcon size={18} />}
+      {kind === 'ig' && <InstagramIcon size={18} />}
     </span>
+  );
+}
+
+function CoverSection({ listing: l }: { listing: Listing }) {
+  const update = useListings((s) => s.update);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const setCover = (coverImage: string | undefined) => {
+    const previous = l.coverImage;
+    try {
+      update(l.id, { coverImage });
+      setError(null);
+    } catch {
+      // localStorage 容量用完時寫入會失敗：還原，避免畫面顯示了但其實沒存到
+      update(l.id, { coverImage: previous });
+      setError('裝置空間不足，首圖沒有存到。可以刪掉一些不需要的物件或首圖再試一次。');
+    }
+  };
+
+  const onFile = async (file: File | undefined) => {
+    if (!file || !file.type.startsWith('image/')) return;
+    setBusy(true);
+    try {
+      setCover(await resizeCoverImage(file));
+    } catch {
+      setError('這張照片讀不出來，請換一張試試');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <section aria-label="首圖" className="flex flex-col gap-1.5">
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        hidden
+        onChange={(e) => {
+          onFile(e.target.files?.[0]);
+          e.target.value = '';
+        }}
+      />
+      {l.coverImage ? (
+        <div className="relative overflow-hidden rounded-2xl bg-[#DDE3EA]">
+          <img src={l.coverImage} alt="房子照片" className="aspect-[4/3] w-full object-cover" />
+          <div className="absolute bottom-2 right-2 flex gap-2">
+            <button
+              type="button"
+              onClick={() => inputRef.current?.click()}
+              className="h-9 rounded-full bg-ink/70 px-3.5 text-sm text-white"
+            >
+              {busy ? '處理中…' : '更換'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setCover(undefined)}
+              className="h-9 rounded-full bg-ink/70 px-3.5 text-sm text-white"
+            >
+              移除
+            </button>
+          </div>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          className="flex h-28 flex-col items-center justify-center gap-1 rounded-2xl border-[1.5px] border-dashed border-[#9AA4B0] text-sm text-sub"
+        >
+          <ImageIcon size={24} />
+          {busy ? '處理中…' : '新增首圖（房子照片）'}
+        </button>
+      )}
+      {error && (
+        <p role="alert" className="rounded-xl bg-warn-bg px-3 py-2 text-[13px] text-warn-text">
+          {error}
+        </p>
+      )}
+    </section>
+  );
+}
+
+function MessageSection({ listing: l }: { listing: Listing }) {
+  const [templateId, setTemplateId] = useState(TEMPLATES[0].id);
+  const [text, setText] = useState(() => TEMPLATES[0].build(l));
+  const [flash, setFlash] = useState<string | null>(null);
+  const setProfileMessage = usePreferences((s) => s.setProfileMessage);
+  const isProfile = templateId === PROFILE_TEMPLATE_ID;
+
+  // 個人資訊範本：邊打邊存成使用者自己的公版，下一間物件會直接帶入
+  const changeText = (value: string) => {
+    setText(value);
+    if (isProfile) setProfileMessage(value);
+  };
+
+  const pickTemplate = (id: string) => {
+    const template = TEMPLATES.find((t) => t.id === id) ?? TEMPLATES[0];
+    setTemplateId(template.id);
+    setText(template.build(l));
+  };
+
+  const copy = async () => {
+    setFlash((await copyText(text)) ? '已複製，到 LINE／IG 貼上就好' : '複製失敗，請長按文字手動複製');
+    window.setTimeout(() => setFlash(null), 2500);
+  };
+
+  return (
+    <section id="message" className="card flex flex-col gap-2.5 p-3.5">
+      <h2 className="flex items-center gap-1.5 text-[15px] font-bold">
+        <ChatIcon size={16} />
+        私訊
+      </h2>
+      <div className="flex flex-wrap gap-1.5">
+        {TEMPLATES.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            aria-pressed={t.id === templateId}
+            onClick={() => pickTemplate(t.id)}
+            className={clsx(
+              'h-9 rounded-full px-3.5 text-[13px]',
+              t.id === templateId ? 'bg-ink text-white' : 'border border-line bg-white',
+            )}
+          >
+            {t.name}
+          </button>
+        ))}
+      </div>
+      <label htmlFor="message-text" className="sr-only">
+        私訊內容
+      </label>
+      <textarea
+        id="message-text"
+        value={text}
+        onChange={(e) => changeText(e.target.value)}
+        rows={isProfile ? 16 : 7}
+        className="w-full resize-none rounded-xl bg-ground p-3 text-[15px] leading-7 outline-none focus:ring-2 focus:ring-brand"
+      />
+      <p className="text-xs text-sub">
+        {isProfile
+          ? '填過的內容會自動記住，下一間物件也會帶入；也可以到「個人設定」修改。'
+          : '聯絡人、租金、物件編號會自動帶入；[ ] 裡的字記得換掉。'}
+      </p>
+      <button type="button" onClick={copy} className="btn-primary h-12 w-full rounded-xl text-[15px] font-bold">
+        <CopyIcon size={18} />
+        複製訊息
+      </button>
+      {flash && (
+        <p role="status" className="text-center text-sm text-brand">
+          {flash}
+        </p>
+      )}
+    </section>
   );
 }
 

@@ -21,6 +21,25 @@ export function lineHref(lineId: string): string {
   return `https://line.me/R/ti/p/~${encodeURIComponent(id)}`;
 }
 
+/** IG 帳號：去掉 @、網址前綴與結尾斜線，只留帳號名稱 */
+export function igHandle(igId: string): string {
+  return igId
+    .trim()
+    .replace(/^https?:\/\/(www\.)?instagram\.com\//i, '')
+    .replace(/^@/, '')
+    .split(/[/?#]/)[0];
+}
+
+/** 開 IG 個人頁 */
+export function igHref(igId: string): string {
+  return `https://www.instagram.com/${encodeURIComponent(igHandle(igId))}/`;
+}
+
+/** 直接開 IG 私訊對話 */
+export function igDmHref(igId: string): string {
+  return `https://ig.me/m/${encodeURIComponent(igHandle(igId))}`;
+}
+
 export function mapsSearchHref(address: string, lat?: number, lng?: number): string {
   const query = address || (lat != null && lng != null ? `${lat},${lng}` : '');
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;

@@ -13,7 +13,7 @@ export function ListView({ listings, total }: { listings: Listing[]; total: numb
     return (
       <div className="flex flex-col items-center gap-2 px-8 pt-24 text-center text-sub">
         <p className="text-base font-medium text-ink">還沒有物件</p>
-        <p className="text-sm">按右下角的 + 上傳租屋截圖，AI 會幫你整理好。</p>
+        <p className="text-sm">按下方的「新增」上傳租屋截圖，AI 會幫你整理好。</p>
       </div>
     );
   }
@@ -22,7 +22,7 @@ export function ListView({ listings, total }: { listings: Listing[]; total: numb
   }
 
   return (
-    <ul className="flex flex-col gap-3 px-4 pb-32">
+    <ul className="flex flex-col gap-3 px-4 pb-6">
       {listings.map((l) => {
         const rented = l.status === 'rented';
         const latest = l.notes[0];
@@ -73,7 +73,7 @@ export function ListView({ listings, total }: { listings: Listing[]; total: numb
                     <PinIcon size={18} />
                     地圖
                   </a>
-                  <Link href={`/listing/${l.id}/message`} className="btn-primary">
+                  <Link href={`/listing/${l.id}#message`} className="btn-primary">
                     <ChatIcon size={18} />
                     私訊代管
                   </Link>

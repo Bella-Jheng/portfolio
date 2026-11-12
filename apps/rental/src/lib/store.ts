@@ -5,6 +5,8 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Listing, Note, ParsedField, Status } from './types';
 
+type PersistedListing = Omit<Listing, 'status' | 'igIds'> & { status: Status | 'contacting'; igIds?: string[] };
+
 export function newId(): string {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return crypto.randomUUID();
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
@@ -16,7 +18,7 @@ export function emptyListing(partial: Partial<Listing> = {}): Listing {
     id: newId(),
     createdAt: now,
     updatedAt: now,
-    status: 'contacting',
+    status: 'not_contacted',
     source: '591',
     title: '',
     address: '',
@@ -30,6 +32,7 @@ export function emptyListing(partial: Partial<Listing> = {}): Listing {
     contactRole: '',
     phones: [],
     lineIds: [],
+    igIds: [],
     notes: [],
     uncertain: [],
     ...partial,
@@ -89,7 +92,22 @@ export const useListings = create<ListingState>()(
           ),
         })),
     }),
-    { name: 'rental-helper:listings', version: 1 },
+    {
+      name: 'rental-helper:listings',
+      version: 2,
+      // v1 → v2：「聯絡中」拆成「尚未聯絡／已聯絡」，舊的聯絡中視為已聯絡；新增 IG 聯絡方式
+      migrate: (persisted, version) => {
+        const state = persisted as { listings: PersistedListing[] };
+        if (version < 2) {
+          state.listings = state.listings.map((l) => ({
+            ...l,
+            status: l.status === 'contacting' ? 'contacted' : l.status,
+            igIds: l.igIds ?? [],
+          }));
+        }
+        return state as unknown as ListingState;
+      },
+    },
   ),
 );
 

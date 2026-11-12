@@ -5,45 +5,75 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import clsx from 'clsx';
 import { emptyListing, useListings } from '../../lib/store';
-import { resizeImage } from '../../lib/image';
+import { resizeCoverImage, resizeImage } from '../../lib/image';
 import { useGeocode } from '../../lib/geocode';
 import { SOURCE_LABEL, type ParseResult, type Source } from '../../lib/types';
-import { BackIcon, CloseIcon, PlusIcon, SparkIcon } from '../../components/icons';
+import { BackIcon, CloseIcon, ImageIcon, PlusIcon, SparkIcon } from '../../components/icons';
+import {
+  ListingDraftForm,
+  draftFromResult,
+  parseRent,
+  splitList,
+  type DraftValues,
+} from '../../components/ListingDraftForm';
+import { igHandle } from '../../lib/contact';
+import { useAuth } from '../../lib/auth';
 
 const MAX_IMAGES = 6;
-const CODE_KEY = 'rental-helper:access-code';
 
 interface Picked {
   file: File;
   url: string;
 }
 
+interface Draft {
+  values: DraftValues;
+  thumbnail: string;
+}
+
 export default function AddPage() {
   const router = useRouter();
   const add = useListings((s) => s.add);
   const geocode = useGeocode();
+  const { user, loading: authLoading, configured: authConfigured, login, getToken } = useAuth();
   const inputRef = useRef<HTMLInputElement>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
 
   const [picked, setPicked] = useState<Picked[]>([]);
+  const [cover, setCover] = useState<Picked | null>(null);
   const [sameListing, setSameListing] = useState(true);
   const [source, setSource] = useState<Source>('591');
   const [busy, setBusy] = useState<string | null>(null);
+  // AI 解析完先放在草稿讓使用者確認、修改，按「儲存」才真的建立物件
+  const [drafts, setDrafts] = useState<Draft[] | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [needCode, setNeedCode] = useState(false);
-  const [code, setCode] = useState('');
-
-  useEffect(() => {
-    try {
-      setCode(localStorage.getItem(CODE_KEY) ?? '');
-    } catch {
-      /* ignore */
-    }
-  }, []);
 
   // 離開頁面時釋放預覽圖
   const pickedRef = useRef(picked);
   pickedRef.current = picked;
-  useEffect(() => () => pickedRef.current.forEach((p) => URL.revokeObjectURL(p.url)), []);
+  const coverRef = useRef(cover);
+  coverRef.current = cover;
+  useEffect(
+    () => () => {
+      pickedRef.current.forEach((p) => URL.revokeObjectURL(p.url));
+      if (coverRef.current) URL.revokeObjectURL(coverRef.current.url);
+    },
+    [],
+  );
+
+  const onCoverFile = (file: File | undefined) => {
+    if (!file || !file.type.startsWith('image/')) return;
+    if (cover) URL.revokeObjectURL(cover.url);
+    setCover({ file, url: URL.createObjectURL(file) });
+  };
+
+  const removeCover = () => {
+    if (cover) URL.revokeObjectURL(cover.url);
+    setCover(null);
+  };
+
+  // 首圖只屬於一間物件：截圖拆成多筆時不套用
+  const coverApplies = sameListing || picked.length <= 1;
 
   const onFiles = (files: FileList | null) => {
     if (!files) return;
@@ -63,39 +93,40 @@ export default function AddPage() {
   async function parseGroup(files: File[]): Promise<{ result: ParseResult; thumbnail: string }> {
     const images = await Promise.all(files.map((f) => resizeImage(f, 1600)));
     const thumb = await resizeImage(files[0], 240, 0.7);
+    const token = await getToken();
+    if (!token) throw new Error('請先用 Google 登入');
     const res = await fetch('/api/parse', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-access-code': code },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ images: images.map((i) => ({ mimeType: i.mimeType, data: i.base64 })) }),
     });
-    if (res.status === 401) {
-      setNeedCode(true);
-      throw new Error('請輸入存取碼');
-    }
     const data = (await res.json()) as ParseResult & { error?: string };
     if (!res.ok) throw new Error(data.error ?? '解析失敗');
     return { result: data, thumbnail: thumb.dataUrl };
   }
 
-  async function createFrom(result: ParseResult, thumbnail: string) {
-    const loc = await geocode(result.address);
+  async function createFrom({ values, thumbnail }: Draft, coverImage?: string) {
+    const address = values.address.trim();
+    const loc = await geocode(address);
     const listing = emptyListing({
       source,
-      title: result.title,
-      address: result.address,
-      rent: result.rent ?? undefined,
-      layout: result.layout,
-      size: result.size,
-      floor: result.floor,
-      fees: result.fees,
-      pets: result.pets,
-      listingNo: result.listingNo,
-      contactName: result.contactName,
-      contactRole: result.contactRole,
-      phones: result.phones,
-      lineIds: result.lineIds,
-      uncertain: result.uncertain,
+      title: values.title.trim(),
+      address,
+      rent: parseRent(values.rent),
+      layout: values.layout.trim(),
+      size: values.size.trim(),
+      floor: values.floor.trim(),
+      fees: values.fees.trim(),
+      pets: values.pets.trim(),
+      listingNo: values.listingNo.trim(),
+      contactName: values.contactName.trim(),
+      contactRole: values.contactRole.trim(),
+      phones: splitList(values.phones),
+      lineIds: splitList(values.lineIds),
+      igIds: splitList(values.igIds).map(igHandle).filter(Boolean),
+      uncertain: values.uncertain,
       thumbnail,
+      coverImage,
       ...(loc ?? {}),
     });
     add(listing);
@@ -106,28 +137,96 @@ export default function AddPage() {
     if (picked.length === 0 || busy) return;
     setError(null);
     try {
-      try {
-        localStorage.setItem(CODE_KEY, code);
-      } catch {
-        /* ignore */
-      }
       const groups = sameListing ? [picked.map((p) => p.file)] : picked.map((p) => [p.file]);
-      let last = null;
+      const parsed: Draft[] = [];
       for (let i = 0; i < groups.length; i++) {
         setBusy(groups.length > 1 ? `解析中 ${i + 1} / ${groups.length}…` : '解析中…');
         const { result, thumbnail } = await parseGroup(groups[i]);
-        last = await createFrom(result, thumbnail);
+        parsed.push({ values: draftFromResult(result), thumbnail });
       }
-      if (groups.length === 1 && last) router.replace(`/listing/${last.id}`);
-      else router.replace('/');
+      setDrafts(parsed);
+      window.scrollTo({ top: 0 });
     } catch (e) {
       setError(e instanceof Error ? e.message : '解析失敗');
+    } finally {
       setBusy(null);
     }
   }
 
-  function manual() {
-    const listing = emptyListing({ source });
+  async function save() {
+    if (!drafts || busy) return;
+    setError(null);
+    setBusy('儲存中…');
+    try {
+      const coverImage = cover && drafts.length === 1 ? await resizeCoverImage(cover.file) : undefined;
+      let last = null;
+      for (const draft of drafts) last = await createFrom(draft, coverImage);
+      if (drafts.length === 1 && last) router.replace(`/listing/${last.id}`);
+      else router.replace('/');
+    } catch {
+      setError('儲存失敗，裝置空間可能不足，請刪掉一些物件或首圖再試一次');
+      setBusy(null);
+    }
+  }
+
+  const updateDraft = (index: number, values: DraftValues) =>
+    setDrafts((prev) => prev && prev.map((d, i) => (i === index ? { ...d, values } : d)));
+
+  if (drafts) {
+    return (
+      <div className="flex min-h-dvh flex-col">
+        <header className="flex items-center gap-1 px-3 pb-2 pt-[max(16px,env(safe-area-inset-top))]">
+          <button
+            type="button"
+            aria-label="返回重新選截圖"
+            onClick={() => setDrafts(null)}
+            className="flex h-11 w-11 items-center justify-center"
+          >
+            <BackIcon size={22} />
+          </button>
+          <h1 className="text-xl font-bold">確認解析結果</h1>
+        </header>
+
+        <main className="flex flex-1 flex-col gap-4 px-5 pb-10 pt-2">
+          <p className="text-[13px] text-sub">
+            還沒儲存喔！請確認 AI 整理的內容，<span className="font-medium text-warn-text">黃色欄位</span>是 AI
+            沒把握的，修改完按下方「儲存」。
+          </p>
+
+          {drafts.map((draft, i) => (
+            <ListingDraftForm
+              key={i}
+              draft={draft.values}
+              heading={drafts.length > 1 ? `第 ${i + 1} 間` : undefined}
+              onChange={(values) => updateDraft(i, values)}
+            />
+          ))}
+
+          {error && (
+            <p role="alert" className="rounded-xl bg-warn-bg px-3 py-2.5 text-sm text-warn-text">
+              {error}
+            </p>
+          )}
+
+          <button
+            type="button"
+            onClick={save}
+            disabled={busy != null}
+            className="btn-primary h-14 w-full rounded-2xl text-base font-bold"
+          >
+            {busy ?? (drafts.length > 1 ? `儲存 ${drafts.length} 間物件` : '儲存')}
+          </button>
+          <button type="button" onClick={() => setDrafts(null)} className="self-center text-sm text-sub underline">
+            放棄，重新選截圖
+          </button>
+        </main>
+      </div>
+    );
+  }
+
+  async function manual() {
+    const coverImage = cover ? await resizeCoverImage(cover.file) : undefined;
+    const listing = emptyListing({ source, coverImage });
     add(listing);
     router.replace(`/listing/${listing.id}`);
   }
@@ -189,6 +288,48 @@ export default function AddPage() {
           )}
         </section>
 
+        <section className="flex flex-col gap-2.5">
+          <div>
+            <h2 className="text-[15px] font-bold">首圖（選填）</h2>
+            <p className="text-[13px] text-sub">放一張房子的照片，方便之後一眼認出是哪間；不會拿去給 AI 解析。</p>
+          </div>
+          <input
+            ref={coverInputRef}
+            type="file"
+            accept="image/*"
+            hidden
+            onChange={(e) => {
+              onCoverFile(e.target.files?.[0]);
+              e.target.value = '';
+            }}
+          />
+          {cover ? (
+            <div className="relative overflow-hidden rounded-xl bg-[#DDE3EA]">
+              <img src={cover.url} alt="首圖" className="aspect-[4/3] w-full object-cover" />
+              <button
+                type="button"
+                aria-label="移除首圖"
+                onClick={removeCover}
+                className="absolute right-1.5 top-1.5 flex h-8 w-8 items-center justify-center rounded-full bg-ink/70 text-white"
+              >
+                <CloseIcon size={16} />
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => coverInputRef.current?.click()}
+              className="flex h-12 items-center justify-center gap-1.5 rounded-xl border-[1.5px] border-dashed border-[#9AA4B0] text-sm"
+            >
+              <ImageIcon size={18} />
+              選一張房子照片
+            </button>
+          )}
+          {cover && !coverApplies && (
+            <p className="text-[13px] text-warn-text">截圖拆成多筆物件時不會套用首圖，可以之後在各物件頁面再加。</p>
+          )}
+        </section>
+
         <section className="card flex flex-col gap-3.5 p-4">
           <div className="flex items-center justify-between gap-3">
             <div>
@@ -236,22 +377,16 @@ export default function AddPage() {
           </div>
         </section>
 
-        {needCode && (
-          <label className="card flex flex-col gap-2 p-4">
-            <span className="text-[15px] font-medium">存取碼</span>
-            <span className="text-[13px] text-sub">這個網站有設存取碼，輸入一次之後會記在這台裝置。</span>
-            <input
-              className="field-input"
-              type="password"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              autoComplete="off"
-            />
-          </label>
+        {!authLoading && !user && (
+          <p className="card p-4 text-[13px] leading-relaxed text-sub">
+            {authConfigured
+              ? 'AI 解析需要先用 Google 登入，只有被允許的帳號可以使用。沒有登入也可以手動新增。'
+              : '這個網站還沒設定 Google 登入，暫時不能用 AI 解析，可以先手動新增。'}
+          </p>
         )}
 
         <aside className="rounded-2xl bg-brand-soft p-3.5 text-[13px] leading-relaxed text-[#0F3F3A]">
-          截圖時讓<b>地址</b>、<b>物件編號</b>和<b>聯絡電話／LINE</b> 入鏡，解析會更準。
+          截圖時讓<b>地址</b>、<b>物件編號</b>和<b>聯絡電話／LINE／IG</b> 入鏡，解析會更準。
         </aside>
 
         {error && (
@@ -266,15 +401,26 @@ export default function AddPage() {
       </main>
 
       <div className="safe-bottom fixed inset-x-0 bottom-0 mx-auto max-w-[480px] border-t border-[#E3E8EE] bg-ground px-5 pt-4">
-        <button
-          type="button"
-          onClick={start}
-          disabled={picked.length === 0 || busy != null}
-          className="btn-primary h-14 w-full rounded-2xl text-base font-bold"
-        >
-          <SparkIcon size={20} />
-          {busy ?? '開始解析'}
-        </button>
+        {user || authLoading || !authConfigured ? (
+          <button
+            type="button"
+            onClick={start}
+            disabled={picked.length === 0 || busy != null || !user}
+            className="btn-primary h-14 w-full rounded-2xl text-base font-bold"
+          >
+            <SparkIcon size={20} />
+            {busy ?? '開始解析'}
+          </button>
+        ) : (
+          <button
+            type="button"
+            // 直接在點擊裡呼叫登入，iOS Safari 才不會擋下 Google 登入視窗
+            onClick={async () => setError(await login())}
+            className="btn-dark h-14 w-full rounded-2xl text-base font-bold"
+          >
+            Google 登入後開始解析
+          </button>
+        )}
       </div>
     </div>
   );

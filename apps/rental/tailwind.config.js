@@ -13,7 +13,8 @@ module.exports = {
         ground: '#F4F6F8',
         brand: { DEFAULT: '#0F766E', dark: '#115E59', soft: '#E6F4F1' },
         status: {
-          contacting: '#2563EB',
+          not_contacted: '#D97706',
+          contacted: '#2563EB',
           viewed: '#0F766E',
           favorite: '#DB2777',
           rented: '#6B7480',

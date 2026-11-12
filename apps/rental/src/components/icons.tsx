@@ -58,6 +58,25 @@ export const LineIcon = (p: IconProps) => (
     <path d="M21 11c0-4.4-4-8-9-8s-9 3.6-9 8c0 4 3.2 7.2 7.6 7.9L10 21l3-2.1c4.6-.6 8-3.9 8-7.9z" />
   </Icon>
 );
+export const InstagramIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="3" y="3" width="18" height="18" rx="5" />
+    <circle cx="12" cy="12" r="4" />
+    <circle cx="17.5" cy="6.5" r="0.6" fill="currentColor" />
+  </Icon>
+);
+export const MapIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="m9 4-6 2v14l6-2 6 2 6-2V4l-6 2-6-2z" />
+    <path d="M9 4v14M15 6v14" />
+  </Icon>
+);
+export const SettingsIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <circle cx="12" cy="8" r="4" />
+    <path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6" />
+  </Icon>
+);
 export const NoteIcon = (p: IconProps) => (
   <Icon {...p}>
     <path d="M5 4h14v16H5z" />

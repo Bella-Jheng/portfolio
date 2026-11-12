@@ -1,11 +1,15 @@
 import type { Listing } from './types';
 import { SOURCE_LABEL } from './types';
+import { getProfileMessage } from './preferences';
 
 export interface MessageTemplate {
   id: string;
   name: string;
   build: (l: Listing) => string;
 }
+
+/** 個人資訊範本：內容是使用者自己的資料，改過會記住，下一間物件直接帶入 */
+export const PROFILE_TEMPLATE_ID = 'profile';
 
 function greeting(l: Listing): string {
   return l.contactName ? `${l.contactName}您好` : '您好';
@@ -40,5 +44,10 @@ export const TEMPLATES: MessageTemplate[] = [
     name: '問細節',
     build: (l) =>
       `${greeting(l)}，關於${describe(l)}想多了解：\n1. 管理費、網路費怎麼算？\n2. 最短租期多久？押金幾個月？\n3. 可以報稅、設籍嗎？\n謝謝您！`,
+  },
+  {
+    id: PROFILE_TEMPLATE_ID,
+    name: '個人資訊',
+    build: () => getProfileMessage(),
   },
 ];

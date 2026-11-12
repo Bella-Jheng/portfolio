@@ -1,6 +1,7 @@
 import './global.css';
 import type { Metadata, Viewport } from 'next';
 import { Providers } from '../components/Providers';
+import { BottomNav } from '../components/BottomNav';
 
 export const metadata: Metadata = {
   title: '租屋小幫手',
@@ -32,6 +33,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="bg-ground text-ink antialiased">
         <Providers>
           <div className="mx-auto min-h-dvh max-w-[480px] bg-ground">{children}</div>
+          <BottomNav />
         </Providers>
       </body>
     </html>
