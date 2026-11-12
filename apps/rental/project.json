@@ -1,0 +1,18 @@
+{
+  "name": "rental",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/rental/src",
+  "tags": [],
+  "targets": {
+    "serve": {
+      "options": {
+        "port": 42422
+      }
+    },
+    "build": {
+      // 同 apps/bazi：Nx 本地快取複製 .next 時遇到 symlink 會噴 EEXIST（nrwl/nx#34013），Vercel 上直接關掉
+      "cache": false
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "租屋小幫手",
+  "short_name": "租屋小幫手",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F4F6F8",
+  "theme_color": "#17202B",
+  "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

@@ -17,6 +17,9 @@
     },
     {
       "path": "./apps/order"
+    },
+    {
+      "path": "./apps/rental"
     }
   ],
   "extends": "./tsconfig.base.json"
