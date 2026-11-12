@@ -7,11 +7,12 @@ module.exports = {
     },
     extend: {
       colors: {
-        // 暖色系：像家一樣的奶油白底、陶土紅屋頂、深可可色文字
+        // 暖色系：白色底，需要突出的卡片、按鈕、標籤用奶油色，主色是陶土紅、文字是深可可色
         ink: '#3A2A20',
         sub: '#7D6B5D',
         line: '#E8DCCB',
-        ground: '#FBF5EC',
+        ground: '#FFFFFF',
+        cream: { DEFAULT: '#FBF5EC', deep: '#F4EADB' },
         brand: { DEFAULT: '#C2643A', dark: '#A34F2B', soft: '#F8E6D9' },
         status: {
           not_contacted: '#D97706',

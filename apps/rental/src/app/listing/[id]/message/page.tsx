@@ -96,7 +96,7 @@ function Composer({ listing: l }: { listing: Listing }) {
             value={text}
             onChange={(e) => setText(e.target.value)}
             rows={8}
-            className="w-full resize-none rounded-xl bg-ground p-3.5 text-[15px] leading-7 outline-none focus:ring-2 focus:ring-brand"
+            className="w-full resize-none rounded-xl bg-white p-3.5 text-[15px] leading-7 outline-none focus:ring-2 focus:ring-brand"
           />
           <p className="text-xs text-sub">聯絡人、租金、物件編號會自動帶入；[ ] 裡的字記得換掉。</p>
         </section>

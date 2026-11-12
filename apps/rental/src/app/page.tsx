@@ -72,7 +72,7 @@ function Home() {
         <div className="flex items-center gap-2">
           <div
             className={`flex h-11 flex-1 items-center rounded-full px-4 ${
-              view === 'map' ? 'bg-white shadow-[0_2px_8px_rgba(58,42,32,.12)]' : ''
+              view === 'map' ? 'bg-cream shadow-[0_2px_8px_rgba(58,42,32,.12)]' : ''
             }`}
           >
             <h1 className="text-lg font-bold">{favoritesOnly ? '最想要' : '租屋小幫手'}</h1>

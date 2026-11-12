@@ -28,7 +28,7 @@ export function FilterChips({
             onClick={() => onToggle(s)}
             className={clsx(
               'flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3 text-[13px] transition-opacity',
-              floating ? 'bg-white shadow-[0_1px_4px_rgba(58,42,32,.15)]' : 'border border-line bg-white',
+              floating ? 'bg-cream shadow-[0_1px_4px_rgba(58,42,32,.15)]' : 'bg-cream',
               !on && 'opacity-45',
             )}
           >
