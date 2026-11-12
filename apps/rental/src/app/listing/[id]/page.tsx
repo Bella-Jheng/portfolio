@@ -456,16 +456,34 @@ function MessageSection({ listing: l }: { listing: Listing }) {
   };
 
   const copy = async () => {
-    setFlash((await copyText(text)) ? '已複製，到 LINE／IG 貼上就好' : '複製失敗，請長按文字手動複製');
+    setFlash((await copyText(text)) ? '已複製' : '複製失敗，請長按文字複製');
     window.setTimeout(() => setFlash(null), 2500);
   };
 
   return (
     <section id="message" className="card flex flex-col gap-2.5 p-3.5">
-      <h2 className="flex items-center gap-1.5 text-[15px] font-bold">
-        <ChatIcon size={16} />
-        私訊
-      </h2>
+      <div className="flex items-center justify-between">
+        <h2 className="flex items-center gap-1.5 text-[15px] font-bold">
+          <ChatIcon size={16} />
+          私訊
+        </h2>
+        <div className="flex items-center gap-1">
+          {flash && (
+            <span role="status" className="text-[13px] text-brand">
+              {flash}
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={copy}
+            aria-label="複製訊息"
+            title="複製訊息"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-brand hover:bg-brand-soft"
+          >
+            <CopyIcon size={18} />
+          </button>
+        </div>
+      </div>
       <div className="flex flex-wrap gap-1.5">
         {TEMPLATES.map((t) => (
           <button
@@ -495,17 +513,8 @@ function MessageSection({ listing: l }: { listing: Listing }) {
       <p className="text-xs text-sub">
         {isProfile
           ? '填過的內容會自動記住，下一間物件也會帶入；也可以到「個人設定」修改。'
-          : '聯絡人、租金、物件編號會自動帶入；[ ] 裡的字記得換掉。'}
+          : '租金、物件編號會自動帶入；[ ] 裡的字記得換掉。'}
       </p>
-      <button type="button" onClick={copy} className="btn-primary h-12 w-full rounded-xl text-[15px] font-bold">
-        <CopyIcon size={18} />
-        複製訊息
-      </button>
-      {flash && (
-        <p role="status" className="text-center text-sm text-brand">
-          {flash}
-        </p>
-      )}
     </section>
   );
 }
