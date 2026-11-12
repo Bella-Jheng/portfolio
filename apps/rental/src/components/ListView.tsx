@@ -8,7 +8,15 @@ import { StatusChip } from './StatusChip';
 import { Thumb } from './MapView';
 import { ChatIcon, NoteIcon, PinIcon } from './icons';
 
-export function ListView({ listings, total }: { listings: Listing[]; total: number }) {
+export function ListView({
+  listings,
+  total,
+  emptyText = '這個篩選條件下沒有物件',
+}: {
+  listings: Listing[];
+  total: number;
+  emptyText?: string;
+}) {
   if (total === 0) {
     return (
       <div className="flex flex-col items-center gap-2 px-8 pt-24 text-center text-sub">
@@ -18,7 +26,7 @@ export function ListView({ listings, total }: { listings: Listing[]; total: numb
     );
   }
   if (listings.length === 0) {
-    return <p className="px-8 pt-16 text-center text-sm text-sub">這個篩選條件下沒有物件</p>;
+    return <p className="px-8 pt-16 text-center text-sm leading-relaxed text-sub">{emptyText}</p>;
   }
 
   return (
@@ -31,7 +39,7 @@ export function ListView({ listings, total }: { listings: Listing[]; total: numb
             <article
               className={clsx(
                 'flex flex-col gap-3 rounded-2xl p-3.5',
-                rented ? 'border border-[#E3E8EE] bg-[#F9FAFB]' : 'bg-white',
+                rented ? 'border border-[#EFE4D6] bg-[#F7F1E8]' : 'bg-white',
               )}
             >
               <Link href={`/listing/${l.id}`} className="flex gap-3">
@@ -48,7 +56,7 @@ export function ListView({ listings, total }: { listings: Listing[]; total: numb
                   <div className="flex flex-wrap gap-1.5">
                     <StatusChip status={l.status} />
                     {l.pets && (
-                      <span className="rounded-full bg-[#EEF1F4] px-2.5 py-0.5 text-xs text-[#3D4652]">{l.pets}</span>
+                      <span className="rounded-full bg-[#F3EBE0] px-2.5 py-0.5 text-xs text-[#5C4A3D]">{l.pets}</span>
                     )}
                     {l.uncertain.length > 0 && (
                       <span className="rounded-full bg-warn-bg px-2.5 py-0.5 text-xs text-warn-text">待確認</span>
@@ -57,7 +65,7 @@ export function ListView({ listings, total }: { listings: Listing[]; total: numb
                 </div>
               </Link>
               {latest && (
-                <p className="flex items-center gap-1.5 rounded-lg bg-ground px-2.5 py-2 text-[13px] text-[#3D4652]">
+                <p className="flex items-center gap-1.5 rounded-lg bg-ground px-2.5 py-2 text-[13px] text-[#5C4A3D]">
                   <NoteIcon size={14} className="shrink-0" />
                   <span className="truncate">{latest.text}</span>
                 </p>

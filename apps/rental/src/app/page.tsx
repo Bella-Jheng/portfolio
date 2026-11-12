@@ -1,15 +1,15 @@
 'use client';
 
-import { Suspense, useEffect, useMemo, useState } from 'react';
+import { Suspense, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useListings, useHydrated } from '../lib/store';
 import { STATUSES, type Status } from '../lib/types';
 import { FilterChips } from '../components/FilterChips';
 import { ListView } from '../components/ListView';
 import { MapView } from '../components/MapView';
-import { ViewToggle, type View } from '../components/ViewToggle';
 
-const VIEW_KEY = 'rental-helper:view';
+// 地圖／清單由網址決定（底部導覽列：「地圖」/、「清單」/?view=list、「最想要」/?view=favorites）
+type View = 'map' | 'list';
 
 export default function HomePage() {
   // useSearchParams 需要包在 Suspense 裡
@@ -24,33 +24,12 @@ function Home() {
   const hydrated = useHydrated();
   const searchParams = useSearchParams();
   const listings = useListings((s) => s.listings);
-  const [view, setView] = useState<View>('map');
+  const viewParam = searchParams.get('view');
+  // 「最想要」是只列出最想要物件的清單，不顯示狀態篩選
+  const favoritesOnly = viewParam === 'favorites';
+  const view: View = viewParam === 'list' || favoritesOnly ? 'list' : 'map';
   const [active, setActive] = useState<Set<Status>>(() => new Set(STATUSES));
   const [selectedId, setSelectedId] = useState<string | null>(null);
-
-  useEffect(() => {
-    try {
-      const saved = sessionStorage.getItem(VIEW_KEY);
-      if (saved === 'map' || saved === 'list') setView(saved);
-    } catch {
-      /* 無痕模式之類的讀不到就算了 */
-    }
-  }, []);
-
-  // 底部導覽列「回到地圖」會帶 ?view=map，就算原本停在清單也切回地圖
-  const viewParam = searchParams.get('view');
-  useEffect(() => {
-    if (viewParam === 'map') changeView('map');
-  }, [viewParam]);
-
-  const changeView = (v: View) => {
-    setView(v);
-    try {
-      sessionStorage.setItem(VIEW_KEY, v);
-    } catch {
-      /* ignore */
-    }
-  };
 
   const toggle = (s: Status) =>
     setActive((prev) => {
@@ -60,7 +39,10 @@ function Home() {
       return next;
     });
 
-  const filtered = useMemo(() => listings.filter((l) => active.has(l.status)), [listings, active]);
+  const filtered = useMemo(
+    () => listings.filter((l) => (favoritesOnly ? l.status === 'favorite' : active.has(l.status))),
+    [listings, active, favoritesOnly],
+  );
 
   return (
     <div className="relative h-dvh overflow-hidden">
@@ -69,8 +51,16 @@ function Home() {
           {hydrated && <MapView listings={filtered} selectedId={selectedId} onSelect={setSelectedId} />}
         </div>
       ) : (
-        <div className="absolute inset-x-0 top-0 bottom-[var(--nav-h)] overflow-y-auto pt-[136px]">
-          {hydrated && <ListView listings={filtered} total={listings.length} />}
+        <div className={`absolute inset-0 overflow-y-auto pb-[var(--nav-h)] ${favoritesOnly ? 'pt-[84px]' : 'pt-[136px]'}`}>
+          {hydrated && (
+            <ListView
+              listings={filtered}
+              total={listings.length}
+              emptyText={
+                favoritesOnly ? '還沒有「最想要」的物件。在物件頁把狀態設成「最想要」，就會出現在這裡。' : undefined
+              }
+            />
+          )}
         </div>
       )}
 
@@ -82,15 +72,16 @@ function Home() {
         <div className="flex items-center gap-2">
           <div
             className={`flex h-11 flex-1 items-center rounded-full px-4 ${
-              view === 'map' ? 'bg-white shadow-[0_2px_8px_rgba(23,32,43,.12)]' : ''
+              view === 'map' ? 'bg-white shadow-[0_2px_8px_rgba(58,42,32,.12)]' : ''
             }`}
           >
-            <h1 className="text-lg font-bold">租屋小幫手</h1>
-            <span className="ml-2 text-sm text-sub">{hydrated ? `${listings.length} 間` : ''}</span>
+            <h1 className="text-lg font-bold">{favoritesOnly ? '最想要' : '租屋小幫手'}</h1>
+            <span className="ml-2 text-sm text-sub">{hydrated ? `${favoritesOnly ? filtered.length : listings.length} 間` : ''}</span>
           </div>
-          <ViewToggle view={view} onChange={changeView} />
         </div>
-        <FilterChips listings={listings} active={active} onToggle={toggle} floating={view === 'map'} />
+        {!favoritesOnly && (
+          <FilterChips listings={listings} active={active} onToggle={toggle} floating={view === 'map'} />
+        )}
       </header>
 
     </div>

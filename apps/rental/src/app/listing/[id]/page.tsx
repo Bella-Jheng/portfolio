@@ -9,7 +9,7 @@ import { useGeocode } from '../../../lib/geocode';
 import { STATUSES, STATUS_META, type Listing, type ParsedField } from '../../../lib/types';
 import { copyText, igHandle, igHref, lineHref, lineIsPhone, mapsSearchHref, telHref } from '../../../lib/contact';
 import { resizeCoverImage } from '../../../lib/image';
-import { PROFILE_TEMPLATE_ID, TEMPLATES } from '../../../lib/templates';
+import { PROFILE_TEMPLATE_ID, TEMPLATES, buildMessage } from '../../../lib/templates';
 import { usePreferences } from '../../../lib/preferences';
 import { EditableRow } from '../../../components/EditableRow';
 import { MAPS_KEY } from '../../../components/Providers';
@@ -55,6 +55,8 @@ function ListingDetail({ listing: l }: { listing: Listing }) {
 
   const isUncertain = (f: ParsedField) => l.uncertain.includes(f);
   const save = (field: ParsedField, patch: Partial<Listing>) => update(l.id, patch, [field]);
+  // 內容沒問題、不用改：只把 AI 不確定的標記拿掉
+  const confirm = (field: ParsedField) => update(l.id, {}, [field]);
 
   const saveAddress = async (address: string) => {
     save('address', { address, lat: undefined, lng: undefined });
@@ -78,9 +80,18 @@ function ListingDetail({ listing: l }: { listing: Listing }) {
 
       <main className="flex flex-1 flex-col gap-3 px-4 pb-[calc(var(--nav-h)+24px)] pt-1">
         {l.uncertain.length > 0 && (
-          <p className="mx-1 text-[13px] text-sub">
-            <span className="font-medium text-warn-text">黃色欄位</span>是 AI 沒把握的，請再確認一次。
-          </p>
+          <div className="mx-1 flex items-start justify-between gap-3 text-[13px] text-sub">
+            <p>
+              <span className="font-medium text-warn-text">黃色欄位</span>是 AI 沒把握的：內容正確就按「沒問題」，不對就按鉛筆修改。
+            </p>
+            <button
+              type="button"
+              onClick={() => update(l.id, {}, l.uncertain)}
+              className="shrink-0 font-medium text-brand underline"
+            >
+              全部沒問題
+            </button>
+          </div>
         )}
 
         <CoverSection listing={l} />
@@ -100,7 +111,7 @@ function ListingDetail({ listing: l }: { listing: Listing }) {
                 style={
                   on
                     ? { background: meta.color, color: '#fff' }
-                    : { background: '#fff', color: meta.softText, border: '1px solid #D5DAE0' }
+                    : { background: '#fff', color: meta.softText, border: '1px solid #E8DCCB' }
                 }
               >
                 {meta.label}
@@ -111,12 +122,12 @@ function ListingDetail({ listing: l }: { listing: Listing }) {
 
         {/* 物件資訊 */}
         <section className="card flex flex-col px-3.5 py-1">
-          <EditableRow label="標題" value={l.title} uncertain={isUncertain('title')} onSave={(v) => save('title', { title: v })} />
+          <EditableRow label="標題" value={l.title} uncertain={isUncertain('title')} onConfirm={() => confirm('title')} onSave={(v) => save('title', { title: v })} />
           <EditableRow
             label="租金（每月）"
             value={l.rent != null ? String(l.rent) : ''}
             inputMode="numeric"
-            uncertain={isUncertain('rent')}
+            uncertain={isUncertain('rent')} onConfirm={() => confirm('rent')}
             onSave={(v) => {
               const n = parseInt(v.replace(/[^\d]/g, ''), 10);
               save('rent', { rent: Number.isFinite(n) ? n : undefined });
@@ -127,17 +138,19 @@ function ListingDetail({ listing: l }: { listing: Listing }) {
             value={l.address}
             uncertain={isUncertain('address') || (!located && !!l.address)}
             uncertainHint={!located && l.address ? (locating ? '定位中…' : '地圖上找不到，請補完整') : '只有大概位置'}
+            // 「地圖上找不到」要補地址才能解決，只有 AI 沒把握時才能按沒問題
+            onConfirm={isUncertain('address') ? () => confirm('address') : undefined}
             onSave={saveAddress}
           />
-          <EditableRow label="房型" value={l.layout} uncertain={isUncertain('layout')} onSave={(v) => save('layout', { layout: v })} />
-          <EditableRow label="坪數" value={l.size} uncertain={isUncertain('size')} onSave={(v) => save('size', { size: v })} />
-          <EditableRow label="樓層" value={l.floor} uncertain={isUncertain('floor')} onSave={(v) => save('floor', { floor: v })} />
-          <EditableRow label="費用與條件" value={l.fees} uncertain={isUncertain('fees')} onSave={(v) => save('fees', { fees: v })} />
-          <EditableRow label="寵物" value={l.pets} uncertain={isUncertain('pets')} onSave={(v) => save('pets', { pets: v })} />
+          <EditableRow label="房型" value={l.layout} uncertain={isUncertain('layout')} onConfirm={() => confirm('layout')} onSave={(v) => save('layout', { layout: v })} />
+          <EditableRow label="坪數" value={l.size} uncertain={isUncertain('size')} onConfirm={() => confirm('size')} onSave={(v) => save('size', { size: v })} />
+          <EditableRow label="樓層" value={l.floor} uncertain={isUncertain('floor')} onConfirm={() => confirm('floor')} onSave={(v) => save('floor', { floor: v })} />
+          <EditableRow label="費用與條件" value={l.fees} uncertain={isUncertain('fees')} onConfirm={() => confirm('fees')} onSave={(v) => save('fees', { fees: v })} />
+          <EditableRow label="寵物" value={l.pets} uncertain={isUncertain('pets')} onConfirm={() => confirm('pets')} onSave={(v) => save('pets', { pets: v })} />
           <EditableRow
             label="物件編號"
             value={l.listingNo}
-            uncertain={isUncertain('listingNo')}
+            uncertain={isUncertain('listingNo')} onConfirm={() => confirm('listingNo')}
             uncertainHint="截圖裡沒找到"
             onSave={(v) => save('listingNo', { listingNo: v })}
           />
@@ -214,7 +227,7 @@ function ContactSection({ listing: l }: { listing: Listing }) {
       <div className="mb-1 flex items-center justify-between">
         <h2 className="text-[15px] font-bold">聯絡方式</h2>
         {(l.phones.length > 0 || l.lineIds.length > 0 || l.igIds.length > 0) && (
-          <span className="rounded-full bg-brand-soft px-2 py-0.5 text-xs text-[#0F5E57]">從截圖解析</span>
+          <span className="rounded-full bg-brand-soft px-2 py-0.5 text-xs text-[#8A4321]">從截圖解析</span>
         )}
       </div>
 
@@ -223,6 +236,7 @@ function ContactSection({ listing: l }: { listing: Listing }) {
         value={[l.contactName, l.contactRole].filter(Boolean).join(' · ')}
         placeholder="例如：王小姐 · 代管"
         uncertain={l.uncertain.includes('contactName')}
+          onConfirm={() => update(l.id, {}, ['contactName'])}
         onSave={(v) => {
           const [name, ...role] = v.split(/[·・,，]/).map((s) => s.trim());
           update(l.id, { contactName: name ?? '', contactRole: role.join(' ') }, ['contactName']);
@@ -236,6 +250,7 @@ function ContactSection({ listing: l }: { listing: Listing }) {
           value={phone}
           inputMode="tel"
           uncertain={l.uncertain.includes('phones')}
+          onConfirm={() => update(l.id, {}, ['phones'])}
           leading={<ContactBadge kind="phone" />}
           trailing={
             <a
@@ -257,6 +272,7 @@ function ContactSection({ listing: l }: { listing: Listing }) {
             label={byPhone ? 'LINE（用電話號碼加）' : 'LINE ID'}
             value={lineId}
             uncertain={l.uncertain.includes('lineIds')}
+          onConfirm={() => update(l.id, {}, ['lineIds'])}
             leading={<ContactBadge kind="line" />}
             trailing={
               <a
@@ -280,6 +296,7 @@ function ContactSection({ listing: l }: { listing: Listing }) {
           label="IG"
           value={igId}
           uncertain={l.uncertain.includes('igIds')}
+          onConfirm={() => update(l.id, {}, ['igIds'])}
           leading={<ContactBadge kind="ig" />}
           trailing={
             <a
@@ -343,7 +360,7 @@ function ContactBadge({ kind }: { kind: ContactKind }) {
     <span
       className={clsx(
         'flex h-9 w-9 shrink-0 items-center justify-center rounded-full',
-        kind === 'phone' && 'bg-[#E0ECFB] text-[#1E4E8C]',
+        kind === 'phone' && 'bg-[#E3ECF6] text-[#2C5282]',
         kind === 'line' && 'bg-[#DDF5E4] text-[#14632F]',
         kind === 'ig' && 'bg-[#FCE7F3] text-[#9D174D]',
       )}
@@ -398,7 +415,7 @@ function CoverSection({ listing: l }: { listing: Listing }) {
         }}
       />
       {l.coverImage ? (
-        <div className="relative overflow-hidden rounded-2xl bg-[#DDE3EA]">
+        <div className="relative overflow-hidden rounded-2xl bg-[#EDE2D3]">
           <img src={l.coverImage} alt="房子照片" className="aspect-[4/3] w-full object-cover" />
           <div className="absolute bottom-2 right-2 flex gap-2">
             <button
@@ -421,7 +438,7 @@ function CoverSection({ listing: l }: { listing: Listing }) {
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
-          className="flex h-28 flex-col items-center justify-center gap-1 rounded-2xl border-[1.5px] border-dashed border-[#9AA4B0] text-sm text-sub"
+          className="flex h-28 flex-col items-center justify-center gap-1 rounded-2xl border-[1.5px] border-dashed border-[#C4AE97] text-sm text-sub"
         >
           <ImageIcon size={24} />
           {busy ? '處理中…' : '新增首圖（房子照片）'}
@@ -438,34 +455,52 @@ function CoverSection({ listing: l }: { listing: Listing }) {
 
 function MessageSection({ listing: l }: { listing: Listing }) {
   const [templateId, setTemplateId] = useState(TEMPLATES[0].id);
-  const [text, setText] = useState(() => TEMPLATES[0].build(l));
+  const [text, setText] = useState(() => buildMessage(TEMPLATES[0], l));
   const [flash, setFlash] = useState<string | null>(null);
-  const setProfileMessage = usePreferences((s) => s.setProfileMessage);
+  const setTemplate = usePreferences((s) => s.setTemplate);
   const isProfile = templateId === PROFILE_TEMPLATE_ID;
 
   // 個人資訊範本：邊打邊存成使用者自己的公版，下一間物件會直接帶入
   const changeText = (value: string) => {
     setText(value);
-    if (isProfile) setProfileMessage(value);
+    if (isProfile) setTemplate(PROFILE_TEMPLATE_ID, value);
   };
 
   const pickTemplate = (id: string) => {
     const template = TEMPLATES.find((t) => t.id === id) ?? TEMPLATES[0];
     setTemplateId(template.id);
-    setText(template.build(l));
+    setText(buildMessage(template, l));
   };
 
   const copy = async () => {
-    setFlash((await copyText(text)) ? '已複製，到 LINE／IG 貼上就好' : '複製失敗，請長按文字手動複製');
+    setFlash((await copyText(text)) ? '已複製' : '複製失敗，請長按文字複製');
     window.setTimeout(() => setFlash(null), 2500);
   };
 
   return (
     <section id="message" className="card flex flex-col gap-2.5 p-3.5">
-      <h2 className="flex items-center gap-1.5 text-[15px] font-bold">
-        <ChatIcon size={16} />
-        私訊
-      </h2>
+      <div className="flex items-center justify-between">
+        <h2 className="flex items-center gap-1.5 text-[15px] font-bold">
+          <ChatIcon size={16} />
+          私訊
+        </h2>
+        <div className="flex items-center gap-1">
+          {flash && (
+            <span role="status" className="text-[13px] text-brand">
+              {flash}
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={copy}
+            aria-label="複製訊息"
+            title="複製訊息"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-brand hover:bg-brand-soft"
+          >
+            <CopyIcon size={18} />
+          </button>
+        </div>
+      </div>
       <div className="flex flex-wrap gap-1.5">
         {TEMPLATES.map((t) => (
           <button
@@ -494,18 +529,9 @@ function MessageSection({ listing: l }: { listing: Listing }) {
       />
       <p className="text-xs text-sub">
         {isProfile
-          ? '填過的內容會自動記住，下一間物件也會帶入；也可以到「個人設定」修改。'
-          : '聯絡人、租金、物件編號會自動帶入；[ ] 裡的字記得換掉。'}
+          ? '填過的內容會自動記住，下一間物件也會帶入；也可以到「設定」修改。'
+          : '租金、物件編號會自動帶入；[ ] 裡的字記得換掉。範本內容可以到「設定」修改。'}
       </p>
-      <button type="button" onClick={copy} className="btn-primary h-12 w-full rounded-xl text-[15px] font-bold">
-        <CopyIcon size={18} />
-        複製訊息
-      </button>
-      {flash && (
-        <p role="status" className="text-center text-sm text-brand">
-          {flash}
-        </p>
-      )}
     </section>
   );
 }

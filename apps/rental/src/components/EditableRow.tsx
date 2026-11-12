@@ -2,9 +2,12 @@
 
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import clsx from 'clsx';
-import { EditIcon } from './icons';
+import { CheckIcon, EditIcon } from './icons';
 
-/** 顯示一個欄位，按鉛筆就地編輯。uncertain = AI 沒把握的欄位，用黃底提示 */
+/**
+ * 顯示一個欄位，按鉛筆就地編輯。uncertain = AI 沒把握的欄位，用黃底提示；
+ * 有 onConfirm 時會多一個「✓ 沒問題」按鈕，內容正確不用改也能把黃底取消（編輯後沒改內容直接存也算確認）
+ */
 export function EditableRow({
   label,
   value,
@@ -16,6 +19,7 @@ export function EditableRow({
   leading,
   trailing,
   onSave,
+  onConfirm,
 }: {
   label: string;
   value: string;
@@ -27,6 +31,7 @@ export function EditableRow({
   leading?: ReactNode;
   trailing?: ReactNode;
   onSave: (value: string) => void;
+  onConfirm?: () => void;
 }) {
   const [editing, setEditing] = useState(startEditing);
   const [draft, setDraft] = useState(value);
@@ -44,13 +49,14 @@ export function EditableRow({
     setEditing(false);
     // startEditing 的「新增」列就算沒填也要通知外面收起來
     if (draft.trim() !== value || startEditing) onSave(draft.trim());
+    else if (uncertain) onConfirm?.();
   };
 
   return (
     <div
       className={clsx(
         'flex items-center gap-2 py-1.5',
-        uncertain ? '-mx-2.5 my-1 rounded-xl bg-warn-bg px-2.5' : 'border-b border-[#EEF1F4] last:border-b-0',
+        uncertain ? '-mx-2.5 my-1 rounded-xl bg-warn-bg px-2.5' : 'border-b border-[#F3EBE0] last:border-b-0',
       )}
     >
       {leading}
@@ -89,6 +95,17 @@ export function EditableRow({
               {value || placeholder}
             </span>
           </button>
+          {uncertain && onConfirm && (
+            <button
+              type="button"
+              onClick={onConfirm}
+              aria-label={`${label}沒問題`}
+              className="flex h-9 shrink-0 items-center gap-1 rounded-full bg-white px-2.5 text-[13px] font-medium text-warn-text"
+            >
+              <CheckIcon size={15} />
+              沒問題
+            </button>
+          )}
           <button
             type="button"
             aria-label={`編輯${label}`}

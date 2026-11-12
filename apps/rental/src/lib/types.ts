@@ -7,10 +7,10 @@ export const STATUS_META: Record<
   { label: string; color: string; softBg: string; softText: string }
 > = {
   not_contacted: { label: '尚未聯絡', color: '#D97706', softBg: '#FEF3C7', softText: '#92400E' },
-  contacted: { label: '已聯絡', color: '#2563EB', softBg: '#E0ECFB', softText: '#1E4E8C' },
-  viewed: { label: '已看房', color: '#0F766E', softBg: '#E6F4F1', softText: '#0F5E57' },
-  favorite: { label: '最想要', color: '#DB2777', softBg: '#FCE7F3', softText: '#9D174D' },
-  rented: { label: '已出租', color: '#6B7480', softBg: '#EEF1F4', softText: '#3D4652' },
+  contacted: { label: '已聯絡', color: '#3B6EA8', softBg: '#E3ECF6', softText: '#2C5282' },
+  viewed: { label: '已看房', color: '#5A8A4F', softBg: '#E8F1E3', softText: '#3F6B36' },
+  favorite: { label: '最想要', color: '#D9467A', softBg: '#FCE7F3', softText: '#9D174D' },
+  rented: { label: '已出租', color: '#9C8B7D', softBg: '#F1EAE1', softText: '#5C4A3D' },
 };
 
 export type Source = '591' | 'fb' | 'other';

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import clsx from 'clsx';
 import { useHydrated, useListings } from '../../../../lib/store';
-import { TEMPLATES } from '../../../../lib/templates';
+import { TEMPLATES, buildMessage } from '../../../../lib/templates';
 import { copyText, igDmHref, lineHref, lineIsPhone, telHref } from '../../../../lib/contact';
 import type { Listing } from '../../../../lib/types';
 import { BackIcon, CopyIcon } from '../../../../components/icons';
@@ -37,7 +37,7 @@ function Composer({ listing: l }: { listing: Listing }) {
 
   const template = TEMPLATES.find((t) => t.id === templateId) ?? TEMPLATES[0];
   useEffect(() => {
-    setText(template.build(l));
+    setText(buildMessage(template, l));
     // 只在換範本時重建；使用者正在改的字不要被蓋掉
   }, [templateId]);
 
@@ -102,7 +102,7 @@ function Composer({ listing: l }: { listing: Listing }) {
         </section>
       </main>
 
-      <div className="safe-bottom fixed inset-x-0 bottom-0 mx-auto flex max-w-[480px] flex-col gap-2.5 border-t border-[#E3E8EE] bg-ground px-5 pt-3.5">
+      <div className="safe-bottom fixed inset-x-0 bottom-0 mx-auto flex max-w-[480px] flex-col gap-2.5 border-t border-[#EFE4D6] bg-ground px-5 pt-3.5">
         {flash && (
           <p role="status" className="text-center text-sm text-brand">
             {flash}

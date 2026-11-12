@@ -3,19 +3,20 @@
 import { useState } from 'react';
 import { useHydrated, useListings } from '../../lib/store';
 import { useAuth } from '../../lib/auth';
-import { DEFAULT_PROFILE_MESSAGE, usePreferences } from '../../lib/preferences';
+import { usePreferences } from '../../lib/preferences';
+import { PROFILE_TEMPLATE_ID, TEMPLATES, TEMPLATE_VARIABLES } from '../../lib/templates';
 
 export default function SettingsPage() {
   const hydrated = useHydrated();
   const count = useListings((s) => s.listings.length);
   const { user, loading, configured, login, logout } = useAuth();
   const [error, setError] = useState<string | null>(null);
-  const { profileMessage, setProfileMessage, resetProfileMessage } = usePreferences();
+  const { templates, setTemplate, resetTemplate } = usePreferences();
 
   return (
     <div className="flex min-h-dvh flex-col">
       <header className="px-5 pb-2 pt-[max(20px,env(safe-area-inset-top))]">
-        <h1 className="text-xl font-bold">個人設定</h1>
+        <h1 className="text-xl font-bold">設定</h1>
       </header>
 
       <main className="flex flex-1 flex-col gap-4 px-4 pb-[calc(var(--nav-h)+24px)] pt-2">
@@ -49,27 +50,47 @@ export default function SettingsPage() {
           {error && <p role="alert" className="text-[13px] text-warn-text">{error}</p>}
         </section>
 
-        <section className="card flex flex-col gap-2.5 p-4">
-          <h2 className="text-[15px] font-bold">偏好設定</h2>
-          {/* 之後的個人偏好（例如預設來源、地圖預設位置）也都放在這一區 */}
-          <label htmlFor="profile-message" className="text-sm font-medium">
-            私訊用的個人資訊
-          </label>
-          <p className="-mt-1.5 text-[13px] text-sub">房仲常問的資料先填好，在物件頁的私訊選「個人資訊」就會帶入。</p>
-          {hydrated && (
-            <textarea
-              id="profile-message"
-              value={profileMessage ?? DEFAULT_PROFILE_MESSAGE}
-              onChange={(e) => setProfileMessage(e.target.value)}
-              rows={16}
-              className="w-full resize-none rounded-xl bg-ground p-3 text-[15px] leading-7 outline-none focus:ring-2 focus:ring-brand"
-            />
-          )}
-          {profileMessage != null && (
-            <button type="button" onClick={resetProfileMessage} className="self-start text-sm text-sub underline">
-              恢復預設內容
-            </button>
-          )}
+        <section className="card flex flex-col gap-4 p-4">
+          <div className="flex flex-col gap-1">
+            <h2 className="text-[15px] font-bold">偏好設定 · 私訊範本</h2>
+            {/* 之後的個人偏好（例如預設來源、地圖預設位置）也都放在這一區 */}
+            <p className="text-[13px] leading-relaxed text-sub">
+              在物件頁的私訊選範本時會帶入這裡的內容。
+              {TEMPLATE_VARIABLES.map((v) => (
+                <span key={v.token} className="block">
+                  <code className="rounded bg-ground px-1 text-ink">{v.token}</code> 會換成{v.description}
+                </span>
+              ))}
+            </p>
+          </div>
+          {hydrated &&
+            TEMPLATES.map((t) => {
+              const customized = templates[t.id] != null;
+              return (
+                <div key={t.id} className="flex flex-col gap-1.5">
+                  <div className="flex items-center justify-between">
+                    <label htmlFor={`template-${t.id}`} className="text-sm font-medium">
+                      {t.name}
+                    </label>
+                    {customized && (
+                      <button type="button" onClick={() => resetTemplate(t.id)} className="text-[13px] text-sub underline">
+                        恢復預設
+                      </button>
+                    )}
+                  </div>
+                  {t.id === PROFILE_TEMPLATE_ID && (
+                    <p className="-mt-1 text-[13px] text-sub">房仲常問的資料先填好；在物件頁改過也會記住。</p>
+                  )}
+                  <textarea
+                    id={`template-${t.id}`}
+                    value={templates[t.id] ?? t.defaultText}
+                    onChange={(e) => setTemplate(t.id, e.target.value)}
+                    rows={t.id === PROFILE_TEMPLATE_ID ? 16 : 5}
+                    className="w-full resize-none rounded-xl bg-ground p-3 text-[15px] leading-7 outline-none focus:ring-2 focus:ring-brand"
+                  />
+                </div>
+              );
+            })}
         </section>
 
         <section className="card flex flex-col gap-1 p-4">

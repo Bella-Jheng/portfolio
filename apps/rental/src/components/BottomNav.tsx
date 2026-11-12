@@ -1,9 +1,11 @@
 'use client';
 
+import { Suspense, type ReactNode } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import clsx from 'clsx';
-import { MapIcon, PlusIcon, SettingsIcon } from './icons';
+import { HeartOutlineIcon, ListIcon, PinIcon, PlusIcon, SettingsIcon } from './icons';
+import { useHideOnScrollDown } from '../lib/use-scroll-direction';
 
 // 新增頁與私訊頁底部有自己的操作按鈕，不顯示導覽列
 function hiddenOn(pathname: string): boolean {
@@ -11,42 +13,64 @@ function hiddenOn(pathname: string): boolean {
 }
 
 export function BottomNav() {
+  // useSearchParams 需要包在 Suspense 裡
+  return (
+    <Suspense>
+      <Nav />
+    </Suspense>
+  );
+}
+
+function Nav() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  // 往下捲動時收起來讓出畫面，往上捲動時再出現；換頁時重新顯示
+  const scrolledAway = useHideOnScrollDown(`${pathname}?${searchParams.toString()}`);
   if (hiddenOn(pathname)) return null;
 
-  const onMap = pathname === '/';
-  const onSettings = pathname === '/settings';
+  const onHome = pathname === '/';
+  const viewParam = onHome ? searchParams.get('view') : null;
+  const onList = viewParam === 'list';
+  const onFavorites = viewParam === 'favorites';
 
   return (
     <nav
       aria-label="主要導覽"
-      className="fixed inset-x-0 bottom-0 z-20 mx-auto grid h-[var(--nav-h)] max-w-[480px] grid-cols-3 border-t border-[#E3E8EE] bg-white pb-[env(safe-area-inset-bottom)]"
+      // 參考 LINE：懸浮在畫面上的圓角膠囊，目前所在的項目用淡色圓角底標示
+      className={clsx(
+        'fixed inset-x-0 bottom-[var(--nav-gap)] z-20 mx-auto grid h-16 w-[calc(100%-24px)] max-w-[456px] grid-cols-5 gap-1 rounded-[32px] bg-white/90 p-1.5 shadow-[0_6px_24px_rgba(58,42,32,.18)] backdrop-blur-md transition-transform duration-300',
+        scrolledAway && 'translate-y-[calc(100%+var(--nav-gap)+16px)]',
+      )}
     >
+      <NavItem href="/" active={onHome && !viewParam} icon={<PinIcon size={22} />} label="地圖" />
+      <NavItem href="/?view=list" active={onList} icon={<ListIcon size={22} />} label="清單" />
       <Link
-        href="/?view=map"
-        aria-current={onMap ? 'page' : undefined}
-        className={clsx('flex flex-col items-center justify-center gap-0.5 text-[11px]', onMap ? 'text-brand' : 'text-sub')}
+        href="/add"
+        className="flex flex-col items-center justify-center gap-0.5 rounded-[26px] text-[11px] font-medium text-ink"
       >
-        <MapIcon size={22} />
-        回到地圖
-      </Link>
-      <Link href="/add" className="flex flex-col items-center justify-center gap-0.5 text-[11px] text-ink">
-        <span className="-mt-5 flex h-12 w-12 items-center justify-center rounded-full bg-ink text-white shadow-[0_4px_12px_rgba(23,32,43,.3)]">
-          <PlusIcon size={24} strokeWidth={2.4} />
+        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand text-white">
+          <PlusIcon size={18} strokeWidth={2.6} />
         </span>
         新增
       </Link>
-      <Link
-        href="/settings"
-        aria-current={onSettings ? 'page' : undefined}
-        className={clsx(
-          'flex flex-col items-center justify-center gap-0.5 text-[11px]',
-          onSettings ? 'text-brand' : 'text-sub',
-        )}
-      >
-        <SettingsIcon size={22} />
-        個人設定
-      </Link>
+      <NavItem href="/?view=favorites" active={onFavorites} icon={<HeartOutlineIcon size={22} />} label="最想要" />
+      <NavItem href="/settings" active={pathname === '/settings'} icon={<SettingsIcon size={22} />} label="設定" />
     </nav>
+  );
+}
+
+function NavItem({ href, active, icon, label }: { href: string; active: boolean; icon: ReactNode; label: string }) {
+  return (
+    <Link
+      href={href}
+      aria-current={active ? 'page' : undefined}
+      className={clsx(
+        'flex flex-col items-center justify-center gap-0.5 rounded-[26px] text-[11px] transition-colors',
+        active ? 'bg-brand-soft font-medium text-brand' : 'text-sub',
+      )}
+    >
+      {icon}
+      {label}
+    </Link>
   );
 }
