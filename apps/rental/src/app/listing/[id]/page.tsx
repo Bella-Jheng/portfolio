@@ -7,7 +7,7 @@ import clsx from 'clsx';
 import { useHydrated, useListings } from '../../../lib/store';
 import { useGeocode } from '../../../lib/geocode';
 import { STATUSES, STATUS_META, type Listing, type ParsedField } from '../../../lib/types';
-import { copyText, igHandle, igHref, lineHref, lineIsPhone, mapsSearchHref, telHref } from '../../../lib/contact';
+import { copyText, formatDateTime, igHandle, igHref, lineHref, lineIsPhone, mapsSearchHref, telHref } from '../../../lib/contact';
 import { resizeCoverImage } from '../../../lib/image';
 import { PROFILE_TEMPLATE_ID, TEMPLATES, buildMessage } from '../../../lib/templates';
 import { usePreferences } from '../../../lib/preferences';
@@ -75,7 +75,10 @@ function ListingDetail({ listing: l }: { listing: Listing }) {
         <Link href="/" aria-label="返回" className="flex h-11 w-11 items-center justify-center">
           <BackIcon size={22} />
         </Link>
-        <h1 className="truncate text-xl font-bold">{l.title || '物件資訊'}</h1>
+        <div className="min-w-0">
+          <h1 className="truncate text-xl font-bold">{l.title || '物件資訊'}</h1>
+          <p className="text-xs text-sub">建立於 {formatDateTime(l.createdAt)}</p>
+        </div>
       </header>
 
       <main className="flex flex-1 flex-col gap-3 px-4 pb-[calc(var(--nav-h)+24px)] pt-1">
@@ -479,28 +482,10 @@ function MessageSection({ listing: l }: { listing: Listing }) {
 
   return (
     <section id="message" className="card flex flex-col gap-2.5 p-3.5">
-      <div className="flex items-center justify-between">
-        <h2 className="flex items-center gap-1.5 text-[15px] font-bold">
-          <ChatIcon size={16} />
-          私訊
-        </h2>
-        <div className="flex items-center gap-1">
-          {flash && (
-            <span role="status" className="text-[13px] text-brand">
-              {flash}
-            </span>
-          )}
-          <button
-            type="button"
-            onClick={copy}
-            aria-label="複製訊息"
-            title="複製訊息"
-            className="flex h-9 w-9 items-center justify-center rounded-full text-brand hover:bg-brand-soft"
-          >
-            <CopyIcon size={18} />
-          </button>
-        </div>
-      </div>
+      <h2 className="flex items-center gap-1.5 text-[15px] font-bold">
+        <ChatIcon size={16} />
+        私訊
+      </h2>
       <div className="flex flex-wrap gap-1.5">
         {TEMPLATES.map((t) => (
           <button
@@ -520,13 +505,32 @@ function MessageSection({ listing: l }: { listing: Listing }) {
       <label htmlFor="message-text" className="sr-only">
         私訊內容
       </label>
-      <textarea
-        id="message-text"
-        value={text}
-        onChange={(e) => changeText(e.target.value)}
-        rows={isProfile ? 16 : 7}
-        className="w-full resize-none rounded-xl bg-cream p-3 text-[15px] leading-7 outline-none focus:ring-2 focus:ring-brand"
-      />
+      <div className="relative">
+        <textarea
+          id="message-text"
+          value={text}
+          onChange={(e) => changeText(e.target.value)}
+          rows={isProfile ? 16 : 7}
+          // 右下角留空間給複製按鈕，避免蓋住最後一行字
+          className="block w-full resize-none rounded-xl bg-cream p-3 pb-12 text-[15px] leading-7 outline-none focus:ring-2 focus:ring-brand"
+        />
+        <div className="absolute bottom-2 right-2 flex items-center gap-1.5">
+          {flash && (
+            <span role="status" className="rounded-full bg-white/90 px-2 py-0.5 text-[13px] text-brand">
+              {flash}
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={copy}
+            aria-label="複製這段訊息"
+            title="複製這段訊息"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-brand shadow-[0_1px_3px_rgba(46,48,51,.15)] hover:bg-brand-soft"
+          >
+            <CopyIcon size={18} />
+          </button>
+        </div>
+      </div>
       <p className="text-xs text-sub">
         {isProfile
           ? '填過的內容會自動記住，下一間物件也會帶入；也可以到「設定」修改。'

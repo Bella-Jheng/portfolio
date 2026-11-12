@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import clsx from 'clsx';
 import type { Listing } from '../lib/types';
-import { formatRent, mapsSearchHref } from '../lib/contact';
+import { formatRent, formatShortDate, mapsSearchHref } from '../lib/contact';
 import { StatusChip } from './StatusChip';
 import { Thumb } from './MapView';
 import { ChatIcon, NoteIcon, PinIcon } from './icons';
@@ -44,10 +44,13 @@ export function ListView({
             >
               <Link href={`/listing/${l.id}`} className="flex gap-3">
                 <Thumb listing={l} size={84} />
-                <div className="flex min-w-0 flex-col gap-1">
-                  <h2 className={clsx('truncate text-base font-bold', rented && 'text-sub')}>
-                    {l.title || '（未命名物件）'}
-                  </h2>
+                <div className="flex min-w-0 flex-1 flex-col gap-1">
+                  <div className="flex items-baseline justify-between gap-2">
+                    <h2 className={clsx('truncate text-base font-bold', rented && 'text-sub')}>
+                      {l.title || '（未命名物件）'}
+                    </h2>
+                    <span className="shrink-0 text-xs text-sub">{formatShortDate(l.createdAt)} 建立</span>
+                  </div>
                   <p className="truncate text-[13px] text-sub">{l.address || '地址未填'}</p>
                   <p className={clsx('text-lg font-bold', rented && 'text-sub line-through')}>
                     {formatRent(l.rent)}

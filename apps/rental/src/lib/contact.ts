@@ -59,6 +59,19 @@ export async function copyText(text: string): Promise<boolean> {
   }
 }
 
+/** 建立時間：完整格式，例如「2026/11/12 15:30」 */
+export function formatDateTime(iso: string): string {
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+/** 建立時間：清單用的簡短格式，例如「11/12」 */
+export function formatShortDate(iso: string): string {
+  const d = new Date(iso);
+  return `${d.getMonth() + 1}/${d.getDate()}`;
+}
+
 export function formatRent(rent?: number): string {
   return rent != null ? `$${rent.toLocaleString('zh-TW')}` : '租金未填';
 }
