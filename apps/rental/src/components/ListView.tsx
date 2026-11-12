@@ -73,7 +73,7 @@ export function ListView({ listings, total }: { listings: Listing[]; total: numb
                     <PinIcon size={18} />
                     地圖
                   </a>
-                  <Link href={`/listing/${l.id}/message`} className="btn-primary">
+                  <Link href={`/listing/${l.id}#message`} className="btn-primary">
                     <ChatIcon size={18} />
                     私訊代管
                   </Link>

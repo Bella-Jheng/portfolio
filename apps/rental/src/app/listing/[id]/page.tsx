@@ -9,11 +9,13 @@ import { useGeocode } from '../../../lib/geocode';
 import { STATUSES, STATUS_META, type Listing, type ParsedField } from '../../../lib/types';
 import { copyText, igHandle, igHref, lineHref, lineIsPhone, mapsSearchHref, telHref } from '../../../lib/contact';
 import { resizeCoverImage } from '../../../lib/image';
+import { TEMPLATES } from '../../../lib/templates';
 import { EditableRow } from '../../../components/EditableRow';
 import { MAPS_KEY } from '../../../components/Providers';
 import {
   BackIcon,
   ChatIcon,
+  CopyIcon,
   ExternalIcon,
   ImageIcon,
   InstagramIcon,
@@ -73,7 +75,7 @@ function ListingDetail({ listing: l }: { listing: Listing }) {
         <h1 className="truncate text-xl font-bold">{l.title || '物件資訊'}</h1>
       </header>
 
-      <main className="flex flex-1 flex-col gap-3 px-4 pb-32 pt-1">
+      <main className="flex flex-1 flex-col gap-3 px-4 pb-10 pt-1">
         {l.uncertain.length > 0 && (
           <p className="mx-1 text-[13px] text-sub">
             <span className="font-medium text-warn-text">黃色欄位</span>是 AI 沒把握的，請再確認一次。
@@ -141,6 +143,7 @@ function ListingDetail({ listing: l }: { listing: Listing }) {
         </section>
 
         <ContactSection listing={l} />
+        <MessageSection listing={l} />
         <NotesSection listing={l} />
 
         <a
@@ -184,12 +187,6 @@ function ListingDetail({ listing: l }: { listing: Listing }) {
         </div>
       </main>
 
-      <div className="safe-bottom fixed inset-x-0 bottom-0 mx-auto max-w-[480px] border-t border-[#E3E8EE] bg-ground px-5 pt-3.5">
-        <Link href={`/listing/${l.id}/message`} className="btn-primary h-14 w-full rounded-2xl text-base font-bold">
-          <ChatIcon size={20} />
-          產生私訊
-        </Link>
-      </div>
     </div>
   );
 }
@@ -432,6 +429,68 @@ function CoverSection({ listing: l }: { listing: Listing }) {
       {error && (
         <p role="alert" className="rounded-xl bg-warn-bg px-3 py-2 text-[13px] text-warn-text">
           {error}
+        </p>
+      )}
+    </section>
+  );
+}
+
+function MessageSection({ listing: l }: { listing: Listing }) {
+  const [templateId, setTemplateId] = useState(TEMPLATES[0].id);
+  const [text, setText] = useState(() => TEMPLATES[0].build(l));
+  const [flash, setFlash] = useState<string | null>(null);
+
+  const pickTemplate = (id: string) => {
+    const template = TEMPLATES.find((t) => t.id === id) ?? TEMPLATES[0];
+    setTemplateId(template.id);
+    setText(template.build(l));
+  };
+
+  const copy = async () => {
+    setFlash((await copyText(text)) ? '已複製，到 LINE／IG 貼上就好' : '複製失敗，請長按文字手動複製');
+    window.setTimeout(() => setFlash(null), 2500);
+  };
+
+  return (
+    <section id="message" className="card flex flex-col gap-2.5 p-3.5">
+      <h2 className="flex items-center gap-1.5 text-[15px] font-bold">
+        <ChatIcon size={16} />
+        私訊
+      </h2>
+      <div className="flex flex-wrap gap-1.5">
+        {TEMPLATES.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            aria-pressed={t.id === templateId}
+            onClick={() => pickTemplate(t.id)}
+            className={clsx(
+              'h-9 rounded-full px-3.5 text-[13px]',
+              t.id === templateId ? 'bg-ink text-white' : 'border border-line bg-white',
+            )}
+          >
+            {t.name}
+          </button>
+        ))}
+      </div>
+      <label htmlFor="message-text" className="sr-only">
+        私訊內容
+      </label>
+      <textarea
+        id="message-text"
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        rows={7}
+        className="w-full resize-none rounded-xl bg-ground p-3 text-[15px] leading-7 outline-none focus:ring-2 focus:ring-brand"
+      />
+      <p className="text-xs text-sub">聯絡人、租金、物件編號會自動帶入；[ ] 裡的字記得換掉。</p>
+      <button type="button" onClick={copy} className="btn-primary h-12 w-full rounded-xl text-[15px] font-bold">
+        <CopyIcon size={18} />
+        複製訊息
+      </button>
+      {flash && (
+        <p role="status" className="text-center text-sm text-brand">
+          {flash}
         </p>
       )}
     </section>
