@@ -11,6 +11,11 @@ body {
   margin: 0;
 }
 
+:root {
+  /* 底部導覽列（BottomNav）的高度，含 iPhone 底部安全區域；需要避開導覽列的地方都用這個 */
+  --nav-h: calc(64px + env(safe-area-inset-bottom));
+}
+
 @layer components {
   .btn {
     @apply inline-flex h-11 items-center justify-center gap-1.5 rounded-xl px-4 text-sm font-medium transition-colors disabled:opacity-50;

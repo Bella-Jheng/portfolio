@@ -1,19 +1,28 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import Link from 'next/link';
+import { Suspense, useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useListings, useHydrated } from '../lib/store';
 import { STATUSES, type Status } from '../lib/types';
 import { FilterChips } from '../components/FilterChips';
 import { ListView } from '../components/ListView';
 import { MapView } from '../components/MapView';
 import { ViewToggle, type View } from '../components/ViewToggle';
-import { PlusIcon } from '../components/icons';
 
 const VIEW_KEY = 'rental-helper:view';
 
 export default function HomePage() {
+  // useSearchParams 需要包在 Suspense 裡
+  return (
+    <Suspense>
+      <Home />
+    </Suspense>
+  );
+}
+
+function Home() {
   const hydrated = useHydrated();
+  const searchParams = useSearchParams();
   const listings = useListings((s) => s.listings);
   const [view, setView] = useState<View>('map');
   const [active, setActive] = useState<Set<Status>>(() => new Set(STATUSES));
@@ -27,6 +36,12 @@ export default function HomePage() {
       /* 無痕模式之類的讀不到就算了 */
     }
   }, []);
+
+  // 底部導覽列「回到地圖」會帶 ?view=map，就算原本停在清單也切回地圖
+  const viewParam = searchParams.get('view');
+  useEffect(() => {
+    if (viewParam === 'map') changeView('map');
+  }, [viewParam]);
 
   const changeView = (v: View) => {
     setView(v);
@@ -50,11 +65,11 @@ export default function HomePage() {
   return (
     <div className="relative h-dvh overflow-hidden">
       {view === 'map' ? (
-        <div className="absolute inset-0">
+        <div className="absolute inset-x-0 top-0 bottom-[var(--nav-h)]">
           {hydrated && <MapView listings={filtered} selectedId={selectedId} onSelect={setSelectedId} />}
         </div>
       ) : (
-        <div className="absolute inset-0 overflow-y-auto pt-[136px]">
+        <div className="absolute inset-x-0 top-0 bottom-[var(--nav-h)] overflow-y-auto pt-[136px]">
           {hydrated && <ListView listings={filtered} total={listings.length} />}
         </div>
       )}
@@ -78,16 +93,6 @@ export default function HomePage() {
         <FilterChips listings={listings} active={active} onToggle={toggle} floating={view === 'map'} />
       </header>
 
-      {!(view === 'map' && selectedId) && (
-        <Link
-          href="/add"
-          aria-label="新增房間"
-          className="absolute bottom-[max(28px,env(safe-area-inset-bottom))] right-5 flex items-center justify-center rounded-full bg-ink text-white shadow-[0_6px_16px_rgba(23,32,43,.35)]"
-          style={{ width: 60, height: 60 }}
-        >
-          <PlusIcon size={28} strokeWidth={2.4} />
-        </Link>
-      )}
     </div>
   );
 }

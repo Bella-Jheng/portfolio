@@ -75,7 +75,7 @@ function ListingDetail({ listing: l }: { listing: Listing }) {
         <h1 className="truncate text-xl font-bold">{l.title || '物件資訊'}</h1>
       </header>
 
-      <main className="flex flex-1 flex-col gap-3 px-4 pb-10 pt-1">
+      <main className="flex flex-1 flex-col gap-3 px-4 pb-[calc(var(--nav-h)+24px)] pt-1">
         {l.uncertain.length > 0 && (
           <p className="mx-1 text-[13px] text-sub">
             <span className="font-medium text-warn-text">黃色欄位</span>是 AI 沒把握的，請再確認一次。

@@ -89,7 +89,7 @@ export function MapView({
 
       {selected && <SelectedCard listing={selected} />}
       {located.length < listings.length && !selected && (
-        <p className="absolute bottom-28 left-4 right-24 rounded-xl bg-white/95 px-3 py-2 text-xs text-sub shadow">
+        <p className="absolute bottom-4 left-4 right-4 rounded-xl bg-white/95 px-3 py-2 text-xs text-sub shadow">
           有 {listings.length - located.length} 間還沒定位（地址不完整），可以到清單裡補地址。
         </p>
       )}
@@ -111,7 +111,7 @@ function FitBounds({ listings }: { listings: Listing[] }) {
     }
     const bounds = new google.maps.LatLngBounds();
     listings.forEach((l) => bounds.extend({ lat: l.lat as number, lng: l.lng as number }));
-    map.fitBounds(bounds, { top: 140, bottom: 260, left: 40, right: 40 });
+    map.fitBounds(bounds, { top: 140, bottom: 200, left: 40, right: 40 });
   }, [map, listings]);
   return null;
 }
@@ -119,7 +119,7 @@ function FitBounds({ listings }: { listings: Listing[] }) {
 function SelectedCard({ listing: l }: { listing: Listing }) {
   const latest = l.notes[0];
   return (
-    <article className="card absolute bottom-6 left-3 right-3 flex flex-col gap-3 p-3.5 shadow-[0_6px_20px_rgba(23,32,43,.2)]">
+    <article className="card absolute bottom-3 left-3 right-3 flex flex-col gap-3 p-3.5 shadow-[0_6px_20px_rgba(23,32,43,.2)]">
       <Link href={`/listing/${l.id}`} className="flex gap-3">
         <Thumb listing={l} size={72} />
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
