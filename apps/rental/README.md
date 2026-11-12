@@ -26,9 +26,20 @@ npx nx build rental
 | `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | 地圖顯示和地址轉座標，要啟用 Maps JavaScript API 和 Geocoding API，並限制 HTTP referrer |
 | `NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID` | Advanced Marker 需要 Map ID；沒填會用 `DEMO_MAP_ID`（只適合開發） |
 | `NEXT_PUBLIC_FIREBASE_API_KEY`、`NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`、`NEXT_PUBLIC_FIREBASE_PROJECT_ID` | Google 登入（Firebase Authentication），可以跟 apps/bazi 共用同一個專案；要在 Firebase 的 Authorized domains 加上這個網站的網域 |
-| `ALLOWED_EMAILS` | 允許使用 AI 解析的 Google 帳號，逗號分隔。後端會驗證登入憑證，只有名單裡的帳號能呼叫 AI，避免網址外流後被別人消耗額度 |
+| `FIREBASE_PROJECT_ID`、`FIREBASE_CLIENT_EMAIL`、`FIREBASE_PRIVATE_KEY` | Firebase 服務帳號，後端用來驗證登入憑證、讀取 Firestore 的允許名單；跟 apps/bazi 同一組即可 |
 
 沒有設定 Maps key 也能用清單、解析和私訊，只是不會顯示地圖。
+
+## 誰可以用 AI 解析
+
+後端會驗證 Google 登入憑證，再到 Firestore 的 **`rentalAllowedUsers`** 集合確認，只有名單裡的帳號能呼叫 AI，避免網址外流後被別人消耗額度。名單只在伺服器端讀取，不會出現在前端。
+
+新增使用者：Firebase Console → Firestore Database → `rentalAllowedUsers` 集合（第一次要先「開始集合」建立）→ 新增文件
+
+- **文件 ID**：對方的 Google email，**全部小寫**（例如 `you@gmail.com`）
+- 欄位：Firestore 規定至少要一個欄位，隨便填就好，例如 `name`（字串）：`我自己`
+
+移除使用者：把那份文件刪掉即可，不需要重新部署。
 
 ## 部署（Vercel）
 
