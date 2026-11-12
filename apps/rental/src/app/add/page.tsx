@@ -9,6 +9,14 @@ import { resizeCoverImage, resizeImage } from '../../lib/image';
 import { useGeocode } from '../../lib/geocode';
 import { SOURCE_LABEL, type ParseResult, type Source } from '../../lib/types';
 import { BackIcon, CloseIcon, ImageIcon, PlusIcon, SparkIcon } from '../../components/icons';
+import {
+  ListingDraftForm,
+  draftFromResult,
+  parseRent,
+  splitList,
+  type DraftValues,
+} from '../../components/ListingDraftForm';
+import { igHandle } from '../../lib/contact';
 
 const MAX_IMAGES = 6;
 const CODE_KEY = 'rental-helper:access-code';
@@ -16,6 +24,11 @@ const CODE_KEY = 'rental-helper:access-code';
 interface Picked {
   file: File;
   url: string;
+}
+
+interface Draft {
+  values: DraftValues;
+  thumbnail: string;
 }
 
 export default function AddPage() {
@@ -30,6 +43,8 @@ export default function AddPage() {
   const [sameListing, setSameListing] = useState(true);
   const [source, setSource] = useState<Source>('591');
   const [busy, setBusy] = useState<string | null>(null);
+  // AI 解析完先放在草稿讓使用者確認、修改，按「儲存」才真的建立物件
+  const [drafts, setDrafts] = useState<Draft[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [needCode, setNeedCode] = useState(false);
   const [code, setCode] = useState('');
@@ -101,25 +116,26 @@ export default function AddPage() {
     return { result: data, thumbnail: thumb.dataUrl };
   }
 
-  async function createFrom(result: ParseResult, thumbnail: string, coverImage?: string) {
-    const loc = await geocode(result.address);
+  async function createFrom({ values, thumbnail }: Draft, coverImage?: string) {
+    const address = values.address.trim();
+    const loc = await geocode(address);
     const listing = emptyListing({
       source,
-      title: result.title,
-      address: result.address,
-      rent: result.rent ?? undefined,
-      layout: result.layout,
-      size: result.size,
-      floor: result.floor,
-      fees: result.fees,
-      pets: result.pets,
-      listingNo: result.listingNo,
-      contactName: result.contactName,
-      contactRole: result.contactRole,
-      phones: result.phones,
-      lineIds: result.lineIds,
-      igIds: result.igIds ?? [],
-      uncertain: result.uncertain,
+      title: values.title.trim(),
+      address,
+      rent: parseRent(values.rent),
+      layout: values.layout.trim(),
+      size: values.size.trim(),
+      floor: values.floor.trim(),
+      fees: values.fees.trim(),
+      pets: values.pets.trim(),
+      listingNo: values.listingNo.trim(),
+      contactName: values.contactName.trim(),
+      contactRole: values.contactRole.trim(),
+      phones: splitList(values.phones),
+      lineIds: splitList(values.lineIds),
+      igIds: splitList(values.igIds).map(igHandle).filter(Boolean),
+      uncertain: values.uncertain,
       thumbnail,
       coverImage,
       ...(loc ?? {}),
@@ -138,19 +154,90 @@ export default function AddPage() {
         /* ignore */
       }
       const groups = sameListing ? [picked.map((p) => p.file)] : picked.map((p) => [p.file]);
-      const coverImage = cover && coverApplies ? await resizeCoverImage(cover.file) : undefined;
-      let last = null;
+      const parsed: Draft[] = [];
       for (let i = 0; i < groups.length; i++) {
         setBusy(groups.length > 1 ? `解析中 ${i + 1} / ${groups.length}…` : '解析中…');
         const { result, thumbnail } = await parseGroup(groups[i]);
-        last = await createFrom(result, thumbnail, coverImage);
+        parsed.push({ values: draftFromResult(result), thumbnail });
       }
-      if (groups.length === 1 && last) router.replace(`/listing/${last.id}`);
-      else router.replace('/');
+      setDrafts(parsed);
+      window.scrollTo({ top: 0 });
     } catch (e) {
       setError(e instanceof Error ? e.message : '解析失敗');
+    } finally {
       setBusy(null);
     }
+  }
+
+  async function save() {
+    if (!drafts || busy) return;
+    setError(null);
+    setBusy('儲存中…');
+    try {
+      const coverImage = cover && drafts.length === 1 ? await resizeCoverImage(cover.file) : undefined;
+      let last = null;
+      for (const draft of drafts) last = await createFrom(draft, coverImage);
+      if (drafts.length === 1 && last) router.replace(`/listing/${last.id}`);
+      else router.replace('/');
+    } catch {
+      setError('儲存失敗，裝置空間可能不足，請刪掉一些物件或首圖再試一次');
+      setBusy(null);
+    }
+  }
+
+  const updateDraft = (index: number, values: DraftValues) =>
+    setDrafts((prev) => prev && prev.map((d, i) => (i === index ? { ...d, values } : d)));
+
+  if (drafts) {
+    return (
+      <div className="flex min-h-dvh flex-col">
+        <header className="flex items-center gap-1 px-3 pb-2 pt-[max(16px,env(safe-area-inset-top))]">
+          <button
+            type="button"
+            aria-label="返回重新選截圖"
+            onClick={() => setDrafts(null)}
+            className="flex h-11 w-11 items-center justify-center"
+          >
+            <BackIcon size={22} />
+          </button>
+          <h1 className="text-xl font-bold">確認解析結果</h1>
+        </header>
+
+        <main className="flex flex-1 flex-col gap-4 px-5 pb-10 pt-2">
+          <p className="text-[13px] text-sub">
+            還沒儲存喔！請確認 AI 整理的內容，<span className="font-medium text-warn-text">黃色欄位</span>是 AI
+            沒把握的，修改完按下方「儲存」。
+          </p>
+
+          {drafts.map((draft, i) => (
+            <ListingDraftForm
+              key={i}
+              draft={draft.values}
+              heading={drafts.length > 1 ? `第 ${i + 1} 間` : undefined}
+              onChange={(values) => updateDraft(i, values)}
+            />
+          ))}
+
+          {error && (
+            <p role="alert" className="rounded-xl bg-warn-bg px-3 py-2.5 text-sm text-warn-text">
+              {error}
+            </p>
+          )}
+
+          <button
+            type="button"
+            onClick={save}
+            disabled={busy != null}
+            className="btn-primary h-14 w-full rounded-2xl text-base font-bold"
+          >
+            {busy ?? (drafts.length > 1 ? `儲存 ${drafts.length} 間物件` : '儲存')}
+          </button>
+          <button type="button" onClick={() => setDrafts(null)} className="self-center text-sm text-sub underline">
+            放棄，重新選截圖
+          </button>
+        </main>
+      </div>
+    );
   }
 
   async function manual() {
