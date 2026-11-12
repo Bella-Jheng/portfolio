@@ -8,7 +8,7 @@ import { FilterChips } from '../components/FilterChips';
 import { ListView } from '../components/ListView';
 import { MapView } from '../components/MapView';
 
-// 地圖／清單由網址決定（底部導覽列的「地圖」連到 /，「清單」連到 /?view=list）
+// 地圖／清單由網址決定（底部導覽列：「地圖」/、「清單」/?view=list、「最想要」/?view=favorites）
 type View = 'map' | 'list';
 
 export default function HomePage() {
@@ -24,7 +24,10 @@ function Home() {
   const hydrated = useHydrated();
   const searchParams = useSearchParams();
   const listings = useListings((s) => s.listings);
-  const view: View = searchParams.get('view') === 'list' ? 'list' : 'map';
+  const viewParam = searchParams.get('view');
+  // 「最想要」是只列出最想要物件的清單，不顯示狀態篩選
+  const favoritesOnly = viewParam === 'favorites';
+  const view: View = viewParam === 'list' || favoritesOnly ? 'list' : 'map';
   const [active, setActive] = useState<Set<Status>>(() => new Set(STATUSES));
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
@@ -36,7 +39,10 @@ function Home() {
       return next;
     });
 
-  const filtered = useMemo(() => listings.filter((l) => active.has(l.status)), [listings, active]);
+  const filtered = useMemo(
+    () => listings.filter((l) => (favoritesOnly ? l.status === 'favorite' : active.has(l.status))),
+    [listings, active, favoritesOnly],
+  );
 
   return (
     <div className="relative h-dvh overflow-hidden">
@@ -45,8 +51,16 @@ function Home() {
           {hydrated && <MapView listings={filtered} selectedId={selectedId} onSelect={setSelectedId} />}
         </div>
       ) : (
-        <div className="absolute inset-0 overflow-y-auto pb-[var(--nav-h)] pt-[136px]">
-          {hydrated && <ListView listings={filtered} total={listings.length} />}
+        <div className={`absolute inset-0 overflow-y-auto pb-[var(--nav-h)] ${favoritesOnly ? 'pt-[84px]' : 'pt-[136px]'}`}>
+          {hydrated && (
+            <ListView
+              listings={filtered}
+              total={listings.length}
+              emptyText={
+                favoritesOnly ? '還沒有「最想要」的物件。在物件頁把狀態設成「最想要」，就會出現在這裡。' : undefined
+              }
+            />
+          )}
         </div>
       )}
 
@@ -61,11 +75,13 @@ function Home() {
               view === 'map' ? 'bg-white shadow-[0_2px_8px_rgba(58,42,32,.12)]' : ''
             }`}
           >
-            <h1 className="text-lg font-bold">租屋小幫手</h1>
-            <span className="ml-2 text-sm text-sub">{hydrated ? `${listings.length} 間` : ''}</span>
+            <h1 className="text-lg font-bold">{favoritesOnly ? '最想要' : '租屋小幫手'}</h1>
+            <span className="ml-2 text-sm text-sub">{hydrated ? `${favoritesOnly ? filtered.length : listings.length} 間` : ''}</span>
           </div>
         </div>
-        <FilterChips listings={listings} active={active} onToggle={toggle} floating={view === 'map'} />
+        {!favoritesOnly && (
+          <FilterChips listings={listings} active={active} onToggle={toggle} floating={view === 'map'} />
+        )}
       </header>
 
     </div>

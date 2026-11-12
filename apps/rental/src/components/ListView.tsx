@@ -8,7 +8,15 @@ import { StatusChip } from './StatusChip';
 import { Thumb } from './MapView';
 import { ChatIcon, NoteIcon, PinIcon } from './icons';
 
-export function ListView({ listings, total }: { listings: Listing[]; total: number }) {
+export function ListView({
+  listings,
+  total,
+  emptyText = '這個篩選條件下沒有物件',
+}: {
+  listings: Listing[];
+  total: number;
+  emptyText?: string;
+}) {
   if (total === 0) {
     return (
       <div className="flex flex-col items-center gap-2 px-8 pt-24 text-center text-sub">
@@ -18,7 +26,7 @@ export function ListView({ listings, total }: { listings: Listing[]; total: numb
     );
   }
   if (listings.length === 0) {
-    return <p className="px-8 pt-16 text-center text-sm text-sub">這個篩選條件下沒有物件</p>;
+    return <p className="px-8 pt-16 text-center text-sm leading-relaxed text-sub">{emptyText}</p>;
   }
 
   return (
