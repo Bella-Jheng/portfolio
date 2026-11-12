@@ -132,7 +132,7 @@ function SelectedCard({ listing: l }: { listing: Listing }) {
         </div>
       </Link>
       {latest && (
-        <p className="flex items-center gap-1.5 truncate rounded-lg bg-cream px-2.5 py-2 text-[13px] text-[#4A4A4A]">
+        <p className="flex items-center gap-1.5 truncate rounded-lg border border-line bg-white px-2.5 py-2 text-[13px] text-[#4A4A4A]">
           <NoteIcon size={14} className="shrink-0" />
           <span className="truncate">{latest.text}</span>
         </p>
@@ -166,7 +166,7 @@ export function Thumb({ listing, size }: { listing: Listing; size: number }) {
     />
   ) : (
     <div
-      className="flex shrink-0 items-center justify-center rounded-xl bg-[#EAEAEA] text-sub"
+      className="flex shrink-0 items-center justify-center rounded-xl border border-line bg-white text-sub"
       style={{ width: size, height: size }}
     >
       <ImageIcon size={22} />

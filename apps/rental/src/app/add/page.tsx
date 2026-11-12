@@ -248,7 +248,7 @@ export default function AddPage() {
           {picked.length > 0 && (
             <ul className="grid grid-cols-3 gap-2.5">
               {picked.map((p, i) => (
-                <li key={p.url} className="relative aspect-[9/16] overflow-hidden rounded-xl bg-[#EFEFEF]">
+                <li key={p.url} className="relative aspect-[9/16] overflow-hidden rounded-xl border border-line bg-white">
                   <img src={p.url} alt={`截圖 ${i + 1}`} className="h-full w-full object-cover object-top" />
                   <button
                     type="button"
@@ -304,7 +304,7 @@ export default function AddPage() {
             }}
           />
           {cover ? (
-            <div className="relative overflow-hidden rounded-xl bg-[#EFEFEF]">
+            <div className="relative overflow-hidden rounded-xl border border-line bg-white">
               <img src={cover.url} alt="首圖" className="aspect-[4/3] w-full object-cover" />
               <button
                 type="button"
@@ -385,7 +385,7 @@ export default function AddPage() {
           </p>
         )}
 
-        <aside className="rounded-2xl bg-brand-soft p-3.5 text-[13px] leading-relaxed text-[#4A3326]">
+        <aside className="rounded-2xl border border-line bg-white p-3.5 text-[13px] leading-relaxed text-[#4A3326]">
           截圖時讓<b>地址</b>、<b>物件編號</b>和<b>聯絡電話／LINE／IG</b> 入鏡，解析會更準。
         </aside>
 

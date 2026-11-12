@@ -10,7 +10,7 @@ export const STATUS_META: Record<
   contacted: { label: '已聯絡', color: '#3F6A73', softBg: '#E3ECEC', softText: '#2F5157' },
   viewed: { label: '已看房', color: '#5B7F52', softBg: '#E8F1E3', softText: '#3F6B36' },
   favorite: { label: '最想要', color: '#B8556B', softBg: '#F6E6EA', softText: '#8C3A4E' },
-  rented: { label: '已出租', color: '#9A958D', softBg: '#EFEFEF', softText: '#4A4A4A' },
+  rented: { label: '已出租', color: '#9A958D', softBg: '#FFFFFF', softText: '#4A4A4A' },
 };
 
 export type Source = '591' | 'fb' | 'other';

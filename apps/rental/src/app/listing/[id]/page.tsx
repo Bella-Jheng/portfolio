@@ -230,7 +230,7 @@ function ContactSection({ listing: l }: { listing: Listing }) {
       <div className="mb-1 flex items-center justify-between">
         <h2 className="text-[15px] font-bold">聯絡方式</h2>
         {(l.phones.length > 0 || l.lineIds.length > 0 || l.igIds.length > 0) && (
-          <span className="rounded-full bg-brand-soft px-2 py-0.5 text-xs text-[#553A2A]">從截圖解析</span>
+          <span className="rounded-full border border-line bg-white px-2 py-0.5 text-xs text-[#553A2A]">從截圖解析</span>
         )}
       </div>
 
@@ -418,7 +418,7 @@ function CoverSection({ listing: l }: { listing: Listing }) {
         }}
       />
       {l.coverImage ? (
-        <div className="relative overflow-hidden rounded-2xl bg-[#EFEFEF]">
+        <div className="relative overflow-hidden rounded-2xl border border-line bg-white">
           <img src={l.coverImage} alt="房子照片" className="aspect-[4/3] w-full object-cover" />
           <div className="absolute bottom-2 right-2 flex gap-2">
             <button
@@ -525,7 +525,7 @@ function MessageSection({ listing: l }: { listing: Listing }) {
             onClick={copy}
             aria-label="複製這段訊息"
             title="複製這段訊息"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-brand shadow-[0_1px_3px_rgba(46,48,51,.15)] hover:bg-brand-soft"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-brand shadow-[0_1px_3px_rgba(46,48,51,.15)]"
           >
             <CopyIcon size={18} />
           </button>

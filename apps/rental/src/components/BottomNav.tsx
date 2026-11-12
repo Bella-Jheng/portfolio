@@ -66,7 +66,7 @@ function NavItem({ href, active, icon, label }: { href: string; active: boolean;
       aria-current={active ? 'page' : undefined}
       className={clsx(
         'flex flex-col items-center justify-center gap-0.5 rounded-[26px] text-[11px] transition-colors',
-        active ? 'bg-cream font-medium text-brand' : 'text-sub',
+        active ? 'font-bold text-brand after:mt-0.5 after:h-0.5 after:w-4 after:rounded-full after:bg-brand' : 'text-sub',
       )}
     >
       {icon}

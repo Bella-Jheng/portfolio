@@ -58,7 +58,7 @@ export default function SettingsPage() {
               在物件頁的私訊選範本時會帶入這裡的內容。
               {TEMPLATE_VARIABLES.map((v) => (
                 <span key={v.token} className="block">
-                  <code className="rounded bg-cream px-1 text-ink">{v.token}</code> 會換成{v.description}
+                  <code className="rounded border border-line bg-white px-1 text-ink">{v.token}</code> 會換成{v.description}
                 </span>
               ))}
             </p>
