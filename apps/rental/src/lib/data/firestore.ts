@@ -5,7 +5,7 @@ import type { Repositories } from './types';
 /**
  * Firestore 實作。跟 apps/bazi 共用同一個 Firebase 專案，所以集合名稱都加 rental 前綴：
  * - rentalAllowedUsers/{小寫 email}   白名單
- * - rentalUsers/{uid}                 偏好設定（templates）
+ * - rentalUsers/{uid}                 email、最後登入時間、偏好設定（templates）
  * - rentalUsers/{uid}/listings/{id}   物件（整筆存成一份文件）
  * - rentalMembers/{ownerUid}__{email} 一起找房的成員
  * - rentalShareLinks/{token}          單一物件的分享連結
@@ -37,6 +37,12 @@ export function createFirestoreRepositories(db: Firestore): Repositories {
         // 物件刪掉時，分享連結也一起失效
         const links = await linksOf(ownerUid, id);
         await Promise.all([listings(ownerUid).doc(id).delete(), ...links.docs.map((d) => d.ref.delete())]);
+      },
+    },
+    users: {
+      async recordLogin(uid, email) {
+        // merge：不會蓋掉同一份文件裡的 templates
+        await userDoc(uid).set({ email: email.toLowerCase(), lastLoginAt: new Date().toISOString() }, { merge: true });
       },
     },
     preferences: {

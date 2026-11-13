@@ -102,6 +102,8 @@ export async function startCloudSync(tokenGetter: () => Promise<string | null>) 
   getToken = tokenGetter;
   setStatus('syncing');
   try {
+    // 先記下 uid ↔ email 的對應，同時確認這個帳號在白名單裡
+    await api('/api/session', { method: 'POST' });
     const [{ listings: remote }, { templates: remoteTemplates }] = await Promise.all([
       api<{ listings: Listing[] }>('/api/listings'),
       api<{ templates: Record<string, string> | null }>('/api/preferences'),

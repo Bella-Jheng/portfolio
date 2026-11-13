@@ -1,7 +1,7 @@
 /**
  * PostgreSQL 資料表（正規化）：
  * - rental_allowed_users     白名單
- * - rental_users             使用者偏好（私訊範本存成 JSONB）
+ * - rental_users             使用者：email、最後登入時間、偏好（私訊範本存成 JSONB）
  * - rental_listings          物件主表，一列一間，用 owner_uid 區分是誰的
  * - rental_listing_contacts  電話／LINE／IG，一個聯絡方式一列（position 保留順序）
  * - rental_listing_notes     備註，一則一列
@@ -51,6 +51,9 @@ CREATE TABLE IF NOT EXISTS rental_listings (
 CREATE INDEX IF NOT EXISTS rental_listings_owner_created_idx ON rental_listings (owner_uid, created_at DESC);
 -- 後來加的欄位：已經建好的資料表用 ADD COLUMN IF NOT EXISTS 補上
 ALTER TABLE rental_listings ADD COLUMN IF NOT EXISTS viewing_at TIMESTAMPTZ;
+ALTER TABLE rental_users ADD COLUMN IF NOT EXISTS email TEXT;
+ALTER TABLE rental_users ADD COLUMN IF NOT EXISTS last_login_at TIMESTAMPTZ;
+CREATE INDEX IF NOT EXISTS rental_users_email_idx ON rental_users (email);
 
 CREATE TABLE IF NOT EXISTS rental_listing_contacts (
   listing_id TEXT NOT NULL REFERENCES rental_listings (id) ON DELETE CASCADE,

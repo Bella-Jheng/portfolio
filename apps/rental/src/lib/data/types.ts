@@ -19,6 +19,12 @@ export interface ListingRepository {
   remove(ownerUid: string, id: string): Promise<void>;
 }
 
+/** 使用者：把登入憑證裡的 uid 和 email 對應記下來，後台才看得出每份資料是誰的 */
+export interface UserRepository {
+  /** 登入同步時呼叫：記錄（或更新）這個 uid 的 email 與最後登入時間 */
+  recordLogin(uid: string, email: string): Promise<void>;
+}
+
 /** 個人偏好（目前是私訊範本） */
 export interface PreferencesRepository {
   /** 還沒存過時回傳 null */
@@ -52,6 +58,7 @@ export interface AllowlistRepository {
 
 export interface Repositories {
   listings: ListingRepository;
+  users: UserRepository;
   preferences: PreferencesRepository;
   allowlist: AllowlistRepository;
   members: MemberRepository;

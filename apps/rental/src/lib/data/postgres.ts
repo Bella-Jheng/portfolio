@@ -198,6 +198,17 @@ export function createPostgresRepositories(sql: SqlClient): Repositories {
       },
     },
 
+    users: {
+      async recordLogin(uid, email) {
+        await ready();
+        await sql.query(
+          `INSERT INTO rental_users (uid, email, last_login_at) VALUES ($1, $2, now())
+           ON CONFLICT (uid) DO UPDATE SET email = EXCLUDED.email, last_login_at = now()`,
+          [uid, email.toLowerCase()],
+        );
+      },
+    },
+
     preferences: {
       async getTemplates(uid) {
         await ready();

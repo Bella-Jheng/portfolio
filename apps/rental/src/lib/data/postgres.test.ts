@@ -135,6 +135,14 @@ describe('PostgreSQL 資料存取層', () => {
     expect(await repos.preferences.getTemplates('alice')).toEqual({ profile: '預算：18000', ask: '哈囉{物件}' });
   });
 
+  it('記錄登入：uid 對應到 email，之後存範本也不會蓋掉', async () => {
+    await repos.users.recordLogin('alice', 'Alice@Gmail.com');
+    await repos.preferences.saveTemplates('alice', { profile: '預算：15000' });
+    await repos.users.recordLogin('alice', 'alice@gmail.com');
+    const { rows } = await db.query('SELECT uid, email, templates, last_login_at IS NOT NULL AS logged FROM rental_users');
+    expect(rows).toEqual([{ uid: 'alice', email: 'alice@gmail.com', templates: { profile: '預算：15000' }, logged: true }]);
+  });
+
   it('白名單：email 不分大小寫', async () => {
     expect(await repos.allowlist.isAllowed('me@gmail.com')).toBe(false);
     await db.query("INSERT INTO rental_allowed_users (email) VALUES ('me@gmail.com')");

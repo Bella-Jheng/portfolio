@@ -82,7 +82,7 @@ API 不直接碰資料庫，而是透過 `src/lib/data/` 的 repository 介面�
 ### Firestore（預設）
 
 - `rentalAllowedUsers/{小寫 email}`：白名單
-- `rentalUsers/{uid}`：私訊範本；`rentalUsers/{uid}/listings/{id}`：物件
+- `rentalUsers/{uid}`：email、最後登入時間、私訊範本（登入時記下 uid 對應的 email，後台看得出是誰的資料）；`rentalUsers/{uid}/listings/{id}`：物件
 - `rentalMembers/{ownerUid}__{email}`：一起找房的成員；`rentalShareLinks/{token}`：分享連結
 
 ### PostgreSQL
@@ -92,7 +92,7 @@ API 不直接碰資料庫，而是透過 `src/lib/data/` 的 repository 介面�
 | 資料表 | 內容 |
 | --- | --- |
 | `rental_allowed_users` | 白名單（email） |
-| `rental_users` | 每個帳號的私訊範本（JSONB） |
+| `rental_users` | 每個帳號的 email、最後登入時間、私訊範本（JSONB） |
 | `rental_listings` | 物件主表，`owner_uid` 區分帳號 |
 | `rental_listing_contacts` | 電話／LINE／IG，一個聯絡方式一列 |
 | `rental_listing_notes` | 備註，一則一列 |
