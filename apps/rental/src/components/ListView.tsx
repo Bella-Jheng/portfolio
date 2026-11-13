@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import clsx from 'clsx';
 import type { Listing } from '../lib/types';
-import { formatRent, formatShortDate, mapsSearchHref } from '../lib/contact';
+import { formatRent, formatShortDate, formatViewing, mapsSearchHref } from '../lib/contact';
 import { StatusChip } from './StatusChip';
 import { FavoriteButton } from './FavoriteButton';
 import { Thumb } from './MapView';
@@ -60,6 +60,16 @@ export function ListView({
                     <StatusChip status={l.status} />
                     {l.pets && (
                       <span className="rounded-full border border-line bg-white px-2.5 py-0.5 text-xs text-[#4A4A4A]">{l.pets}</span>
+                    )}
+                    {l.sharedBy && (
+                      <span className="rounded-full border border-line bg-white px-2.5 py-0.5 text-xs text-sub">
+                        {l.sharedBy.email.split('@')[0]} 共用
+                      </span>
+                    )}
+                    {l.viewingAt && (
+                      <span className="rounded-full border border-[#3F6A73]/40 bg-white px-2.5 py-0.5 text-xs text-[#2F5157]">
+                        看房 {formatViewing(l.viewingAt)}
+                      </span>
                     )}
                     {l.uncertain.length > 0 && (
                       <span className="rounded-full bg-warn-bg px-2.5 py-0.5 text-xs text-warn-text">待確認</span>

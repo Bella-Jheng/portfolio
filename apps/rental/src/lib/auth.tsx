@@ -1,8 +1,9 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { onAuthStateChanged, signInWithPopup, signOut, type User } from 'firebase/auth';
 import { auth, googleProvider, isFirebaseConfigured } from './firebase-client';
+import { flushCloudSync, startCloudSync, stopCloudSync } from './cloud-sync';
 
 // 使用者自己關掉登入視窗，不算錯誤
 const IGNORED_LOGIN_ERRORS = ['auth/popup-closed-by-user', 'auth/cancelled-popup-request'];
@@ -21,6 +22,7 @@ const AuthContext = createContext<AuthValue | null>(null);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(isFirebaseConfigured);
+  const prevUserRef = useRef<User | null>(null);
 
   useEffect(() => {
     // 舊版的存取碼已經不用了，順手從這台裝置清掉
@@ -31,8 +33,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     if (!auth) return;
     return onAuthStateChanged(auth, (authUser) => {
+      const prev = prevUserRef.current;
+      prevUserRef.current = authUser;
       setUser(authUser);
       setLoading(false);
+      // 登入（或換帳號）就開始雲端同步；從登入變成登出時，清掉這台裝置上的資料
+      if (authUser && authUser.uid !== prev?.uid) {
+        if (prev) stopCloudSync({ clearLocal: true });
+        startCloudSync(() => authUser.getIdToken());
+      } else if (!authUser && prev) {
+        stopCloudSync({ clearLocal: true });
+      }
     });
   }, []);
 
@@ -51,6 +62,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = async () => {
+    await flushCloudSync();
     if (auth) await signOut(auth);
   };
 

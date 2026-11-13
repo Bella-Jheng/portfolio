@@ -1,16 +1,21 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import clsx from 'clsx';
-import { useHydrated, useListings } from '../../../lib/store';
+import { isShared, useHydrated, useListings } from '../../../lib/store';
+import { useAuth } from '../../../lib/auth';
+import { cloudApi, useSyncStatus } from '../../../lib/cloud-sync';
 import { useGeocode } from '../../../lib/geocode';
 import { STATUSES, STATUS_META, type Listing, type ParsedField } from '../../../lib/types';
 import {
   copyText,
   detectSource,
   formatDateTime,
+  formatViewing,
+  fromLocalInputValue,
+  toLocalInputValue,
   igHandle,
   igHref,
   lineHref,
@@ -28,6 +33,8 @@ import { EditableRow } from '../../../components/EditableRow';
 import { MAPS_KEY } from '../../../components/Providers';
 import {
   BackIcon,
+  CalendarIcon,
+  ShareIcon,
   ChatIcon,
   CopyIcon,
   ExternalIcon,
@@ -111,6 +118,12 @@ function ListingDetail({ listing: l }: { listing: Listing }) {
           </div>
         )}
 
+        {l.sharedBy && (
+          <p className="rounded-xl border border-line px-3 py-2 text-[13px] text-sub">
+            這間是 <b className="text-ink">{l.sharedBy.email}</b> 共用給你的，你的修改對方也看得到。
+          </p>
+        )}
+
         <CoverSection listing={l} />
 
         {/* 狀態 */}
@@ -136,6 +149,8 @@ function ListingDetail({ listing: l }: { listing: Listing }) {
             );
           })}
         </section>
+
+        <ViewingSection listing={l} />
 
         {/* 來源與房源出處 */}
         <section className="card flex flex-col gap-1 px-3.5 pb-1 pt-3">
@@ -219,7 +234,10 @@ function ListingDetail({ listing: l }: { listing: Listing }) {
           <ExternalIcon size={15} />
         </a>
 
-        <div className="flex justify-center">
+        {!isShared(l) && <ShareSection listing={l} />}
+
+        {/* 共用來的物件只有擁有者能刪 */}
+        <div className={isShared(l) ? 'hidden' : 'flex justify-center'}>
           {confirmDelete ? (
             <div className="flex items-center gap-2 text-sm">
               <span>確定刪除這間？</span>
@@ -582,6 +600,127 @@ function MessageSection({ listing: l }: { listing: Listing }) {
           ? '填過的內容會自動記住，下一間物件也會帶入；也可以到「設定」修改。'
           : '租金、物件編號會自動帶入；[ ] 裡的字記得換掉。範本內容可以到「設定」修改。'}
       </p>
+    </section>
+  );
+}
+
+function ShareSection({ listing: l }: { listing: Listing }) {
+  const { user } = useAuth();
+  const sync = useSyncStatus();
+  const [token, setToken] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const synced = !!user && sync.status === 'synced';
+  const url = token && typeof window !== 'undefined' ? `${window.location.origin}/share/${token}` : null;
+
+  // 打開物件頁時看看是不是已經分享過
+  useEffect(() => {
+    if (!synced) return;
+    cloudApi<{ token: string | null }>(`/api/listings/${encodeURIComponent(l.id)}/share`)
+      .then((r) => setToken(r.token))
+      .catch(() => setToken(null));
+  }, [synced, l.id]);
+
+  const run = async (task: () => Promise<void>) => {
+    setBusy(true);
+    setMessage(null);
+    try {
+      await task();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : '操作失敗，請稍後再試');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const create = () =>
+    run(async () => {
+      const r = await cloudApi<{ token: string }>(`/api/listings/${encodeURIComponent(l.id)}/share`, { method: 'POST' });
+      setToken(r.token);
+      const link = `${window.location.origin}/share/${r.token}`;
+      setMessage((await copyText(link)) ? '已產生並複製連結' : '已產生連結');
+    });
+  const revoke = () =>
+    run(async () => {
+      await cloudApi(`/api/listings/${encodeURIComponent(l.id)}/share`, { method: 'DELETE' });
+      setToken(null);
+      setMessage('已停止分享，舊連結不能再打開');
+    });
+
+  return (
+    <section aria-label="分享" className="card flex flex-col gap-2 p-3.5">
+      <h2 className="flex items-center gap-1.5 text-[15px] font-bold">
+        <ShareIcon size={16} />
+        分享這間
+      </h2>
+      {!synced ? (
+        <p className="text-[13px] text-sub">登入並同步到雲端後，就能產生連結分享給別人看。</p>
+      ) : url ? (
+        <>
+          <p className="text-[13px] text-sub">拿到連結的人不用登入就能看（看不到備註），隨時可以停止分享。</p>
+          <div className="flex items-center gap-2">
+            <input readOnly value={url} aria-label="分享連結" className="field-input min-w-0 flex-1 bg-cream text-[13px]" />
+            <button
+              type="button"
+              disabled={busy}
+              onClick={async () => setMessage((await copyText(url)) ? '已複製連結' : '複製失敗，請長按連結複製')}
+              aria-label="複製分享連結"
+              className="btn-outline h-11 w-11 shrink-0 px-0"
+            >
+              <CopyIcon size={18} />
+            </button>
+          </div>
+          <button type="button" disabled={busy} onClick={revoke} className="self-start text-sm text-sub underline">
+            停止分享
+          </button>
+        </>
+      ) : (
+        <button type="button" disabled={busy} onClick={create} className="btn-outline">
+          產生分享連結
+        </button>
+      )}
+      {message && (
+        <p role="status" className="text-[13px] text-brand">
+          {message}
+        </p>
+      )}
+    </section>
+  );
+}
+
+function ViewingSection({ listing: l }: { listing: Listing }) {
+  const update = useListings((s) => s.update);
+  return (
+    <section aria-label="預約看房" className="card flex flex-col gap-2 p-3.5">
+      <div className="flex items-center justify-between">
+        <h2 className="flex items-center gap-1.5 text-[15px] font-bold">
+          <CalendarIcon size={16} />
+          預約看房
+        </h2>
+        {l.viewingAt && (
+          <Link href="/schedule" className="text-[13px] font-medium text-brand">
+            看行程
+          </Link>
+        )}
+      </div>
+      <div className="flex items-center gap-2">
+        <label htmlFor="viewing-at" className="sr-only">
+          預約看房時間
+        </label>
+        <input
+          id="viewing-at"
+          type="datetime-local"
+          value={l.viewingAt ? toLocalInputValue(l.viewingAt) : ''}
+          onChange={(e) => update(l.id, { viewingAt: fromLocalInputValue(e.target.value) })}
+          className="field-input min-w-0 flex-1 bg-cream"
+        />
+        {l.viewingAt && (
+          <button type="button" onClick={() => update(l.id, { viewingAt: undefined })} className="btn-outline h-11 shrink-0">
+            取消預約
+          </button>
+        )}
+      </div>
+      {l.viewingAt && <p className="text-[13px] text-sub">{formatViewing(l.viewingAt)} 去看房</p>}
     </section>
   );
 }

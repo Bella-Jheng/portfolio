@@ -7,9 +7,9 @@ import { STATUSES, type Status } from '../lib/types';
 import { FilterChips } from '../components/FilterChips';
 import { ListView } from '../components/ListView';
 import { MapView } from '../components/MapView';
+import { ViewSwitch, type View } from '../components/ViewSwitch';
 
-// 地圖／清單由網址決定（底部導覽列：「地圖」/、「清單」/?view=list、「最想要」/?view=favorites）
-type View = 'map' | 'list';
+// 地圖／清單由網址決定（/、/?view=list，標題右邊的切換）；「最想要」是 /?view=favorites
 
 export default function HomePage() {
   // useSearchParams 需要包在 Suspense 裡
@@ -78,6 +78,7 @@ function Home() {
             <h1 className="text-lg font-bold">{favoritesOnly ? '最想要' : '租屋小幫手'}</h1>
             <span className="ml-2 text-sm text-sub">{hydrated ? `${favoritesOnly ? filtered.length : listings.length} 間` : ''}</span>
           </div>
+          {!favoritesOnly && <ViewSwitch view={view} />}
         </div>
         {!favoritesOnly && (
           <FilterChips listings={listings} active={active} onToggle={toggle} floating={view === 'map'} />

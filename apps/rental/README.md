@@ -4,9 +4,13 @@
 
 ## 功能
 
-- **地圖首頁**：每間房間以價格標籤顯示，依狀態上色：尚未聯絡、已聯絡、已看房、已出租；「最想要」是獨立的愛心，可以跟任何狀態同時存在，地圖標籤上會顯示愛心；上方可篩選狀態，底部導覽列切換地圖或清單
+- **地圖首頁**：每間房間以價格標籤顯示，依狀態上色：尚未聯絡、已聯絡、已看房、已出租；「最想要」是獨立的愛心，可以跟任何狀態同時存在，地圖標籤上會顯示愛心；上方可篩選狀態，標題右邊切換地圖或清單
 - **上傳截圖解析**：一次最多 6 張，可以設定「同一間物件」或「每張各一間」；AI 沒把握的欄位會用黃色標出
 - **詳細頁**：所有欄位都能就地編輯；可以切換來源（591／FB 社團／IG／其他）並貼上房源出處連結（貼 591、FB、IG 的網址會自動切換來源）；電話可直接撥打，LINE ID 可直接開 LINE（官方帳號 @ID、一般 ID、「LINE 同電話」三種情況都有處理）
+- **預約看房與行程管理**：物件頁可以填預約看房時間；底部導覽列的「行程管理」用月曆列出每天的看房行程和接下來的預約
+- **分享**：
+  - 分享單一物件：物件頁「產生分享連結」，拿到連結的人不用登入就能看（看不到備註），可以隨時停止分享
+  - 一起找房：設定頁邀請對方的 Google email，對方可以看、修改你的物件（不能刪除）；對方也要在白名單裡
 - **備註**：依日期記錄，最新一條會顯示在地圖和清單卡片上
 - **私訊範本**：詢問是否還在、約看房、問細節，會自動帶入聯絡人、租金和物件編號，產生後可以再修改再複製
 
@@ -53,6 +57,56 @@ Build 設定已經寫在 `vercel.json`，在 Vercel 匯入時只要設定兩件�
 
 ## 資料存在哪裡
 
-v1 的資料存在**這台裝置的瀏覽器**（localStorage，`src/lib/store.ts`）。換手機或清掉瀏覽器資料後，資料就會不見。要跟一起找房的人共用，可以把 store 換成 Firestore（apps/bazi 已經有 Firebase 設定可以參考），畫面元件不需要改。
+- **沒登入**：存在這台裝置的瀏覽器（localStorage），換手機或清掉瀏覽器資料就會不見。
+- **登入後**：物件和私訊範本會同步到雲端，每個帳號各自一份，換手機登入同一個帳號就看得到。
+  - 前端只透過後端 API（`/api/listings`、`/api/preferences`）讀寫，後端每次都會檢查帳號在白名單裡
+  - 登入時會把這台裝置上的資料跟雲端合併（同一筆以最後修改時間新的為準），登入前新增的物件不會不見
+  - 修改後約 1 秒內自動上傳；登出時先把還沒送出的修改送完，再清掉這台裝置上的資料
+  - 同步程式在 `src/lib/cloud-sync.ts`
 
-截圖本身不會保存，只留一張縮小的縮圖。
+截圖本身不會保存，只留一張縮小的縮圖和選填的首圖。
+
+## 資料存取層（可切換 Firestore／PostgreSQL）
+
+API 不直接碰資料庫，而是透過 `src/lib/data/` 的 repository 介面：
+
+| 檔案 | 內容 |
+| --- | --- |
+| `types.ts` | 介面：`ListingRepository`、`PreferencesRepository`、`AllowlistRepository` |
+| `firestore.ts` | Firestore 實作（預設） |
+| `postgres.ts`、`schema.ts` | PostgreSQL 實作與資料表 |
+| `validate.ts` | 寫入前檢查物件格式 |
+| `access.ts` | 權限規則：自己的物件、共用給我的物件、分享連結看得到哪些欄位 |
+| `index.ts` | 依 `DATA_BACKEND` 選擇實作 |
+
+### Firestore（預設）
+
+- `rentalAllowedUsers/{小寫 email}`：白名單
+- `rentalUsers/{uid}`：email、最後登入時間、私訊範本（登入時記下 uid 對應的 email，後台看得出是誰的資料）；`rentalUsers/{uid}/listings/{id}`：物件
+- `rentalMembers/{ownerUid}__{email}`：一起找房的成員；`rentalShareLinks/{token}`：分享連結
+
+### PostgreSQL
+
+在 Vercel 設定 `DATA_BACKEND=postgres` 和 `DATABASE_URL`，資料表會在第一次呼叫 API 時自動建立（`CREATE TABLE IF NOT EXISTS`）。
+
+| 資料表 | 內容 |
+| --- | --- |
+| `rental_allowed_users` | 白名單（email） |
+| `rental_users` | 每個帳號的 email、最後登入時間、私訊範本（JSONB） |
+| `rental_listings` | 物件主表，`owner_uid` 區分帳號 |
+| `rental_listing_contacts` | 電話／LINE／IG，一個聯絡方式一列 |
+| `rental_listing_notes` | 備註，一則一列 |
+| `rental_list_members` | 一起找房的成員 |
+| `rental_share_links` | 單一物件的分享連結，物件刪掉時一起刪 |
+
+- 寫入物件在同一個交易裡完成，失敗會整筆回復；別的帳號的物件無法覆蓋或刪除
+- 新增白名單：`INSERT INTO rental_allowed_users (email) VALUES ('you@gmail.com');`
+- 切換資料庫不會自動搬資料：從 Firestore 換到 PostgreSQL 後，登入時這台裝置上的資料會上傳到新的資料庫
+
+### 測試
+
+```bash
+cd apps/rental && npx vitest run
+```
+
+PostgreSQL 的測試用 [PGlite](https://pglite.dev)（記憶體裡的 PostgreSQL）執行，不需要另外架資料庫。
