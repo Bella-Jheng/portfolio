@@ -40,7 +40,7 @@ function Home() {
     });
 
   const filtered = useMemo(
-    () => listings.filter((l) => (favoritesOnly ? l.status === 'favorite' : active.has(l.status))),
+    () => listings.filter((l) => (favoritesOnly ? l.favorite : active.has(l.status))),
     [listings, active, favoritesOnly],
   );
 
@@ -57,7 +57,7 @@ function Home() {
               listings={filtered}
               total={listings.length}
               emptyText={
-                favoritesOnly ? '還沒有「最想要」的物件。在物件頁把狀態設成「最想要」，就會出現在這裡。' : undefined
+                favoritesOnly ? '還沒有「最想要」的物件。按物件右上角的愛心，就會出現在這裡。' : undefined
               }
             />
           )}

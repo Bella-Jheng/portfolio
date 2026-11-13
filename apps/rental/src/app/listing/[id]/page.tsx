@@ -20,6 +20,7 @@ import {
   telHref,
 } from '../../../lib/contact';
 import { SourcePicker } from '../../../components/SourcePicker';
+import { FavoriteButton } from '../../../components/FavoriteButton';
 import { resizeCoverImage } from '../../../lib/image';
 import { PROFILE_TEMPLATE_ID, TEMPLATES, buildMessage } from '../../../lib/templates';
 import { usePreferences } from '../../../lib/preferences';
@@ -87,10 +88,11 @@ function ListingDetail({ listing: l }: { listing: Listing }) {
         <Link href="/" aria-label="返回" className="flex h-11 w-11 items-center justify-center">
           <BackIcon size={22} />
         </Link>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <h1 className="truncate text-xl font-bold">{l.title || '物件資訊'}</h1>
           <p className="text-xs text-sub">建立於 {formatDateTime(l.createdAt)}</p>
         </div>
+        <FavoriteButton listing={l} size={26} />
       </header>
 
       <main className="flex flex-1 flex-col gap-3 px-4 pb-[calc(var(--nav-h)+24px)] pt-1">
@@ -112,7 +114,7 @@ function ListingDetail({ listing: l }: { listing: Listing }) {
         <CoverSection listing={l} />
 
         {/* 狀態 */}
-        <section aria-label="狀態" className="grid grid-cols-5 gap-1">
+        <section aria-label="狀態" className="grid grid-cols-4 gap-1.5">
           {STATUSES.map((s) => {
             const meta = STATUS_META[s];
             const on = l.status === s;

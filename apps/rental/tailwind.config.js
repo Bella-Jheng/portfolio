@@ -21,7 +21,6 @@ module.exports = {
           not_contacted: '#C98A2E',
           contacted: '#3F6A73',
           viewed: '#5B7F52',
-          favorite: '#B8556B',
           rented: '#9A958D',
         },
         warn: { bg: '#FEF3C7', text: '#8A3B0A' },

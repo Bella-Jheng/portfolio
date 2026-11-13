@@ -5,7 +5,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Listing, Note, ParsedField, Status } from './types';
 
-type PersistedListing = Omit<Listing, 'status' | 'igIds'> & { status: Status | 'contacting'; igIds?: string[] };
+type PersistedListing = Omit<Listing, 'status' | 'igIds'> & { status: Status | 'contacting' | 'favorite'; igIds?: string[] };
 
 export function newId(): string {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return crypto.randomUUID();
@@ -45,6 +45,7 @@ interface ListingState {
   update: (id: string, patch: Partial<Listing>, touched?: ParsedField[]) => void;
   remove: (id: string) => void;
   setStatus: (id: string, status: Status) => void;
+  toggleFavorite: (id: string) => void;
   addNote: (id: string, text: string) => void;
   removeNote: (id: string, noteId: string) => void;
 }
@@ -77,6 +78,12 @@ export const useListings = create<ListingState>()(
             l.id === id ? { ...l, status, updatedAt: new Date().toISOString() } : l,
           ),
         })),
+      toggleFavorite: (id) =>
+        set((s) => ({
+          listings: s.listings.map((l) =>
+            l.id === id ? { ...l, favorite: !l.favorite, updatedAt: new Date().toISOString() } : l,
+          ),
+        })),
       addNote: (id, text) =>
         set((s) => ({
           listings: s.listings.map((l) => {
@@ -94,7 +101,7 @@ export const useListings = create<ListingState>()(
     }),
     {
       name: 'rental-helper:listings',
-      version: 2,
+      version: 3,
       // v1 → v2：「聯絡中」拆成「尚未聯絡／已聯絡」，舊的聯絡中視為已聯絡；新增 IG 聯絡方式
       migrate: (persisted, version) => {
         const state = persisted as { listings: PersistedListing[] };
@@ -104,6 +111,12 @@ export const useListings = create<ListingState>()(
             status: l.status === 'contacting' ? 'contacted' : l.status,
             igIds: l.igIds ?? [],
           }));
+        }
+        // v2 → v3：「最想要」從狀態拆成獨立的愛心；原本狀態是最想要的，改成已聯絡＋愛心
+        if (version < 3) {
+          state.listings = state.listings.map((l) =>
+            l.status === 'favorite' ? { ...l, status: 'contacted', favorite: true } : l,
+          );
         }
         return state as unknown as ListingState;
       },
