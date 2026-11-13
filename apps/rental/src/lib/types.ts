@@ -13,11 +13,12 @@ export const STATUS_META: Record<
   rented: { label: '已出租', color: '#9A958D', softBg: '#FFFFFF', softText: '#4A4A4A' },
 };
 
-export type Source = '591' | 'fb' | 'other';
+export type Source = '591' | 'fb' | 'ig' | 'other';
 
 export const SOURCE_LABEL: Record<Source, string> = {
   '591': '591',
   fb: 'FB 社團',
+  ig: 'IG',
   other: '其他',
 };
 
@@ -49,6 +50,8 @@ export interface Listing {
   updatedAt: string;
   status: Status;
   source: Source;
+  /** 房源出處：原始貼文或物件頁的網址（舊資料沒有這個欄位） */
+  sourceUrl?: string;
   title: string;
   address: string;
   lat?: number;

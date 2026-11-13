@@ -7,7 +7,8 @@ import clsx from 'clsx';
 import { emptyListing, useListings } from '../../lib/store';
 import { resizeCoverImage, resizeImage } from '../../lib/image';
 import { useGeocode } from '../../lib/geocode';
-import { SOURCE_LABEL, type ParseResult, type Source } from '../../lib/types';
+import type { ParseResult, Source } from '../../lib/types';
+import { SourcePicker } from '../../components/SourcePicker';
 import { BackIcon, CloseIcon, ImageIcon, PlusIcon, SparkIcon } from '../../components/icons';
 import {
   ListingDraftForm,
@@ -16,7 +17,7 @@ import {
   splitList,
   type DraftValues,
 } from '../../components/ListingDraftForm';
-import { igHandle } from '../../lib/contact';
+import { igHandle, normalizeUrl } from '../../lib/contact';
 import { useAuth } from '../../lib/auth';
 
 const MAX_IMAGES = 6;
@@ -109,7 +110,8 @@ export default function AddPage() {
     const address = values.address.trim();
     const loc = await geocode(address);
     const listing = emptyListing({
-      source,
+      source: values.source,
+      sourceUrl: normalizeUrl(values.sourceUrl),
       title: values.title.trim(),
       address,
       rent: parseRent(values.rent),
@@ -142,7 +144,7 @@ export default function AddPage() {
       for (let i = 0; i < groups.length; i++) {
         setBusy(groups.length > 1 ? `解析中 ${i + 1} / ${groups.length}…` : '解析中…');
         const { result, thumbnail } = await parseGroup(groups[i]);
-        parsed.push({ values: draftFromResult(result), thumbnail });
+        parsed.push({ values: draftFromResult(result, source), thumbnail });
       }
       setDrafts(parsed);
       window.scrollTo({ top: 0 });
@@ -358,22 +360,7 @@ export default function AddPage() {
           <div className="h-px bg-[#EAEAEA]" />
           <div className="flex flex-col gap-1.5">
             <p className="text-[15px] font-medium">來源</p>
-            <div className="flex gap-2">
-              {(Object.keys(SOURCE_LABEL) as Source[]).map((s) => (
-                <button
-                  key={s}
-                  type="button"
-                  aria-pressed={source === s}
-                  onClick={() => setSource(s)}
-                  className={clsx(
-                    'h-9 rounded-full px-3.5 text-sm',
-                    source === s ? 'bg-ink text-white' : 'border border-line bg-white',
-                  )}
-                >
-                  {SOURCE_LABEL[s]}
-                </button>
-              ))}
-            </div>
+            <SourcePicker value={source} onChange={setSource} />
           </div>
         </section>
 
