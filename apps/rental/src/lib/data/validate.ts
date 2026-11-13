@@ -22,6 +22,8 @@ export function isValidListing(value: unknown): value is Listing {
     (l.sourceUrl === undefined || isString(l.sourceUrl)) &&
     (l.favorite === undefined || typeof l.favorite === 'boolean') &&
     (l.viewingAt === undefined || isIsoDate(l.viewingAt)) &&
+    (l.sharedBy === undefined ||
+      (!!l.sharedBy && typeof l.sharedBy === 'object' && isString((l.sharedBy as Record<string, unknown>).uid))) &&
     isOptionalNumber(l.lat) &&
     isOptionalNumber(l.lng) &&
     (isOptionalNumber(l.rent) && (l.rent == null || Number.isInteger(l.rent))) &&

@@ -5,6 +5,7 @@ import { useHydrated, useListings } from '../../lib/store';
 import { useAuth } from '../../lib/auth';
 import { usePreferences } from '../../lib/preferences';
 import { useSyncStatus } from '../../lib/cloud-sync';
+import { MembersSection } from '../../components/MembersSection';
 import { PROFILE_TEMPLATE_ID, TEMPLATES, TEMPLATE_VARIABLES } from '../../lib/templates';
 
 export default function SettingsPage() {
@@ -51,6 +52,8 @@ export default function SettingsPage() {
           )}
           {error && <p role="alert" className="text-[13px] text-warn-text">{error}</p>}
         </section>
+
+        <MembersSection />
 
         <section className="card flex flex-col gap-4 p-4">
           <div className="flex flex-col gap-1">

@@ -31,6 +31,16 @@ function setStatus(status: SyncStatus, message: string | null = null) {
   useSyncStatus.setState({ status, message });
 }
 
+/** 給其他畫面用的 API 呼叫（分享、一起找房）：自動帶登入憑證，失敗時丟出錯誤訊息 */
+export function cloudApi<T>(path: string, init: RequestInit = {}): Promise<T> {
+  return api<T>(path, init);
+}
+
+/** 共用設定改變後重新下載（例如被邀請、離開別人的清單） */
+export async function resyncCloud() {
+  if (getToken) await startCloudSync(getToken);
+}
+
 async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   const token = getToken ? await getToken() : null;
   if (!token) throw new Error('請先用 Google 登入');
@@ -104,6 +114,8 @@ export async function startCloudSync(tokenGetter: () => Promise<string | null>) 
     const merged = new Map(remoteById);
     for (const l of local) {
       const r = remoteById.get(l.id);
+      // 別人共用的物件雲端沒有了（取消共用或被刪掉），這台也拿掉，不要再上傳
+      if (!r && l.sharedBy) continue;
       const winner = r ? newer(l, r) : l;
       merged.set(l.id, winner);
       if (winner === l && (!r || r.updatedAt !== l.updatedAt)) toUpload.push(l);

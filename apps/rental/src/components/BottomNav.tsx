@@ -7,9 +7,9 @@ import clsx from 'clsx';
 import { CalendarIcon, HeartOutlineIcon, PinIcon, PlusIcon, SettingsIcon } from './icons';
 import { useHideOnScrollDown } from '../lib/use-scroll-direction';
 
-// 新增頁與私訊頁底部有自己的操作按鈕，不顯示導覽列
+// 新增頁與私訊頁底部有自己的操作按鈕；分享連結頁是給沒登入的人看的，都不顯示導覽列
 function hiddenOn(pathname: string): boolean {
-  return pathname === '/add' || /^\/listing\/[^/]+\/message$/.test(pathname);
+  return pathname === '/add' || pathname.startsWith('/share/') || /^\/listing\/[^/]+\/message$/.test(pathname);
 }
 
 export function BottomNav() {

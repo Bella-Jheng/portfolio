@@ -61,6 +61,11 @@ export function ListView({
                     {l.pets && (
                       <span className="rounded-full border border-line bg-white px-2.5 py-0.5 text-xs text-[#4A4A4A]">{l.pets}</span>
                     )}
+                    {l.sharedBy && (
+                      <span className="rounded-full border border-line bg-white px-2.5 py-0.5 text-xs text-sub">
+                        {l.sharedBy.email.split('@')[0]} 共用
+                      </span>
+                    )}
                     {l.viewingAt && (
                       <span className="rounded-full border border-[#3F6A73]/40 bg-white px-2.5 py-0.5 text-xs text-[#2F5157]">
                         看房 {formatViewing(l.viewingAt)}

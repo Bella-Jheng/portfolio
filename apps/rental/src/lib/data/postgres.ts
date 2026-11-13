@@ -105,33 +105,41 @@ export function createPostgresRepositories(sql: SqlClient): Repositories {
     return schemaReady;
   };
 
-  return {
+  // 讀物件：先查主表，再一次查回這些物件的聯絡方式和備註，在程式裡組回去
+  async function loadListings(where: string, params: unknown[]): Promise<Listing[]> {
+    await ready();
+    const { rows } = await sql.query<ListingRow>(
+      `SELECT * FROM rental_listings WHERE ${where} ORDER BY created_at DESC`,
+      params,
+    );
+    if (rows.length === 0) return [];
+    const ids = rows.map((r) => r.id);
+    const [contacts, notes] = await Promise.all([
+      sql.query<ContactRow>(
+        'SELECT listing_id, kind, value FROM rental_listing_contacts WHERE listing_id = ANY($1) ORDER BY position',
+        [ids],
+      ),
+      sql.query<NoteRow>(
+        'SELECT id, listing_id, at, text FROM rental_listing_notes WHERE listing_id = ANY($1) ORDER BY at DESC',
+        [ids],
+      ),
+    ]);
+    return rows.map((row) =>
+      rowToListing(
+        row,
+        contacts.rows.filter((c) => c.listing_id === row.id),
+        notes.rows.filter((n) => n.listing_id === row.id),
+      ),
+    );
+  }
+
+  const repos: Repositories = {
     listings: {
-      async list(ownerUid) {
-        await ready();
-        const { rows } = await sql.query<ListingRow>(
-          'SELECT * FROM rental_listings WHERE owner_uid = $1 ORDER BY created_at DESC',
-          [ownerUid],
-        );
-        if (rows.length === 0) return [];
-        const ids = rows.map((r) => r.id);
-        const [contacts, notes] = await Promise.all([
-          sql.query<ContactRow>(
-            'SELECT listing_id, kind, value FROM rental_listing_contacts WHERE listing_id = ANY($1) ORDER BY position',
-            [ids],
-          ),
-          sql.query<NoteRow>(
-            'SELECT id, listing_id, at, text FROM rental_listing_notes WHERE listing_id = ANY($1) ORDER BY at DESC',
-            [ids],
-          ),
-        ]);
-        return rows.map((row) =>
-          rowToListing(
-            row,
-            contacts.rows.filter((c) => c.listing_id === row.id),
-            notes.rows.filter((n) => n.listing_id === row.id),
-          ),
-        );
+      list: (ownerUid) => loadListings('owner_uid = $1', [ownerUid]),
+
+      async get(ownerUid, id) {
+        const [listing] = await loadListings('owner_uid = $1 AND id = $2', [ownerUid, id]);
+        return listing ?? null;
       },
 
       async upsert(ownerUid, l) {
@@ -216,5 +224,79 @@ export function createPostgresRepositories(sql: SqlClient): Repositories {
         return rows.length > 0;
       },
     },
+
+    members: {
+      async listMembers(ownerUid) {
+        await ready();
+        const { rows } = await sql.query<{ member_email: string }>(
+          'SELECT member_email FROM rental_list_members WHERE owner_uid = $1 ORDER BY member_email',
+          [ownerUid],
+        );
+        return rows.map((r) => r.member_email);
+      },
+      async listOwners(memberEmail) {
+        await ready();
+        const { rows } = await sql.query<{ owner_uid: string; owner_email: string }>(
+          'SELECT owner_uid, owner_email FROM rental_list_members WHERE member_email = $1 ORDER BY owner_email',
+          [memberEmail.toLowerCase()],
+        );
+        return rows.map((r) => ({ uid: r.owner_uid, email: r.owner_email }));
+      },
+      async isMember(ownerUid, memberEmail) {
+        await ready();
+        const { rows } = await sql.query('SELECT 1 FROM rental_list_members WHERE owner_uid = $1 AND member_email = $2', [
+          ownerUid,
+          memberEmail.toLowerCase(),
+        ]);
+        return rows.length > 0;
+      },
+      async add(ownerUid, ownerEmail, memberEmail) {
+        await ready();
+        await sql.query(
+          `INSERT INTO rental_list_members (owner_uid, owner_email, member_email) VALUES ($1, $2, $3)
+           ON CONFLICT (owner_uid, member_email) DO NOTHING`,
+          [ownerUid, ownerEmail.toLowerCase(), memberEmail.toLowerCase()],
+        );
+      },
+      async remove(ownerUid, memberEmail) {
+        await ready();
+        await sql.query('DELETE FROM rental_list_members WHERE owner_uid = $1 AND member_email = $2', [
+          ownerUid,
+          memberEmail.toLowerCase(),
+        ]);
+      },
+    },
+
+    shareLinks: {
+      async getToken(ownerUid, listingId) {
+        await ready();
+        const { rows } = await sql.query<{ token: string }>(
+          'SELECT token FROM rental_share_links WHERE owner_uid = $1 AND listing_id = $2',
+          [ownerUid, listingId],
+        );
+        return rows[0]?.token ?? null;
+      },
+      async create(ownerUid, listingId, token) {
+        await ready();
+        await sql.query('INSERT INTO rental_share_links (token, owner_uid, listing_id) VALUES ($1, $2, $3)', [
+          token,
+          ownerUid,
+          listingId,
+        ]);
+      },
+      async revoke(ownerUid, listingId) {
+        await ready();
+        await sql.query('DELETE FROM rental_share_links WHERE owner_uid = $1 AND listing_id = $2', [ownerUid, listingId]);
+      },
+      async resolve(token) {
+        await ready();
+        const { rows } = await sql.query<{ owner_uid: string; listing_id: string }>(
+          'SELECT owner_uid, listing_id FROM rental_share_links WHERE token = $1',
+          [token],
+        );
+        return rows[0] ? { ownerUid: rows[0].owner_uid, listingId: rows[0].listing_id } : null;
+      },
+    },
   };
+  return repos;
 }

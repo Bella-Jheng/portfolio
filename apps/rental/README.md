@@ -8,6 +8,9 @@
 - **上傳截圖解析**：一次最多 6 張，可以設定「同一間物件」或「每張各一間」；AI 沒把握的欄位會用黃色標出
 - **詳細頁**：所有欄位都能就地編輯；可以切換來源（591／FB 社團／IG／其他）並貼上房源出處連結（貼 591、FB、IG 的網址會自動切換來源）；電話可直接撥打，LINE ID 可直接開 LINE（官方帳號 @ID、一般 ID、「LINE 同電話」三種情況都有處理）
 - **預約看房與行程管理**：物件頁可以填預約看房時間；底部導覽列的「行程管理」用月曆列出每天的看房行程和接下來的預約
+- **分享**：
+  - 分享單一物件：物件頁「產生分享連結」，拿到連結的人不用登入就能看（看不到備註），可以隨時停止分享
+  - 一起找房：設定頁邀請對方的 Google email，對方可以看、修改你的物件（不能刪除）；對方也要在白名單裡
 - **備註**：依日期記錄，最新一條會顯示在地圖和清單卡片上
 - **私訊範本**：詢問是否還在、約看房、問細節，會自動帶入聯絡人、租金和物件編號，產生後可以再修改再複製
 
@@ -73,12 +76,14 @@ API 不直接碰資料庫，而是透過 `src/lib/data/` 的 repository 介面�
 | `firestore.ts` | Firestore 實作（預設） |
 | `postgres.ts`、`schema.ts` | PostgreSQL 實作與資料表 |
 | `validate.ts` | 寫入前檢查物件格式 |
+| `access.ts` | 權限規則：自己的物件、共用給我的物件、分享連結看得到哪些欄位 |
 | `index.ts` | 依 `DATA_BACKEND` 選擇實作 |
 
 ### Firestore（預設）
 
 - `rentalAllowedUsers/{小寫 email}`：白名單
 - `rentalUsers/{uid}`：私訊範本；`rentalUsers/{uid}/listings/{id}`：物件
+- `rentalMembers/{ownerUid}__{email}`：一起找房的成員；`rentalShareLinks/{token}`：分享連結
 
 ### PostgreSQL
 
@@ -91,6 +96,8 @@ API 不直接碰資料庫，而是透過 `src/lib/data/` 的 repository 介面�
 | `rental_listings` | 物件主表，`owner_uid` 區分帳號 |
 | `rental_listing_contacts` | 電話／LINE／IG，一個聯絡方式一列 |
 | `rental_listing_notes` | 備註，一則一列 |
+| `rental_list_members` | 一起找房的成員 |
+| `rental_share_links` | 單一物件的分享連結，物件刪掉時一起刪 |
 
 - 寫入物件在同一個交易裡完成，失敗會整筆回復；別的帳號的物件無法覆蓋或刪除
 - 新增白名單：`INSERT INTO rental_allowed_users (email) VALUES ('you@gmail.com');`

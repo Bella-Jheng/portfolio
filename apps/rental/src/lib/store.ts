@@ -12,6 +12,11 @@ export function newId(): string {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
+/** 別人共用給我的物件（可以改，但不能刪、不能產生分享連結） */
+export function isShared(listing: Listing): boolean {
+  return !!listing.sharedBy;
+}
+
 export function emptyListing(partial: Partial<Listing> = {}): Listing {
   const now = new Date().toISOString();
   return {
