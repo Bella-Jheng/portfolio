@@ -32,7 +32,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="bg-ground text-ink antialiased">
         <Providers>
-          <div className="mx-auto min-h-dvh max-w-[480px] bg-ground">{children}</div>
+          <div className="mx-auto min-h-dvh max-w-[480px] overflow-x-clip bg-ground">{children}</div>
           <BottomNav />
         </Providers>
       </body>

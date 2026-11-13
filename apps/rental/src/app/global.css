@@ -11,6 +11,19 @@ body {
   margin: 0;
 }
 
+/* iOS Safari 的日期／時間欄位有原生的最小寬度，會撐破版面；改成跟一般輸入框一樣可以縮放 */
+input[type='date'],
+input[type='time'],
+input[type='datetime-local'] {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  min-width: 0;
+}
+input::-webkit-date-and-time-value {
+  text-align: left;
+}
+
 :root {
   /* 底部導覽列（BottomNav）是懸浮的膠囊：距離畫面底部 --nav-gap（至少 12px，iPhone 會用安全區域高度） */
   --nav-gap: max(12px, env(safe-area-inset-bottom));

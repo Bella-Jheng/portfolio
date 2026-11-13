@@ -703,24 +703,29 @@ function ViewingSection({ listing: l }: { listing: Listing }) {
           </Link>
         )}
       </div>
-      <div className="flex items-center gap-2">
-        <label htmlFor="viewing-at" className="sr-only">
-          預約看房時間
-        </label>
-        <input
-          id="viewing-at"
-          type="datetime-local"
-          value={l.viewingAt ? toLocalInputValue(l.viewingAt) : ''}
-          onChange={(e) => update(l.id, { viewingAt: fromLocalInputValue(e.target.value) })}
-          className="field-input min-w-0 flex-1 bg-cream"
-        />
-        {l.viewingAt && (
-          <button type="button" onClick={() => update(l.id, { viewingAt: undefined })} className="btn-outline h-11 shrink-0">
+      <label htmlFor="viewing-at" className="sr-only">
+        預約看房時間
+      </label>
+      {/* iPhone 的日期欄位有最小寬度，跟按鈕放同一行會撐破畫面，所以獨佔一行 */}
+      <input
+        id="viewing-at"
+        type="datetime-local"
+        value={l.viewingAt ? toLocalInputValue(l.viewingAt) : ''}
+        onChange={(e) => update(l.id, { viewingAt: fromLocalInputValue(e.target.value) })}
+        className="field-input bg-cream"
+      />
+      {l.viewingAt && (
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-[13px] text-sub">{formatViewing(l.viewingAt)} 去看房</p>
+          <button
+            type="button"
+            onClick={() => update(l.id, { viewingAt: undefined })}
+            className="shrink-0 text-[13px] text-sub underline"
+          >
             取消預約
           </button>
-        )}
-      </div>
-      {l.viewingAt && <p className="text-[13px] text-sub">{formatViewing(l.viewingAt)} 去看房</p>}
+        </div>
+      )}
     </section>
   );
 }
