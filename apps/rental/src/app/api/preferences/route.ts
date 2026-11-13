@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyUser } from '../../../lib/verify-user';
-import { userDoc } from '../../../lib/user-data';
 
 const MAX_TEMPLATE_CHARS = 5_000;
 
@@ -10,9 +9,9 @@ export async function GET(request: NextRequest) {
   if (!user.ok) return NextResponse.json({ error: user.error }, { status: user.status });
 
   try {
-    const doc = await userDoc(user.db, user.uid).get();
+    const templates = await user.repos.preferences.getTemplates(user.uid);
     return NextResponse.json(
-      { templates: (doc.data()?.templates as Record<string, string> | undefined) ?? null },
+      { templates },
       { headers: { 'Cache-Control': 'no-store, private' } },
     );
   } catch (error) {
@@ -35,7 +34,7 @@ export async function PUT(request: NextRequest) {
   if (!valid) return NextResponse.json({ error: '資料格式錯誤' }, { status: 400 });
 
   try {
-    await userDoc(user.db, user.uid).set({ templates, updatedAt: new Date().toISOString() }, { merge: true });
+    await user.repos.preferences.saveTemplates(user.uid, templates as Record<string, string>);
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error('Save preferences failed:', error);

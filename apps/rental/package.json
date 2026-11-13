@@ -2,6 +2,9 @@
   "name": "@trg/rental",
   "version": "0.0.1",
   "private": true,
+  "scripts": {
+    "test": "vitest run"
+  },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "@vis.gl/react-google-maps": "^1.10.2",
@@ -9,8 +12,14 @@
     "firebase": "^12.13.0",
     "firebase-admin": "^13.0.0",
     "next": "16.4.2",
+    "pg": "^8.23.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "zustand": "^5.0.13"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.16",
+    "@types/pg": "^8.23.1",
+    "vitest": "^3.2.7"
   }
 }

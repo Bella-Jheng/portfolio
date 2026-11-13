@@ -54,11 +54,51 @@ Build 設定已經寫在 `vercel.json`，在 Vercel 匯入時只要設定兩件�
 ## 資料存在哪裡
 
 - **沒登入**：存在這台裝置的瀏覽器（localStorage），換手機或清掉瀏覽器資料就會不見。
-- **登入後**：物件和私訊範本會同步到 Firebase（Firestore），每個帳號各自一份，換手機登入同一個帳號就看得到。
-  - 位置：`rentalUsers/{uid}`（私訊範本）、`rentalUsers/{uid}/listings/{物件 id}`（物件）
-  - 前端只透過後端 API（`/api/listings`、`/api/preferences`）讀寫，後端用服務帳號存取，並檢查帳號在 `rentalAllowedUsers` 名單裡；不需要修改 Firestore 安全規則
+- **登入後**：物件和私訊範本會同步到雲端，每個帳號各自一份，換手機登入同一個帳號就看得到。
+  - 前端只透過後端 API（`/api/listings`、`/api/preferences`）讀寫，後端每次都會檢查帳號在白名單裡
   - 登入時會把這台裝置上的資料跟雲端合併（同一筆以最後修改時間新的為準），登入前新增的物件不會不見
   - 修改後約 1 秒內自動上傳；登出時先把還沒送出的修改送完，再清掉這台裝置上的資料
   - 同步程式在 `src/lib/cloud-sync.ts`
 
 截圖本身不會保存，只留一張縮小的縮圖和選填的首圖。
+
+## 資料存取層（可切換 Firestore／PostgreSQL）
+
+API 不直接碰資料庫，而是透過 `src/lib/data/` 的 repository 介面：
+
+| 檔案 | 內容 |
+| --- | --- |
+| `types.ts` | 介面：`ListingRepository`、`PreferencesRepository`、`AllowlistRepository` |
+| `firestore.ts` | Firestore 實作（預設） |
+| `postgres.ts`、`schema.ts` | PostgreSQL 實作與資料表 |
+| `validate.ts` | 寫入前檢查物件格式 |
+| `index.ts` | 依 `DATA_BACKEND` 選擇實作 |
+
+### Firestore（預設）
+
+- `rentalAllowedUsers/{小寫 email}`：白名單
+- `rentalUsers/{uid}`：私訊範本；`rentalUsers/{uid}/listings/{id}`：物件
+
+### PostgreSQL
+
+在 Vercel 設定 `DATA_BACKEND=postgres` 和 `DATABASE_URL`，資料表會在第一次呼叫 API 時自動建立（`CREATE TABLE IF NOT EXISTS`）。
+
+| 資料表 | 內容 |
+| --- | --- |
+| `rental_allowed_users` | 白名單（email） |
+| `rental_users` | 每個帳號的私訊範本（JSONB） |
+| `rental_listings` | 物件主表，`owner_uid` 區分帳號 |
+| `rental_listing_contacts` | 電話／LINE／IG，一個聯絡方式一列 |
+| `rental_listing_notes` | 備註，一則一列 |
+
+- 寫入物件在同一個交易裡完成，失敗會整筆回復；別的帳號的物件無法覆蓋或刪除
+- 新增白名單：`INSERT INTO rental_allowed_users (email) VALUES ('you@gmail.com');`
+- 切換資料庫不會自動搬資料：從 Firestore 換到 PostgreSQL 後，登入時這台裝置上的資料會上傳到新的資料庫
+
+### 測試
+
+```bash
+cd apps/rental && npx vitest run
+```
+
+PostgreSQL 的測試用 [PGlite](https://pglite.dev)（記憶體裡的 PostgreSQL）執行，不需要另外架資料庫。
