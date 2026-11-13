@@ -1,3 +1,5 @@
+import type { Source } from './types';
+
 /** 電話：只留數字和 +，給 tel: 用 */
 export function telHref(phone: string): string {
   return `tel:${phone.replace(/[^\d+]/g, '')}`;
@@ -38,6 +40,27 @@ export function igHref(igId: string): string {
 /** 直接開 IG 私訊對話 */
 export function igDmHref(igId: string): string {
   return `https://ig.me/m/${encodeURIComponent(igHandle(igId))}`;
+}
+
+/** 房源出處網址：補上 https://，只接受 http(s)，避免 javascript: 之類的連結 */
+export function normalizeUrl(input: string): string {
+  const value = input.trim();
+  if (!value) return '';
+  const withScheme = /^[a-z][a-z\d+.-]*:/i.test(value) ? value : `https://${value}`;
+  return /^https?:\/\//i.test(withScheme) ? withScheme : '';
+}
+
+/** 依網址猜來源：591、FB、IG；猜不出來回傳 null */
+export function detectSource(url: string): Source | null {
+  try {
+    const host = new URL(url).hostname.toLowerCase();
+    if (host.endsWith('591.com.tw')) return '591';
+    if (host.endsWith('facebook.com') || host === 'fb.com' || host.endsWith('fb.me')) return 'fb';
+    if (host.endsWith('instagram.com')) return 'ig';
+  } catch {
+    /* 不是合法網址 */
+  }
+  return null;
 }
 
 export function mapsSearchHref(address: string, lat?: number, lng?: number): string {

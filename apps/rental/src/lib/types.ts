@@ -1,6 +1,9 @@
-export type Status = 'not_contacted' | 'contacted' | 'viewed' | 'favorite' | 'rented';
+export type Status = 'not_contacted' | 'contacted' | 'viewed' | 'rented';
 
-export const STATUSES: Status[] = ['not_contacted', 'contacted', 'viewed', 'favorite', 'rented'];
+export const STATUSES: Status[] = ['not_contacted', 'contacted', 'viewed', 'rented'];
+
+/** 「最想要」是獨立的愛心標記，可以跟任何狀態同時存在（例如已聯絡＋最想要） */
+export const FAVORITE_COLOR = '#B8556B';
 
 export const STATUS_META: Record<
   Status,
@@ -9,15 +12,15 @@ export const STATUS_META: Record<
   not_contacted: { label: '尚未聯絡', color: '#C98A2E', softBg: '#FEF3C7', softText: '#92400E' },
   contacted: { label: '已聯絡', color: '#3F6A73', softBg: '#E3ECEC', softText: '#2F5157' },
   viewed: { label: '已看房', color: '#5B7F52', softBg: '#E8F1E3', softText: '#3F6B36' },
-  favorite: { label: '最想要', color: '#B8556B', softBg: '#F6E6EA', softText: '#8C3A4E' },
   rented: { label: '已出租', color: '#9A958D', softBg: '#FFFFFF', softText: '#4A4A4A' },
 };
 
-export type Source = '591' | 'fb' | 'other';
+export type Source = '591' | 'fb' | 'ig' | 'other';
 
 export const SOURCE_LABEL: Record<Source, string> = {
   '591': '591',
   fb: 'FB 社團',
+  ig: 'IG',
   other: '其他',
 };
 
@@ -48,7 +51,11 @@ export interface Listing {
   createdAt: string;
   updatedAt: string;
   status: Status;
+  /** 最想要（愛心）；舊資料沒有這個欄位時視為 false */
+  favorite?: boolean;
   source: Source;
+  /** 房源出處：原始貼文或物件頁的網址（舊資料沒有這個欄位） */
+  sourceUrl?: string;
   title: string;
   address: string;
   lat?: number;

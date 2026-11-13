@@ -2,10 +2,14 @@
 
 import clsx from 'clsx';
 import { CheckIcon } from './icons';
-import type { ParsedField, ParseResult } from '../lib/types';
+import type { ParsedField, ParseResult, Source } from '../lib/types';
+import { detectSource, normalizeUrl } from '../lib/contact';
+import { SourcePicker } from './SourcePicker';
 
 /** AI 解析完、還沒儲存的草稿。電話／LINE／IG 用文字存，方便直接打逗號輸入多筆 */
 export interface DraftValues {
+  source: Source;
+  sourceUrl: string;
   title: string;
   rent: string;
   address: string;
@@ -25,8 +29,10 @@ export interface DraftValues {
 
 const LIST_SEPARATOR = '、';
 
-export function draftFromResult(result: ParseResult): DraftValues {
+export function draftFromResult(result: ParseResult, source: Source): DraftValues {
   return {
+    source,
+    sourceUrl: '',
     title: result.title,
     rent: result.rent != null ? String(result.rent) : '',
     address: result.address,
@@ -58,7 +64,7 @@ export function parseRent(value: string): number | undefined {
   return Number.isFinite(n) ? n : undefined;
 }
 
-type TextKey = Exclude<keyof DraftValues, 'uncertain'>;
+type TextKey = Exclude<keyof DraftValues, 'uncertain' | 'source' | 'sourceUrl'>;
 
 const FIELDS: {
   key: TextKey;
@@ -103,6 +109,26 @@ export function ListingDraftForm({
   return (
     <section className="card flex flex-col gap-3 p-4">
       {heading && <h2 className="text-[15px] font-bold">{heading}</h2>}
+      <div className="flex flex-col gap-1.5">
+        <span className="text-xs text-sub">來源</span>
+        <SourcePicker value={draft.source} onChange={(source) => onChange({ ...draft, source })} />
+      </div>
+      <label className="flex flex-col gap-1">
+        <span className="text-xs text-sub">房源出處 · 貼上原始貼文或物件頁的連結</span>
+        <input
+          className="field-input"
+          type="url"
+          inputMode="url"
+          placeholder="https://"
+          value={draft.sourceUrl}
+          onChange={(e) => {
+            const sourceUrl = e.target.value;
+            // 貼上 591／FB／IG 的連結時，順便把來源切到對應的平台
+            const detected = detectSource(normalizeUrl(sourceUrl));
+            onChange({ ...draft, sourceUrl, source: detected ?? draft.source });
+          }}
+        />
+      </label>
       {FIELDS.map(({ key, label, parsed, inputMode, hint }) => {
         const uncertain = parsed != null && draft.uncertain.includes(parsed);
         return (

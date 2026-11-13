@@ -5,6 +5,7 @@ import clsx from 'clsx';
 import type { Listing } from '../lib/types';
 import { formatRent, formatShortDate, mapsSearchHref } from '../lib/contact';
 import { StatusChip } from './StatusChip';
+import { FavoriteButton } from './FavoriteButton';
 import { Thumb } from './MapView';
 import { ChatIcon, NoteIcon, PinIcon } from './icons';
 
@@ -38,20 +39,19 @@ export function ListView({
           <li key={l.id}>
             <article
               className={clsx(
-                'flex flex-col gap-3 rounded-2xl p-3.5',
+                'relative flex flex-col gap-3 rounded-2xl p-3.5',
                 'border border-card-line bg-white', rented ? 'opacity-70' : 'shadow-[0_1px_3px_rgba(46,48,51,.06)]',
               )}
             >
               <Link href={`/listing/${l.id}`} className="flex gap-3">
                 <Thumb listing={l} size={84} />
                 <div className="flex min-w-0 flex-1 flex-col gap-1">
-                  <div className="flex items-baseline justify-between gap-2">
-                    <h2 className={clsx('truncate text-base font-bold', rented && 'text-sub')}>
-                      {l.title || '（未命名物件）'}
-                    </h2>
-                    <span className="shrink-0 text-xs text-sub">{formatShortDate(l.createdAt)} 建立</span>
-                  </div>
+                  {/* 右上角留給愛心按鈕 */}
+                  <h2 className={clsx('truncate pr-8 text-base font-bold', rented && 'text-sub')}>
+                    {l.title || '（未命名物件）'}
+                  </h2>
                   <p className="truncate text-[13px] text-sub">{l.address || '地址未填'}</p>
+                  <p className="text-xs text-sub">{formatShortDate(l.createdAt)} 建立</p>
                   <p className={clsx('text-lg font-bold', rented && 'text-sub line-through')}>
                     {formatRent(l.rent)}
                     {l.size && <span className="text-[13px] font-normal text-sub"> / 月 · {l.size}</span>}
@@ -67,6 +67,8 @@ export function ListView({
                   </div>
                 </div>
               </Link>
+              {/* 愛心放在連結外面，按了只切換最想要，不會跳到物件頁 */}
+              <FavoriteButton listing={l} className="absolute right-1.5 top-1.5" />
               {latest && (
                 <p className="flex items-center gap-1.5 rounded-lg border border-line bg-white px-2.5 py-2 text-[13px] text-[#4A4A4A]">
                   <NoteIcon size={14} className="shrink-0" />

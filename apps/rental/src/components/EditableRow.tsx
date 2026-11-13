@@ -26,7 +26,7 @@ export function EditableRow({
   placeholder?: string;
   uncertain?: boolean;
   uncertainHint?: string;
-  inputMode?: 'text' | 'tel' | 'numeric';
+  inputMode?: 'text' | 'tel' | 'numeric' | 'url';
   startEditing?: boolean;
   leading?: ReactNode;
   trailing?: ReactNode;
@@ -68,7 +68,7 @@ export function EditableRow({
             className="field-input"
             value={draft}
             inputMode={inputMode}
-            type={inputMode === 'tel' ? 'tel' : 'text'}
+            type={inputMode === 'tel' ? 'tel' : inputMode === 'url' ? 'url' : 'text'}
             onChange={(e) => setDraft(e.target.value)}
             onBlur={commit}
             onKeyDown={(e) => {

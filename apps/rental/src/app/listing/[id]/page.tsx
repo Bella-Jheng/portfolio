@@ -7,7 +7,20 @@ import clsx from 'clsx';
 import { useHydrated, useListings } from '../../../lib/store';
 import { useGeocode } from '../../../lib/geocode';
 import { STATUSES, STATUS_META, type Listing, type ParsedField } from '../../../lib/types';
-import { copyText, formatDateTime, igHandle, igHref, lineHref, lineIsPhone, mapsSearchHref, telHref } from '../../../lib/contact';
+import {
+  copyText,
+  detectSource,
+  formatDateTime,
+  igHandle,
+  igHref,
+  lineHref,
+  lineIsPhone,
+  mapsSearchHref,
+  normalizeUrl,
+  telHref,
+} from '../../../lib/contact';
+import { SourcePicker } from '../../../components/SourcePicker';
+import { FavoriteButton } from '../../../components/FavoriteButton';
 import { resizeCoverImage } from '../../../lib/image';
 import { PROFILE_TEMPLATE_ID, TEMPLATES, buildMessage } from '../../../lib/templates';
 import { usePreferences } from '../../../lib/preferences';
@@ -75,10 +88,11 @@ function ListingDetail({ listing: l }: { listing: Listing }) {
         <Link href="/" aria-label="返回" className="flex h-11 w-11 items-center justify-center">
           <BackIcon size={22} />
         </Link>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <h1 className="truncate text-xl font-bold">{l.title || '物件資訊'}</h1>
           <p className="text-xs text-sub">建立於 {formatDateTime(l.createdAt)}</p>
         </div>
+        <FavoriteButton listing={l} size={26} />
       </header>
 
       <main className="flex flex-1 flex-col gap-3 px-4 pb-[calc(var(--nav-h)+24px)] pt-1">
@@ -100,7 +114,7 @@ function ListingDetail({ listing: l }: { listing: Listing }) {
         <CoverSection listing={l} />
 
         {/* 狀態 */}
-        <section aria-label="狀態" className="grid grid-cols-5 gap-1">
+        <section aria-label="狀態" className="grid grid-cols-4 gap-1.5">
           {STATUSES.map((s) => {
             const meta = STATUS_META[s];
             const on = l.status === s;
@@ -121,6 +135,38 @@ function ListingDetail({ listing: l }: { listing: Listing }) {
               </button>
             );
           })}
+        </section>
+
+        {/* 來源與房源出處 */}
+        <section className="card flex flex-col gap-1 px-3.5 pb-1 pt-3">
+          <div className="flex flex-col gap-1.5 pb-2">
+            <span className="text-xs text-sub">來源</span>
+            <SourcePicker value={l.source} onChange={(source) => update(l.id, { source })} />
+          </div>
+          <EditableRow
+            label="房源出處"
+            value={l.sourceUrl ?? ''}
+            placeholder="點一下貼上連結"
+            inputMode="url"
+            trailing={
+              l.sourceUrl ? (
+                <a
+                  href={l.sourceUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex h-10 shrink-0 items-center gap-1 rounded-full border border-line px-3 text-sm font-medium text-brand"
+                >
+                  開啟
+                  <ExternalIcon size={14} />
+                </a>
+              ) : undefined
+            }
+            onSave={(v) => {
+              const sourceUrl = normalizeUrl(v);
+              // 貼上 591／FB／IG 的連結時，順便把來源切到對應的平台
+              update(l.id, { sourceUrl, source: detectSource(sourceUrl) ?? l.source });
+            }}
+          />
         </section>
 
         {/* 物件資訊 */}

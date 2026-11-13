@@ -8,6 +8,7 @@ import { formatRent, mapsDirectionsHref } from '../lib/contact';
 import { MAPS_KEY, MAP_ID } from './Providers';
 import { StatusChip } from './StatusChip';
 import { HeartIcon, ImageIcon, NoteIcon } from './icons';
+import { FavoriteButton } from './FavoriteButton';
 
 const TAICHUNG = { lat: 24.1477, lng: 120.6736 };
 
@@ -53,7 +54,7 @@ export function MapView({
             <AdvancedMarker
               key={l.id}
               position={{ lat: l.lat as number, lng: l.lng as number }}
-              zIndex={isSelected ? 1000 : l.status === 'favorite' ? 500 : l.status === 'rented' ? 1 : 100}
+              zIndex={isSelected ? 1000 : l.favorite ? 500 : l.status === 'rented' ? 1 : 100}
               onClick={() => onSelect(l.id)}
               title={`${meta.label}：${l.title || l.address}`}
             >
@@ -69,7 +70,7 @@ export function MapView({
                       : '0 2px 6px rgba(46,48,51,.25)',
                   }}
                 >
-                  {l.status === 'favorite' && <HeartIcon />}
+                  {l.favorite && <HeartIcon />}
                   {formatRent(l.rent)}
                 </span>
                 <span
@@ -120,11 +121,12 @@ function SelectedCard({ listing: l }: { listing: Listing }) {
   const latest = l.notes[0];
   return (
     <article className="card absolute bottom-3 left-3 right-3 flex flex-col gap-3 p-3.5 shadow-[0_6px_20px_rgba(46,48,51,.2)]">
+      <FavoriteButton listing={l} className="absolute right-1.5 top-1.5" />
       <Link href={`/listing/${l.id}`} className="flex gap-3">
         <Thumb listing={l} size={72} />
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
           <StatusChip status={l.status} />
-          <h2 className="truncate text-base font-bold">{l.title || '（未命名物件）'}</h2>
+          <h2 className="truncate pr-8 text-base font-bold">{l.title || '（未命名物件）'}</h2>
           <p className="truncate text-sm text-sub">
             <b className="text-base text-ink">{formatRent(l.rent)}</b>
             {[l.size, l.pets].filter(Boolean).map((t) => ` · ${t}`)}
