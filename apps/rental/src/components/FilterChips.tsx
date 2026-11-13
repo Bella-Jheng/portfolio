@@ -27,7 +27,7 @@ export function FilterChips({
             aria-pressed={on}
             onClick={() => onToggle(s)}
             className={clsx(
-              'flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-3 text-[13px] transition',
+              'flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-3 text-[13px] transition active:scale-95',
               // 選中的狀態用奶油色突出，沒選的是白色
               'bg-white', on ? 'border-[#9E9E9E] font-medium' : 'border-line opacity-50',
               floating && 'shadow-[0_1px_4px_rgba(46,48,51,.15)]',

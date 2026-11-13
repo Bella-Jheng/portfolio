@@ -21,10 +21,13 @@ export function FavoriteButton({ listing, size = 22, className }: { listing: Lis
         e.stopPropagation();
         toggleFavorite(listing.id);
       }}
-      className={clsx('flex h-11 w-11 shrink-0 items-center justify-center rounded-full', !on && 'text-sub', className)}
+      className={clsx('flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition active:scale-90', !on && 'text-sub', className)}
       style={on ? { color: FAVORITE_COLOR } : undefined}
     >
-      {on ? <HeartIcon size={size} /> : <HeartOutlineIcon size={size} />}
+      {/* key 跟著狀態換，每次切換都重新播一次彈跳動畫 */}
+      <span key={String(on)} className={clsx('flex', on && 'animate-pop')}>
+        {on ? <HeartIcon size={size} /> : <HeartOutlineIcon size={size} />}
+      </span>
     </button>
   );
 }

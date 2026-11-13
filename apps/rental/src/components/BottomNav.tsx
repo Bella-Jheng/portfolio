@@ -65,8 +65,10 @@ function NavItem({ href, active, icon, label }: { href: string; active: boolean;
       href={href}
       aria-current={active ? 'page' : undefined}
       className={clsx(
-        'flex flex-col items-center justify-center gap-0.5 rounded-[26px] text-[11px] transition-colors',
-        active ? 'font-bold text-brand after:mt-0.5 after:h-0.5 after:w-4 after:rounded-full after:bg-brand' : 'text-sub',
+        'flex flex-col items-center justify-center gap-0.5 rounded-[26px] text-[11px] transition active:scale-90 [&>svg]:transition-transform',
+        active
+          ? 'font-bold text-brand after:mt-0.5 after:h-0.5 after:w-4 after:animate-fade-in after:rounded-full after:bg-brand [&>svg]:scale-110'
+          : 'text-sub',
       )}
     >
       {icon}
