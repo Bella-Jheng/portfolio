@@ -29,10 +29,10 @@ export interface DraftValues {
 
 const LIST_SEPARATOR = '、';
 
-export function draftFromResult(result: ParseResult, source: Source): DraftValues {
+export function draftFromResult(result: ParseResult, source: Source, sourceUrl = ''): DraftValues {
   return {
     source,
-    sourceUrl: '',
+    sourceUrl,
     title: result.title,
     rent: result.rent != null ? String(result.rent) : '',
     address: result.address,
