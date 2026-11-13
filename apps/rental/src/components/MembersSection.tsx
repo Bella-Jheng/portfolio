@@ -124,7 +124,7 @@ export function MembersSection() {
         </>
       )}
       {message && (
-        <p role="status" className="text-[13px] text-brand">
+        <p role="status" className="animate-fade-in text-[13px] text-brand">
           {message}
         </p>
       )}

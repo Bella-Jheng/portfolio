@@ -32,14 +32,16 @@ export function ListView({
 
   return (
     <ul className="flex flex-col gap-3 px-4 pb-6">
-      {listings.map((l) => {
+      {listings.map((l, index) => {
         const rented = l.status === 'rented';
         const latest = l.notes[0];
         return (
           <li key={l.id}>
             <article
+              // 一張接一張浮上來，最多延遲到第 8 張，避免清單很長時要等很久
+              style={{ animationDelay: `${Math.min(index, 8) * 40}ms` }}
               className={clsx(
-                'relative flex flex-col gap-3 rounded-2xl p-3.5',
+                'relative flex animate-fade-up flex-col gap-3 rounded-2xl p-3.5',
                 'border border-card-line bg-white', rented ? 'opacity-70' : 'shadow-[0_1px_3px_rgba(46,48,51,.06)]',
               )}
             >

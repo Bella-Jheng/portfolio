@@ -120,7 +120,7 @@ function FitBounds({ listings }: { listings: Listing[] }) {
 function SelectedCard({ listing: l }: { listing: Listing }) {
   const latest = l.notes[0];
   return (
-    <article className="card absolute bottom-3 left-3 right-3 flex flex-col gap-3 p-3.5 shadow-[0_6px_20px_rgba(46,48,51,.2)]">
+    <article key={l.id} className="card absolute bottom-3 left-3 right-3 flex animate-slide-up flex-col gap-3 p-3.5 shadow-[0_6px_20px_rgba(46,48,51,.2)]">
       <FavoriteButton listing={l} className="absolute right-1.5 top-1.5" />
       <Link href={`/listing/${l.id}`} className="flex gap-3">
         <Thumb listing={l} size={72} />

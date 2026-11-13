@@ -137,7 +137,7 @@ function ListingDetail({ listing: l }: { listing: Listing }) {
                 type="button"
                 aria-pressed={on}
                 onClick={() => setStatus(l.id, s)}
-                className="h-10 rounded-full px-0.5 text-[13px] font-medium transition-colors"
+                className="h-10 rounded-full px-0.5 text-[13px] font-medium transition active:scale-95"
                 style={
                   on
                     ? { background: meta.color, color: '#fff' }
@@ -580,7 +580,7 @@ function MessageSection({ listing: l }: { listing: Listing }) {
         />
         <div className="absolute bottom-2 right-2 flex items-center gap-1.5">
           {flash && (
-            <span role="status" className="rounded-full bg-white/90 px-2 py-0.5 text-[13px] text-brand">
+            <span role="status" className="animate-fade-in rounded-full bg-white/90 px-2 py-0.5 text-[13px] text-brand">
               {flash}
             </span>
           )}
@@ -680,7 +680,7 @@ function ShareSection({ listing: l }: { listing: Listing }) {
         </button>
       )}
       {message && (
-        <p role="status" className="text-[13px] text-brand">
+        <p role="status" className="animate-fade-in text-[13px] text-brand">
           {message}
         </p>
       )}
