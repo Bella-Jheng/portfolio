@@ -40,6 +40,7 @@ type ListingRow = {
   contact_role: string;
   thumbnail: string | null;
   cover_image: string | null;
+  viewing_at: Date | string | null;
   uncertain: string[];
 };
 
@@ -87,6 +88,7 @@ function rowToListing(row: ListingRow, contacts: ContactRow[], notes: NoteRow[])
   if (row.rent != null) listing.rent = row.rent;
   if (row.thumbnail != null) listing.thumbnail = row.thumbnail;
   if (row.cover_image != null) listing.coverImage = row.cover_image;
+  if (row.viewing_at != null) listing.viewingAt = iso(row.viewing_at);
   // 查詢時已依 position 排序
   for (const c of contacts) listing[CONTACT_FIELDS[c.kind]].push(c.value);
   return listing;
@@ -140,8 +142,8 @@ export function createPostgresRepositories(sql: SqlClient): Repositories {
             `INSERT INTO rental_listings (
                id, owner_uid, created_at, updated_at, status, favorite, source, source_url, title, address,
                lat, lng, rent, layout, size, floor, fees, pets, listing_no, contact_name, contact_role,
-               thumbnail, cover_image, uncertain
-             ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24)
+               thumbnail, cover_image, uncertain, viewing_at
+             ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25)
              ON CONFLICT (id) DO UPDATE SET
                updated_at = EXCLUDED.updated_at, status = EXCLUDED.status, favorite = EXCLUDED.favorite,
                source = EXCLUDED.source, source_url = EXCLUDED.source_url, title = EXCLUDED.title,
@@ -149,14 +151,14 @@ export function createPostgresRepositories(sql: SqlClient): Repositories {
                layout = EXCLUDED.layout, size = EXCLUDED.size, floor = EXCLUDED.floor, fees = EXCLUDED.fees,
                pets = EXCLUDED.pets, listing_no = EXCLUDED.listing_no, contact_name = EXCLUDED.contact_name,
                contact_role = EXCLUDED.contact_role, thumbnail = EXCLUDED.thumbnail,
-               cover_image = EXCLUDED.cover_image, uncertain = EXCLUDED.uncertain
+               cover_image = EXCLUDED.cover_image, uncertain = EXCLUDED.uncertain, viewing_at = EXCLUDED.viewing_at
              WHERE rental_listings.owner_uid = EXCLUDED.owner_uid
              RETURNING id`,
             [
               l.id, ownerUid, l.createdAt, l.updatedAt, l.status, !!l.favorite, l.source, l.sourceUrl ?? '',
               l.title, l.address, l.lat ?? null, l.lng ?? null, l.rent ?? null, l.layout, l.size, l.floor,
               l.fees, l.pets, l.listingNo, l.contactName, l.contactRole, l.thumbnail ?? null,
-              l.coverImage ?? null, l.uncertain,
+              l.coverImage ?? null, l.uncertain, l.viewingAt ?? null,
             ],
           );
           if (rows.length === 0) throw new ForbiddenError('這間物件屬於其他帳號');

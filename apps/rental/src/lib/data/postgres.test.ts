@@ -46,6 +46,7 @@ const listing = (overrides: Partial<Listing> = {}): Listing => ({
   thumbnail: 'data:image/jpeg;base64,AAAA',
   coverImage: 'data:image/jpeg;base64,BBBB',
   uncertain: ['address'],
+  viewingAt: '2026-11-15T06:30:00.000Z',
   ...overrides,
 });
 
@@ -84,6 +85,7 @@ describe('PostgreSQL 資料存取層', () => {
     delete minimal.rent;
     delete minimal.thumbnail;
     delete minimal.coverImage;
+    delete minimal.viewingAt;
     await repos.listings.upsert('alice', minimal);
     expect(await repos.listings.list('alice')).toEqual([minimal]);
   });

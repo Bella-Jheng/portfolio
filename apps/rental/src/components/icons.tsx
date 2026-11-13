@@ -70,6 +70,18 @@ export const HeartOutlineIcon = (p: IconProps) => (
     <path d="M12 20s-7.5-4.9-7.5-10.4A4.3 4.3 0 0 1 12 6.9a4.3 4.3 0 0 1 7.5 2.7C19.5 15.1 12 20 12 20z" />
   </Icon>
 );
+export const CalendarIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="3.5" y="5" width="17" height="15.5" rx="2.5" />
+    <path d="M3.5 10h17M8 3v4M16 3v4" />
+  </Icon>
+);
+export const ShareIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M12 15V3.5M7.5 8 12 3.5 16.5 8" />
+    <path d="M5 12.5V19a1.5 1.5 0 0 0 1.5 1.5h11A1.5 1.5 0 0 0 19 19v-6.5" />
+  </Icon>
+);
 export const CheckIcon = (p: IconProps) => (
   <Icon {...p}>
     <path d="m5 12.5 4.5 4.5L19 7.5" />

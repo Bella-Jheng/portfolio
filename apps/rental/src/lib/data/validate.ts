@@ -21,6 +21,7 @@ export function isValidListing(value: unknown): value is Listing {
     Object.keys(SOURCE_LABEL).includes(l.source as string) &&
     (l.sourceUrl === undefined || isString(l.sourceUrl)) &&
     (l.favorite === undefined || typeof l.favorite === 'boolean') &&
+    (l.viewingAt === undefined || isIsoDate(l.viewingAt)) &&
     isOptionalNumber(l.lat) &&
     isOptionalNumber(l.lng) &&
     (isOptionalNumber(l.rent) && (l.rent == null || Number.isInteger(l.rent))) &&

@@ -47,6 +47,8 @@ CREATE TABLE IF NOT EXISTS rental_listings (
   uncertain    TEXT[] NOT NULL DEFAULT '{}'
 );
 CREATE INDEX IF NOT EXISTS rental_listings_owner_created_idx ON rental_listings (owner_uid, created_at DESC);
+-- 後來加的欄位：已經建好的資料表用 ADD COLUMN IF NOT EXISTS 補上
+ALTER TABLE rental_listings ADD COLUMN IF NOT EXISTS viewing_at TIMESTAMPTZ;
 
 CREATE TABLE IF NOT EXISTS rental_listing_contacts (
   listing_id TEXT NOT NULL REFERENCES rental_listings (id) ON DELETE CASCADE,

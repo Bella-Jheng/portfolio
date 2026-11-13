@@ -4,7 +4,7 @@ import { Suspense, type ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import clsx from 'clsx';
-import { HeartOutlineIcon, ListIcon, PinIcon, PlusIcon, SettingsIcon } from './icons';
+import { CalendarIcon, HeartOutlineIcon, PinIcon, PlusIcon, SettingsIcon } from './icons';
 import { useHideOnScrollDown } from '../lib/use-scroll-direction';
 
 // 新增頁與私訊頁底部有自己的操作按鈕，不顯示導覽列
@@ -30,7 +30,6 @@ function Nav() {
 
   const onHome = pathname === '/';
   const viewParam = onHome ? searchParams.get('view') : null;
-  const onList = viewParam === 'list';
   const onFavorites = viewParam === 'favorites';
 
   return (
@@ -42,8 +41,9 @@ function Nav() {
         scrolledAway && 'translate-y-[calc(100%+var(--nav-gap)+16px)]',
       )}
     >
-      <NavItem href="/" active={onHome && !viewParam} icon={<PinIcon size={22} />} label="地圖" />
-      <NavItem href="/?view=list" active={onList} icon={<ListIcon size={22} />} label="清單" />
+      {/* 「地圖」涵蓋地圖和清單兩種檢視，在首頁標題右邊切換 */}
+      <NavItem href="/" active={onHome && !onFavorites} icon={<PinIcon size={22} />} label="地圖" />
+      <NavItem href="/schedule" active={pathname === '/schedule'} icon={<CalendarIcon size={22} />} label="行程管理" />
       <Link
         href="/add"
         className="flex flex-col items-center justify-center gap-0.5 rounded-[26px] text-[11px] font-medium text-ink"

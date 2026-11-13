@@ -89,6 +89,28 @@ export function formatDateTime(iso: string): string {
   return `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
+const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六'];
+
+/** 預約看房：例如「11/15（六）14:30」 */
+export function formatViewing(iso: string): string {
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getMonth() + 1}/${d.getDate()}（${WEEKDAYS[d.getDay()]}）${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+/** ISO 時間 ↔ <input type="datetime-local"> 的值（使用者手機的當地時間） */
+export function toLocalInputValue(iso: string): string {
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+export function fromLocalInputValue(value: string): string | undefined {
+  if (!value) return undefined;
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? undefined : d.toISOString();
+}
+
 /** 建立時間：清單用的簡短格式，例如「11/12」 */
 export function formatShortDate(iso: string): string {
   const d = new Date(iso);

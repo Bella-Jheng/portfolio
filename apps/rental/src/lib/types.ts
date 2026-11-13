@@ -53,6 +53,8 @@ export interface Listing {
   status: Status;
   /** 最想要（愛心）；舊資料沒有這個欄位時視為 false */
   favorite?: boolean;
+  /** 預約看房時間（ISO）；沒有預約時不放這個欄位 */
+  viewingAt?: string;
   source: Source;
   /** 房源出處：原始貼文或物件頁的網址（舊資料沒有這個欄位） */
   sourceUrl?: string;

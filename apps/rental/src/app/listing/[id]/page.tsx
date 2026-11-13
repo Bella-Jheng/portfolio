@@ -11,6 +11,9 @@ import {
   copyText,
   detectSource,
   formatDateTime,
+  formatViewing,
+  fromLocalInputValue,
+  toLocalInputValue,
   igHandle,
   igHref,
   lineHref,
@@ -28,6 +31,7 @@ import { EditableRow } from '../../../components/EditableRow';
 import { MAPS_KEY } from '../../../components/Providers';
 import {
   BackIcon,
+  CalendarIcon,
   ChatIcon,
   CopyIcon,
   ExternalIcon,
@@ -136,6 +140,8 @@ function ListingDetail({ listing: l }: { listing: Listing }) {
             );
           })}
         </section>
+
+        <ViewingSection listing={l} />
 
         {/* 來源與房源出處 */}
         <section className="card flex flex-col gap-1 px-3.5 pb-1 pt-3">
@@ -582,6 +588,43 @@ function MessageSection({ listing: l }: { listing: Listing }) {
           ? '填過的內容會自動記住，下一間物件也會帶入；也可以到「設定」修改。'
           : '租金、物件編號會自動帶入；[ ] 裡的字記得換掉。範本內容可以到「設定」修改。'}
       </p>
+    </section>
+  );
+}
+
+function ViewingSection({ listing: l }: { listing: Listing }) {
+  const update = useListings((s) => s.update);
+  return (
+    <section aria-label="預約看房" className="card flex flex-col gap-2 p-3.5">
+      <div className="flex items-center justify-between">
+        <h2 className="flex items-center gap-1.5 text-[15px] font-bold">
+          <CalendarIcon size={16} />
+          預約看房
+        </h2>
+        {l.viewingAt && (
+          <Link href="/schedule" className="text-[13px] font-medium text-brand">
+            看行程
+          </Link>
+        )}
+      </div>
+      <div className="flex items-center gap-2">
+        <label htmlFor="viewing-at" className="sr-only">
+          預約看房時間
+        </label>
+        <input
+          id="viewing-at"
+          type="datetime-local"
+          value={l.viewingAt ? toLocalInputValue(l.viewingAt) : ''}
+          onChange={(e) => update(l.id, { viewingAt: fromLocalInputValue(e.target.value) })}
+          className="field-input min-w-0 flex-1 bg-cream"
+        />
+        {l.viewingAt && (
+          <button type="button" onClick={() => update(l.id, { viewingAt: undefined })} className="btn-outline h-11 shrink-0">
+            取消預約
+          </button>
+        )}
+      </div>
+      {l.viewingAt && <p className="text-[13px] text-sub">{formatViewing(l.viewingAt)} 去看房</p>}
     </section>
   );
 }
