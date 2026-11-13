@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useHydrated, useListings } from '../../lib/store';
 import { useAuth } from '../../lib/auth';
 import { usePreferences } from '../../lib/preferences';
+import { useSyncStatus } from '../../lib/cloud-sync';
 import { PROFILE_TEMPLATE_ID, TEMPLATES, TEMPLATE_VARIABLES } from '../../lib/templates';
 
 export default function SettingsPage() {
@@ -12,6 +13,7 @@ export default function SettingsPage() {
   const { user, loading, configured, login, logout } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const { templates, setTemplate, resetTemplate } = usePreferences();
+  const sync = useSyncStatus();
 
   return (
     <div className="flex min-h-dvh flex-col">
@@ -36,7 +38,7 @@ export default function SettingsPage() {
             </div>
           ) : (
             <>
-              <p className="text-sm text-sub">登入 Google 帳號後才能使用 AI 解析截圖。</p>
+              <p className="text-sm text-sub">登入 Google 帳號後，可以使用 AI 解析截圖，物件和私訊範本也會存到雲端，換手機也看得到。</p>
               <button
                 type="button"
                 // 直接在點擊裡呼叫登入，iOS Safari 才不會擋下 Google 登入視窗
@@ -96,7 +98,15 @@ export default function SettingsPage() {
         <section className="card flex flex-col gap-1 p-4">
           <h2 className="text-[15px] font-bold">資料</h2>
           <p className="text-sm text-sub">
-            {hydrated ? `這台裝置上有 ${count} 間物件。` : ''}資料只存在這台裝置的瀏覽器，換手機或清除瀏覽器資料就會不見。
+            {hydrated ? `共 ${count} 間物件。` : ''}
+            {user
+              ? {
+                  off: '尚未開始雲端同步。',
+                  syncing: '雲端同步中…',
+                  synced: '已同步到雲端，換手機登入同一個帳號就看得到；登出時會清掉這台裝置上的資料。',
+                  error: `雲端同步失敗：${sync.message ?? ''}。資料先保留在這台裝置。`,
+                }[sync.status]
+              : '還沒登入，資料只存在這台裝置的瀏覽器，換手機或清除瀏覽器資料就會不見。登入後會自動上傳到雲端。'}
           </p>
         </section>
       </main>

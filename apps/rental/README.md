@@ -53,6 +53,12 @@ Build 設定已經寫在 `vercel.json`，在 Vercel 匯入時只要設定兩件�
 
 ## 資料存在哪裡
 
-v1 的資料存在**這台裝置的瀏覽器**（localStorage，`src/lib/store.ts`）。換手機或清掉瀏覽器資料後，資料就會不見。要跟一起找房的人共用，可以把 store 換成 Firestore（apps/bazi 已經有 Firebase 設定可以參考），畫面元件不需要改。
+- **沒登入**：存在這台裝置的瀏覽器（localStorage），換手機或清掉瀏覽器資料就會不見。
+- **登入後**：物件和私訊範本會同步到 Firebase（Firestore），每個帳號各自一份，換手機登入同一個帳號就看得到。
+  - 位置：`rentalUsers/{uid}`（私訊範本）、`rentalUsers/{uid}/listings/{物件 id}`（物件）
+  - 前端只透過後端 API（`/api/listings`、`/api/preferences`）讀寫，後端用服務帳號存取，並檢查帳號在 `rentalAllowedUsers` 名單裡；不需要修改 Firestore 安全規則
+  - 登入時會把這台裝置上的資料跟雲端合併（同一筆以最後修改時間新的為準），登入前新增的物件不會不見
+  - 修改後約 1 秒內自動上傳；登出時先把還沒送出的修改送完，再清掉這台裝置上的資料
+  - 同步程式在 `src/lib/cloud-sync.ts`
 
-截圖本身不會保存，只留一張縮小的縮圖。
+截圖本身不會保存，只留一張縮小的縮圖和選填的首圖。

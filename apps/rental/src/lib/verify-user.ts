@@ -1,6 +1,6 @@
 import { cert, getApps, initializeApp, type App } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
-import { getFirestore } from 'firebase-admin/firestore';
+import { getFirestore, type Firestore } from 'firebase-admin/firestore';
 
 /**
  * 驗證前端帶來的 Google 登入憑證（Firebase ID token），並到 Firestore 的允許名單確認這個帳號能用 AI。
@@ -12,7 +12,7 @@ import { getFirestore } from 'firebase-admin/firestore';
 export const ALLOWED_USERS_COLLECTION = 'rentalAllowedUsers';
 
 export type VerifyResult =
-  | { ok: true; email: string }
+  | { ok: true; uid: string; email: string; db: Firestore }
   | { ok: false; status: 401 | 403 | 500; error: string };
 
 const NOT_CONFIGURED: VerifyResult = {
@@ -29,7 +29,10 @@ function getAdminApp(): App | null {
   const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
   const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
   if (!projectId || !clientEmail || !privateKey) return null;
-  return initializeApp({ credential: cert({ projectId, clientEmail, privateKey }) });
+  const app = initializeApp({ credential: cert({ projectId, clientEmail, privateKey }) });
+  // 物件資料裡有選填欄位（例如沒填租金），寫入時略過 undefined，不要整筆失敗
+  getFirestore(app).settings({ ignoreUndefinedProperties: true });
+  return app;
 }
 
 export async function verifyUser(authorization: string | null): Promise<VerifyResult> {
@@ -47,20 +50,23 @@ export async function verifyUser(authorization: string | null): Promise<VerifyRe
   if (!token) return { ok: false, status: 401, error: '請先用 Google 登入' };
 
   let email: string | undefined;
+  let uid: string;
   try {
     const decoded = await getAuth(app).verifyIdToken(token);
+    uid = decoded.uid;
     email = decoded.email_verified ? decoded.email?.toLowerCase() : undefined;
   } catch {
     return { ok: false, status: 401, error: '登入已失效，請重新登入' };
   }
   if (!email) return { ok: false, status: 403, error: '這個 Google 帳號沒有使用權限' };
 
+  const db = getFirestore(app);
   try {
-    const doc = await getFirestore(app).collection(ALLOWED_USERS_COLLECTION).doc(email).get();
+    const doc = await db.collection(ALLOWED_USERS_COLLECTION).doc(email).get();
     if (!doc.exists) return { ok: false, status: 403, error: '這個 Google 帳號沒有使用權限' };
   } catch (error) {
     console.error('Allowed users lookup failed:', error);
     return { ok: false, status: 500, error: '暫時無法確認使用權限，請稍後再試' };
   }
-  return { ok: true, email };
+  return { ok: true, uid, email, db };
 }

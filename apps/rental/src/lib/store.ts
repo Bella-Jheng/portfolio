@@ -39,8 +39,16 @@ export function emptyListing(partial: Partial<Listing> = {}): Listing {
   };
 }
 
+/** 雲端同步掛勾：登入後由 cloud-sync 設定，未登入時是 null（資料只存在這台裝置） */
+export const listingSyncHooks: {
+  save: ((listing: Listing) => void) | null;
+  remove: ((id: string) => void) | null;
+} = { save: null, remove: null };
+
 interface ListingState {
   listings: Listing[];
+  /** 同步用：整批換掉（不會觸發上傳） */
+  replaceAll: (listings: Listing[]) => void;
   add: (listing: Listing) => void;
   update: (id: string, patch: Partial<Listing>, touched?: ParsedField[]) => void;
   remove: (id: string) => void;
@@ -50,15 +58,26 @@ interface ListingState {
   removeNote: (id: string, noteId: string) => void;
 }
 
-// v1 資料只存在這台裝置的瀏覽器（localStorage）。之後要跟一起找房的人共用，
-// 把這個 store 換成 Firestore 之類的後端就好，畫面不用動。
+// 資料先存在這台裝置（localStorage），登入後會同步到 Firebase（見 cloud-sync.ts）。
+// 每個會改資料的動作做完後呼叫 changed()，把那一筆交給雲端同步上傳。
 export const useListings = create<ListingState>()(
   persist(
-    (set) => ({
+    (set, get) => {
+      const changed = (id: string) => {
+        const listing = get().listings.find((l) => l.id === id);
+        if (listing) listingSyncHooks.save?.(listing);
+      };
+      // 在原本的 set 之後順便通知同步
+      const setAndSync = (id: string, fn: (s: ListingState) => Partial<ListingState>) => {
+        set(fn);
+        changed(id);
+      };
+      return {
       listings: [],
-      add: (listing) => set((s) => ({ listings: [listing, ...s.listings] })),
+      replaceAll: (listings) => set({ listings }),
+      add: (listing) => setAndSync(listing.id, (s) => ({ listings: [listing, ...s.listings] })),
       update: (id, patch, touched = []) =>
-        set((s) => ({
+        setAndSync(id, (s) => ({
           listings: s.listings.map((l) =>
             l.id === id
               ? {
@@ -71,21 +90,24 @@ export const useListings = create<ListingState>()(
               : l,
           ),
         })),
-      remove: (id) => set((s) => ({ listings: s.listings.filter((l) => l.id !== id) })),
+      remove: (id) => {
+        set((s) => ({ listings: s.listings.filter((l) => l.id !== id) }));
+        listingSyncHooks.remove?.(id);
+      },
       setStatus: (id, status) =>
-        set((s) => ({
+        setAndSync(id, (s) => ({
           listings: s.listings.map((l) =>
             l.id === id ? { ...l, status, updatedAt: new Date().toISOString() } : l,
           ),
         })),
       toggleFavorite: (id) =>
-        set((s) => ({
+        setAndSync(id, (s) => ({
           listings: s.listings.map((l) =>
             l.id === id ? { ...l, favorite: !l.favorite, updatedAt: new Date().toISOString() } : l,
           ),
         })),
       addNote: (id, text) =>
-        set((s) => ({
+        setAndSync(id, (s) => ({
           listings: s.listings.map((l) => {
             if (l.id !== id) return l;
             const note: Note = { id: newId(), at: new Date().toISOString(), text };
@@ -93,12 +115,13 @@ export const useListings = create<ListingState>()(
           }),
         })),
       removeNote: (id, noteId) =>
-        set((s) => ({
+        setAndSync(id, (s) => ({
           listings: s.listings.map((l) =>
-            l.id === id ? { ...l, notes: l.notes.filter((n) => n.id !== noteId) } : l,
+            l.id === id ? { ...l, notes: l.notes.filter((n) => n.id !== noteId), updatedAt: new Date().toISOString() } : l,
           ),
         })),
-    }),
+      };
+    },
     {
       name: 'rental-helper:listings',
       version: 3,
