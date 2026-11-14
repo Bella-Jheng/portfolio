@@ -17,7 +17,7 @@ import {
   splitList,
   type DraftValues,
 } from '../../components/ListingDraftForm';
-import { igHandle, normalizeUrl } from '../../lib/contact';
+import { detectSource, igHandle, normalizeUrl } from '../../lib/contact';
 import { useAuth } from '../../lib/auth';
 
 const MAX_IMAGES = 6;
@@ -44,6 +44,7 @@ export default function AddPage() {
   const [cover, setCover] = useState<Picked | null>(null);
   const [sameListing, setSameListing] = useState(true);
   const [source, setSource] = useState<Source>('591');
+  const [sourceUrl, setSourceUrl] = useState('');
   const [busy, setBusy] = useState<string | null>(null);
   // AI 解析完先放在草稿讓使用者確認、修改，按「儲存」才真的建立物件
   const [drafts, setDrafts] = useState<Draft[] | null>(null);
@@ -73,8 +74,15 @@ export default function AddPage() {
     setCover(null);
   };
 
-  // 首圖只屬於一間物件：截圖拆成多筆時不套用
+  // 首圖和房源出處只屬於一間物件：截圖拆成多筆時不套用
   const coverApplies = sameListing || picked.length <= 1;
+
+  const changeSourceUrl = (value: string) => {
+    setSourceUrl(value);
+    // 貼上 591／FB／IG 的連結時，順便把來源切到對應的平台
+    const detected = detectSource(normalizeUrl(value));
+    if (detected) setSource(detected);
+  };
 
   const onFiles = (files: FileList | null) => {
     if (!files) return;
@@ -144,7 +152,7 @@ export default function AddPage() {
       for (let i = 0; i < groups.length; i++) {
         setBusy(groups.length > 1 ? `解析中 ${i + 1} / ${groups.length}…` : '解析中…');
         const { result, thumbnail } = await parseGroup(groups[i]);
-        parsed.push({ values: draftFromResult(result, source), thumbnail });
+        parsed.push({ values: draftFromResult(result, source, coverApplies ? sourceUrl.trim() : ''), thumbnail });
       }
       setDrafts(parsed);
       window.scrollTo({ top: 0 });
@@ -228,7 +236,7 @@ export default function AddPage() {
 
   async function manual() {
     const coverImage = cover ? await resizeCoverImage(cover.file) : undefined;
-    const listing = emptyListing({ source, coverImage });
+    const listing = emptyListing({ source, coverImage, sourceUrl: normalizeUrl(sourceUrl) });
     add(listing);
     router.replace(`/listing/${listing.id}`);
   }
@@ -362,6 +370,22 @@ export default function AddPage() {
             <p className="text-[15px] font-medium">來源</p>
             <SourcePicker value={source} onChange={setSource} />
           </div>
+          <div className="h-px bg-[#EAEAEA]" />
+          <label className="flex flex-col gap-1.5">
+            <span className="text-[15px] font-medium">房源出處（選填）</span>
+            <span className="text-[13px] text-sub">貼上原始貼文或物件頁的連結，貼 591／FB／IG 的網址會自動選好來源</span>
+            <input
+              className="field-input bg-cream"
+              type="url"
+              inputMode="url"
+              placeholder="https://"
+              value={sourceUrl}
+              onChange={(e) => changeSourceUrl(e.target.value)}
+            />
+            {sourceUrl && !coverApplies && (
+              <span className="text-[13px] text-warn-text">截圖拆成多筆物件時不會套用連結，可以之後在各物件頁面再加。</span>
+            )}
+          </label>
         </section>
 
         {!authLoading && !user && (
