@@ -8,6 +8,7 @@
 - **上傳截圖解析**：一次最多 6 張，可以設定「同一間物件」或「每張各一間」；AI 沒把握的欄位會用黃色標出
 - **詳細頁**：所有欄位都能就地編輯；可以切換來源（591／FB 社團／IG／其他）並貼上房源出處連結（貼 591、FB、IG 的網址會自動切換來源）；電話可直接撥打，LINE ID 可直接開 LINE（官方帳號 @ID、一般 ID、「LINE 同電話」三種情況都有處理）
 - **預約看房與行程管理**：物件頁可以填預約看房時間；底部導覽列的「行程管理」用月曆列出每天的看房行程和接下來的預約
+- **看房提醒**：設定頁開啟這台裝置的推播通知，選好要提前多久提醒（可多個，例如前 2 小時、前 30 分鐘）；點通知會打開那間物件。iPhone 要先「加入主畫面」再從主畫面打開才能收通知
 - **分享**：
   - 分享單一物件：物件頁「產生分享連結」，拿到連結的人不用登入就能看（看不到備註），可以隨時停止分享
   - 一起找房：設定頁邀請對方的 Google email，對方可以看、修改你的物件（不能刪除）；對方也要在白名單裡
@@ -44,6 +45,17 @@ npx nx build rental
 - 欄位：Firestore 規定至少要一個欄位，隨便填就好，例如 `name`（字串）：`我自己`
 
 移除使用者：把那份文件刪掉即可，不需要重新部署。
+
+## 看房提醒（推播）設定
+
+1. 產生 VAPID 金鑰：`npx web-push generate-vapid-keys`
+2. Vercel 環境變數：`NEXT_PUBLIC_VAPID_PUBLIC_KEY`（公鑰）、`VAPID_PRIVATE_KEY`（私鑰）、`VAPID_SUBJECT`（例如 `mailto:you@gmail.com`）、`CRON_SECRET`（自己取一組夠長的隨機字串），設定完 Redeploy
+3. 排程：Vercel 免費方案的內建排程每天只能跑一次，所以用外部排程服務（例如 [cron-job.org](https://cron-job.org)，免費）
+   - 網址：`https://<你的網域>/api/cron/reminders`，方法 GET，每分鐘一次
+   - Header：`Authorization: Bearer <CRON_SECRET>`
+4. 到網站設定頁開啟通知，按「送一則測試通知」確認收得到
+
+運作方式：排程每分鐘查一次接下來 7 天內有預約看房的物件，看房時間減掉提前的分鐘數到了就推播；每個提醒只送一次（改了預約時間會重新提醒），排程停掉超過 15 分鐘的提醒不補送。資料在 Firestore 的 `rentalReminders`（有預約的物件）、`rentalPushSubscriptions`（裝置）、`rentalReminderLog`（已送出），PostgreSQL 則是 `rental_push_subscriptions`、`rental_reminder_log` 與 `rental_users.reminder_offsets`。
 
 ## 部署（Vercel）
 

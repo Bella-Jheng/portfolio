@@ -44,6 +44,8 @@ type ListingRow = {
   uncertain: string[];
 };
 
+type UpcomingRow = { id: string; owner_uid: string; title: string; address: string; viewing_at: Date | string };
+
 type ContactKind = 'phone' | 'line' | 'ig';
 type ContactRow = { listing_id: string; kind: ContactKind; value: string };
 type NoteRow = { id: string; listing_id: string; at: Date | string; text: string };
@@ -191,6 +193,21 @@ export function createPostgresRepositories(sql: SqlClient): Repositories {
         });
       },
 
+      async listUpcomingViewings(from, to) {
+        await ready();
+        const { rows } = await sql.query<UpcomingRow>(
+          'SELECT id, owner_uid, title, address, viewing_at FROM rental_listings WHERE viewing_at BETWEEN $1 AND $2',
+          [from, to],
+        );
+        return rows.map((r) => ({
+          ownerUid: r.owner_uid,
+          listingId: r.id,
+          title: r.title,
+          address: r.address,
+          viewingAt: iso(r.viewing_at),
+        }));
+      },
+
       async remove(ownerUid, id) {
         await ready();
         // 聯絡方式、備註會跟著 CASCADE 刪掉；不是自己的物件就什麼都不會刪
@@ -275,6 +292,54 @@ export function createPostgresRepositories(sql: SqlClient): Repositories {
           ownerUid,
           memberEmail.toLowerCase(),
         ]);
+      },
+    },
+
+    notifications: {
+      async saveSubscription(uid, s) {
+        await ready();
+        await sql.query(
+          `INSERT INTO rental_push_subscriptions (endpoint, uid, p256dh, auth) VALUES ($1, $2, $3, $4)
+           ON CONFLICT (endpoint) DO UPDATE SET uid = EXCLUDED.uid, p256dh = EXCLUDED.p256dh, auth = EXCLUDED.auth`,
+          [s.endpoint, uid, s.keys.p256dh, s.keys.auth],
+        );
+      },
+      async removeSubscription(endpoint) {
+        await ready();
+        await sql.query('DELETE FROM rental_push_subscriptions WHERE endpoint = $1', [endpoint]);
+      },
+      async listSubscriptions(uid) {
+        await ready();
+        const { rows } = await sql.query<{ endpoint: string; p256dh: string; auth: string }>(
+          'SELECT endpoint, p256dh, auth FROM rental_push_subscriptions WHERE uid = $1',
+          [uid],
+        );
+        return rows.map((r) => ({ endpoint: r.endpoint, keys: { p256dh: r.p256dh, auth: r.auth } }));
+      },
+      async getReminderOffsets(uid) {
+        await ready();
+        const { rows } = await sql.query<{ reminder_offsets: number[] | null }>(
+          'SELECT reminder_offsets FROM rental_users WHERE uid = $1',
+          [uid],
+        );
+        return rows[0]?.reminder_offsets ?? null;
+      },
+      async saveReminderOffsets(uid, offsets) {
+        await ready();
+        await sql.query(
+          `INSERT INTO rental_users (uid, reminder_offsets) VALUES ($1, $2)
+           ON CONFLICT (uid) DO UPDATE SET reminder_offsets = EXCLUDED.reminder_offsets`,
+          [uid, offsets],
+        );
+      },
+      async wasReminderSent(key) {
+        await ready();
+        const { rows } = await sql.query('SELECT 1 FROM rental_reminder_log WHERE key = $1', [key]);
+        return rows.length > 0;
+      },
+      async markReminderSent(key) {
+        await ready();
+        await sql.query('INSERT INTO rental_reminder_log (key) VALUES ($1) ON CONFLICT (key) DO NOTHING', [key]);
       },
     },
 

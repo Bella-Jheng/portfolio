@@ -716,7 +716,12 @@ function ViewingSection({ listing: l }: { listing: Listing }) {
       />
       {l.viewingAt && (
         <div className="flex items-center justify-between gap-2">
-          <p className="text-[13px] text-sub">{formatViewing(l.viewingAt)} 去看房</p>
+          <p className="text-[13px] text-sub">
+            {formatViewing(l.viewingAt)} 去看房・
+            <Link href="/settings" className="text-brand underline">
+              提醒設定
+            </Link>
+          </p>
           <button
             type="button"
             onClick={() => update(l.id, { viewingAt: undefined })}

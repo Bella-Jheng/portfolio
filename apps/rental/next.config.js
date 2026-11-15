@@ -8,7 +8,7 @@ const { composePlugins, withNx } = require('@nx/next');
 const nextConfig = {
   nx: {},
   productionBrowserSourceMaps: false,
-  serverExternalPackages: ['firebase-admin', 'pg'],
+  serverExternalPackages: ['firebase-admin', 'pg', 'web-push'],
   outputFileTracingRoot: require('path').join(__dirname, '../../'),
   async headers() {
     return [

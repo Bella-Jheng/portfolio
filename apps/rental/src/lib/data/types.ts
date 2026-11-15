@@ -17,6 +17,35 @@ export interface ListingRepository {
   /** 新增或整筆覆蓋；id 已屬於別的帳號時丟出 ForbiddenError */
   upsert(ownerUid: string, listing: Listing): Promise<void>;
   remove(ownerUid: string, id: string): Promise<void>;
+  /** 所有帳號裡，預約看房時間落在 [from, to] 之間的物件（給看房提醒的排程用） */
+  listUpcomingViewings(from: string, to: string): Promise<UpcomingViewing[]>;
+}
+
+export interface UpcomingViewing {
+  ownerUid: string;
+  listingId: string;
+  title: string;
+  address: string;
+  viewingAt: string;
+}
+
+/** 瀏覽器的推播訂閱（Web Push）：一台裝置一筆 */
+export interface PushSubscriptionRecord {
+  endpoint: string;
+  keys: { p256dh: string; auth: string };
+}
+
+/** 看房提醒：推播訂閱、要提前幾分鐘提醒、哪些提醒已經送過 */
+export interface NotificationRepository {
+  saveSubscription(uid: string, subscription: PushSubscriptionRecord): Promise<void>;
+  removeSubscription(endpoint: string): Promise<void>;
+  listSubscriptions(uid: string): Promise<PushSubscriptionRecord[]>;
+  /** 提前幾分鐘提醒；還沒設定過時回傳 null（用預設值） */
+  getReminderOffsets(uid: string): Promise<number[] | null>;
+  saveReminderOffsets(uid: string, offsets: number[]): Promise<void>;
+  /** 有沒有送過這個提醒；key 包含物件、看房時間與提前幾分鐘，改了時間就是新的提醒 */
+  wasReminderSent(key: string): Promise<boolean>;
+  markReminderSent(key: string): Promise<void>;
 }
 
 /** 使用者：把登入憑證裡的 uid 和 email 對應記下來，後台才看得出每份資料是誰的 */
@@ -63,6 +92,7 @@ export interface Repositories {
   allowlist: AllowlistRepository;
   members: MemberRepository;
   shareLinks: ShareLinkRepository;
+  notifications: NotificationRepository;
 }
 
 export class ForbiddenError extends Error {}

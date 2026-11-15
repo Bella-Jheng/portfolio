@@ -143,6 +143,39 @@ describe('PostgreSQL 資料存取層', () => {
     expect(rows).toEqual([{ uid: 'alice', email: 'alice@gmail.com', templates: { profile: '預算：15000' }, logged: true }]);
   });
 
+  it('看房提醒：只查得到時間範圍內有預約的物件', async () => {
+    await repos.listings.upsert('alice', listing({ id: 'soon', viewingAt: '2026-11-15T07:00:00.000Z' }));
+    await repos.listings.upsert('bob', listing({ id: 'later', viewingAt: '2026-12-01T07:00:00.000Z' }));
+    const none = listing({ id: 'none' });
+    delete none.viewingAt;
+    await repos.listings.upsert('alice', none);
+    const upcoming = await repos.listings.listUpcomingViewings('2026-11-15T00:00:00.000Z', '2026-11-16T00:00:00.000Z');
+    expect(upcoming).toEqual([
+      { ownerUid: 'alice', listingId: 'soon', title: '西屯區套房', address: '台中市西屯區福星路', viewingAt: '2026-11-15T07:00:00.000Z' },
+    ]);
+  });
+
+  it('推播訂閱、提醒設定、已送出紀錄', async () => {
+    const sub = { endpoint: 'https://push.example/abc', keys: { p256dh: 'p', auth: 'a' } };
+    await repos.notifications.saveSubscription('alice', sub);
+    expect(await repos.notifications.listSubscriptions('alice')).toEqual([sub]);
+    expect(await repos.notifications.listSubscriptions('bob')).toEqual([]);
+    await repos.notifications.removeSubscription(sub.endpoint);
+    expect(await repos.notifications.listSubscriptions('alice')).toEqual([]);
+
+    expect(await repos.notifications.getReminderOffsets('alice')).toBeNull();
+    await repos.preferences.saveTemplates('alice', { profile: 'x' });
+    await repos.notifications.saveReminderOffsets('alice', [120, 30]);
+    expect(await repos.notifications.getReminderOffsets('alice')).toEqual([120, 30]);
+    // 存提醒設定不會蓋掉範本
+    expect(await repos.preferences.getTemplates('alice')).toEqual({ profile: 'x' });
+
+    expect(await repos.notifications.wasReminderSent('k1')).toBe(false);
+    await repos.notifications.markReminderSent('k1');
+    await repos.notifications.markReminderSent('k1');
+    expect(await repos.notifications.wasReminderSent('k1')).toBe(true);
+  });
+
   it('白名單：email 不分大小寫', async () => {
     expect(await repos.allowlist.isAllowed('me@gmail.com')).toBe(false);
     await db.query("INSERT INTO rental_allowed_users (email) VALUES ('me@gmail.com')");

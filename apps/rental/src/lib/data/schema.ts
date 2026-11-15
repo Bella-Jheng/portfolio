@@ -7,6 +7,8 @@
  * - rental_listing_notes     備註，一則一列
  * - rental_list_members      一起找房：擁有者邀請的成員（email）
  * - rental_share_links       單一物件的分享連結（token），物件刪掉時一起刪
+ * - rental_push_subscriptions 推播訂閱（一台裝置一列）
+ * - rental_reminder_log      已送出的看房提醒
  * 子表都 ON DELETE CASCADE，刪物件時一起刪掉。全部用 IF NOT EXISTS，重跑也安全。
  */
 export const SCHEMA_SQL = `
@@ -54,6 +56,8 @@ ALTER TABLE rental_listings ADD COLUMN IF NOT EXISTS viewing_at TIMESTAMPTZ;
 ALTER TABLE rental_users ADD COLUMN IF NOT EXISTS email TEXT;
 ALTER TABLE rental_users ADD COLUMN IF NOT EXISTS last_login_at TIMESTAMPTZ;
 CREATE INDEX IF NOT EXISTS rental_users_email_idx ON rental_users (email);
+ALTER TABLE rental_users ADD COLUMN IF NOT EXISTS reminder_offsets INTEGER[];
+CREATE INDEX IF NOT EXISTS rental_listings_viewing_idx ON rental_listings (viewing_at) WHERE viewing_at IS NOT NULL;
 
 CREATE TABLE IF NOT EXISTS rental_listing_contacts (
   listing_id TEXT NOT NULL REFERENCES rental_listings (id) ON DELETE CASCADE,
@@ -81,6 +85,20 @@ CREATE TABLE IF NOT EXISTS rental_list_members (
   PRIMARY KEY (owner_uid, member_email)
 );
 CREATE INDEX IF NOT EXISTS rental_list_members_member_idx ON rental_list_members (member_email);
+
+CREATE TABLE IF NOT EXISTS rental_push_subscriptions (
+  endpoint   TEXT PRIMARY KEY,
+  uid        TEXT NOT NULL,
+  p256dh     TEXT NOT NULL,
+  auth       TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS rental_push_subscriptions_uid_idx ON rental_push_subscriptions (uid);
+
+CREATE TABLE IF NOT EXISTS rental_reminder_log (
+  key     TEXT PRIMARY KEY,
+  sent_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
 
 CREATE TABLE IF NOT EXISTS rental_share_links (
   token      TEXT PRIMARY KEY,
