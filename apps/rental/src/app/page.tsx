@@ -1,15 +1,17 @@
 'use client';
 
-import { Suspense, useMemo, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { Suspense, useMemo } from 'react';
+import { usePathname, useSearchParams } from 'next/navigation';
+import clsx from 'clsx';
 import { useListings, useHydrated } from '../lib/store';
-import { STATUSES, type Status } from '../lib/types';
+import { useMapUi } from '../lib/map-ui';
 import { FilterChips } from '../components/FilterChips';
 import { ListView } from '../components/ListView';
-import { MapView } from '../components/MapView';
+import { isMapView } from '../components/PersistentMap';
 import { ViewSwitch, type View } from '../components/ViewSwitch';
 
 // 地圖／清單由網址決定（/、/?view=list，標題右邊的切換）；「最想要」是 /?view=favorites
+// 地圖本身由 layout 裡的 PersistentMap 顯示，這頁只蓋上標題和篩選按鈕
 
 export default function HomePage() {
   // useSearchParams 需要包在 Suspense 裡
@@ -22,35 +24,26 @@ export default function HomePage() {
 
 function Home() {
   const hydrated = useHydrated();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const listings = useListings((s) => s.listings);
   const viewParam = searchParams.get('view');
   // 「最想要」是只列出最想要物件的清單，不顯示狀態篩選
   const favoritesOnly = viewParam === 'favorites';
-  const view: View = viewParam === 'list' || favoritesOnly ? 'list' : 'map';
-  const [active, setActive] = useState<Set<Status>>(() => new Set(STATUSES));
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-
-  const toggle = (s: Status) =>
-    setActive((prev) => {
-      const next = new Set(prev);
-      if (next.has(s)) next.delete(s);
-      else next.add(s);
-      return next;
-    });
+  const view: View = isMapView(pathname, viewParam) ? 'map' : 'list';
+  const active = useMapUi((s) => s.active);
+  const toggle = useMapUi((s) => s.toggle);
+  const activeSet = useMemo(() => new Set(active), [active]);
 
   const filtered = useMemo(
-    () => listings.filter((l) => (favoritesOnly ? l.favorite : active.has(l.status))),
-    [listings, active, favoritesOnly],
+    () => listings.filter((l) => (favoritesOnly ? l.favorite : activeSet.has(l.status))),
+    [listings, activeSet, favoritesOnly],
   );
 
   return (
-    <div className="relative h-dvh overflow-hidden">
-      {view === 'map' ? (
-        <div className="absolute inset-x-0 top-0 bottom-[var(--nav-h)]">
-          {hydrated && <MapView listings={filtered} selectedId={selectedId} onSelect={setSelectedId} />}
-        </div>
-      ) : (
+    // 地圖檢視時，這層蓋在地圖上面：讓點擊穿過去給地圖，只有標題列接收點擊
+    <div className={clsx('relative h-dvh overflow-hidden', view === 'map' && 'pointer-events-none')}>
+      {view === 'list' && (
         <div className={`absolute inset-0 overflow-y-auto pb-[var(--nav-h)] ${favoritesOnly ? 'pt-[84px]' : 'pt-[136px]'}`}>
           {hydrated && (
             <ListView
@@ -65,9 +58,10 @@ function Home() {
       )}
 
       <header
-        className={`absolute inset-x-0 top-0 flex flex-col gap-2.5 px-4 pb-2 pt-[max(16px,env(safe-area-inset-top))] ${
-          view === 'list' ? 'bg-ground' : ''
-        }`}
+        className={clsx(
+          'pointer-events-auto absolute inset-x-0 top-0 flex flex-col gap-2.5 px-4 pb-2 pt-[max(16px,env(safe-area-inset-top))]',
+          view === 'list' && 'bg-ground',
+        )}
       >
         <div className="flex items-center gap-2">
           <div
@@ -81,10 +75,9 @@ function Home() {
           {!favoritesOnly && <ViewSwitch view={view} />}
         </div>
         {!favoritesOnly && (
-          <FilterChips listings={listings} active={active} onToggle={toggle} floating={view === 'map'} />
+          <FilterChips listings={listings} active={activeSet} onToggle={toggle} floating={view === 'map'} />
         )}
       </header>
-
     </div>
   );
 }
