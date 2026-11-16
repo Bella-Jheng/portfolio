@@ -2,6 +2,7 @@ import './global.css';
 import type { Metadata, Viewport } from 'next';
 import { Providers } from '../components/Providers';
 import { BottomNav } from '../components/BottomNav';
+import { PersistentMap } from '../components/PersistentMap';
 import { SplashScreen } from '../components/SplashScreen';
 import { SPLASH_SEEN_KEY } from '../lib/splash';
 
@@ -40,6 +41,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="bg-ground text-ink antialiased">
         <Providers>
+          {/* 地圖放在頁面外層，換頁不會重建（每建立一次地圖 Google 就算一次載入） */}
+          <PersistentMap />
           <div className="mx-auto min-h-dvh max-w-[480px] overflow-x-clip bg-ground">{children}</div>
           <BottomNav />
         </Providers>
