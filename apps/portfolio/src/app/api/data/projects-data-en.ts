@@ -38,59 +38,6 @@ import {
 
 export const PROJECTS_DATA_EN: FullProject[] = [
   {
-    id: 'bazi',
-    title: 'Bazi: AI-Powered Chinese Astrology Analysis',
-    category: 'AI 實作',
-    displayCategory: 'AI Implementation',
-    period: '2026',
-    description:
-      "A Bazi (Chinese astrology) analysis tool built with Next.js 16, Firebase Firestore, and the Google Gemini API. Enter a birth date and time to get an AI-generated reading.\n\n• Google sign-in gives each user their own space and a daily question quota\n• Admin knowledge-base panel where AI auto-tags content, retrieved by element for precision\n• Supports downloadable share cards and native mobile sharing\n• Became a talking point among friends after launch, and sharpened my own grasp of chart rules",
-    imageUrl: Bazi1.src,
-    link: '/projects/bazi',
-    tags: ['AI Integration', 'RAG', 'Firebase', 'Full-Stack'],
-    technologies: [
-      'Next.js 16',
-      'Firebase Firestore',
-      'Google Gemini API',
-      'TanStack Query',
-      'Tailwind CSS',
-      'Vitest',
-    ],
-    media: [
-      { type: 'image', url: Bazi1.src },
-      { type: 'image', url: Bazi2.src },
-      { type: 'image', url: Bazi3.src },
-      { type: 'image', url: Bazi4.src },
-      { type: 'image', url: Bazi5.src },
-      { type: 'image', url: Bazi6.src },
-    ],
-    links: [
-      {
-        label: 'Live Demo',
-        url: 'https://portfolio-bazi.vercel.app/',
-        type: 'website',
-      },
-      {
-        label: 'DEVLOG',
-        url: 'https://github.com/Bella-Jheng/portfolio/blob/main/apps/bazi/DEVLOG.md',
-        type: 'document',
-      },
-    ],
-    sections: [
-      {
-        title: 'Project Motivation & What I Learned',
-        tabLabel: 'Dev Notes',
-        whatIDid:
-          "##Full Write-Up##The full write-up lives in the DEVLOG. Click the link above for the complete story; this is the short version.\n\n##Getting Stuck##After taking an online course on Bazi (Chinese astrology), I found the rules too dense to memorize and kept getting stuck in practice. So I scraped the course video transcripts and had AI turn them into a structured knowledge base, then built it into a site friends could use too, and each person gets their own space via Google sign-in, with a daily question quota.",
-        techUsed: ['Next.js 16', 'Firebase', 'Google Gemini API', 'TypeScript'],
-        challenges:
-          "##Cost Spike##As the knowledge base grew, stuffing the entire thing into the AI prompt drove up token cost and hurt reading quality\n\n##Login Blocked##A friend opening the link in LINE got blocked at Google sign-in with a 403; the in-app browser was the culprit, and login didn't work at all\n\n##Scattered Logic##Firestore read/write logic was scattered across many API routes, with the same business flow copy-pasted several times",
-        learnings:
-          "##Why I Left##I built this after leaving my job. Before I left, I was burned out, AI had taken over a lot of the bug-fixing that used to be my main source of satisfaction, and at work I was mostly building other people's ideas, with most of the real decisions out of my hands. Even though I liked the company and the people, I still chose to leave.\n\n##My Manager's Words##Before I left, I was chatting with my manager, we were more like friends by that point, and he mentioned he was using AI to build a Pikmin-related plugin he'd never dared attempt before; frontend used to stump him completely, but AI finally let him pull it off. After 20 years in the industry, he said, your sense of accomplishment has to evolve too: grinding out a project by hand used to feel rewarding, but now being able to quickly build something you never thought you could is an even better kind of happy. He used to code for a paycheck; now the resources his job gives him let him bring that into his actual life, and that's what makes him happiest these days. He told me: you should try bringing code into your own life sometime.\n\n##Falling Back in Love##At the time I only half got it. It didn't really click until I finished this site. It let me build more of what I actually wanted, and share it with friends, and every time someone tells me \"this is scarily accurate,\" it makes me want to make it even better.",
-      },
-    ],
-  },
-  {
     id: 'rental',
     title: 'Rental Helper: AI Screenshot-to-Map Apartment Hunting Tool',
     category: 'AI 實作',
@@ -145,6 +92,59 @@ export const PROJECTS_DATA_EN: FullProject[] = [
         ],
         learnings:
           "##Built From My Own Need##I built this for my own move, using it while I searched and changing it as I went, so every feature came from a real point where I got stuck.\n\n##Unexpected Users##After lending it to real-estate agents I know, I found they have the same problem managing their listings, which got me thinking about an agent version.\n\n##Room to Grow##Data access goes through a repository interface that can switch between Firestore and PostgreSQL, leaving room to adjust for scale and cost later.",
+      },
+    ],
+  },
+  {
+    id: 'bazi',
+    title: 'Bazi: AI-Powered Chinese Astrology Analysis',
+    category: 'AI 實作',
+    displayCategory: 'AI Implementation',
+    period: '2026',
+    description:
+      "A Bazi (Chinese astrology) analysis tool built with Next.js 16, Firebase Firestore, and the Google Gemini API. Enter a birth date and time to get an AI-generated reading.\n\n• Google sign-in gives each user their own space and a daily question quota\n• Admin knowledge-base panel where AI auto-tags content, retrieved by element for precision\n• Supports downloadable share cards and native mobile sharing\n• Became a talking point among friends after launch, and sharpened my own grasp of chart rules",
+    imageUrl: Bazi1.src,
+    link: '/projects/bazi',
+    tags: ['AI Integration', 'RAG', 'Firebase', 'Full-Stack'],
+    technologies: [
+      'Next.js 16',
+      'Firebase Firestore',
+      'Google Gemini API',
+      'TanStack Query',
+      'Tailwind CSS',
+      'Vitest',
+    ],
+    media: [
+      { type: 'image', url: Bazi1.src },
+      { type: 'image', url: Bazi2.src },
+      { type: 'image', url: Bazi3.src },
+      { type: 'image', url: Bazi4.src },
+      { type: 'image', url: Bazi5.src },
+      { type: 'image', url: Bazi6.src },
+    ],
+    links: [
+      {
+        label: 'Live Demo',
+        url: 'https://portfolio-bazi.vercel.app/',
+        type: 'website',
+      },
+      {
+        label: 'DEVLOG',
+        url: 'https://github.com/Bella-Jheng/portfolio/blob/main/apps/bazi/DEVLOG.md',
+        type: 'document',
+      },
+    ],
+    sections: [
+      {
+        title: 'Project Motivation & What I Learned',
+        tabLabel: 'Dev Notes',
+        whatIDid:
+          "##Full Write-Up##The full write-up lives in the DEVLOG. Click the link above for the complete story; this is the short version.\n\n##Getting Stuck##After taking an online course on Bazi (Chinese astrology), I found the rules too dense to memorize and kept getting stuck in practice. So I scraped the course video transcripts and had AI turn them into a structured knowledge base, then built it into a site friends could use too, and each person gets their own space via Google sign-in, with a daily question quota.",
+        techUsed: ['Next.js 16', 'Firebase', 'Google Gemini API', 'TypeScript'],
+        challenges:
+          "##Cost Spike##As the knowledge base grew, stuffing the entire thing into the AI prompt drove up token cost and hurt reading quality\n\n##Login Blocked##A friend opening the link in LINE got blocked at Google sign-in with a 403; the in-app browser was the culprit, and login didn't work at all\n\n##Scattered Logic##Firestore read/write logic was scattered across many API routes, with the same business flow copy-pasted several times",
+        learnings:
+          "##Why I Left##I built this after leaving my job. Before I left, I was burned out, AI had taken over a lot of the bug-fixing that used to be my main source of satisfaction, and at work I was mostly building other people's ideas, with most of the real decisions out of my hands. Even though I liked the company and the people, I still chose to leave.\n\n##My Manager's Words##Before I left, I was chatting with my manager, we were more like friends by that point, and he mentioned he was using AI to build a Pikmin-related plugin he'd never dared attempt before; frontend used to stump him completely, but AI finally let him pull it off. After 20 years in the industry, he said, your sense of accomplishment has to evolve too: grinding out a project by hand used to feel rewarding, but now being able to quickly build something you never thought you could is an even better kind of happy. He used to code for a paycheck; now the resources his job gives him let him bring that into his actual life, and that's what makes him happiest these days. He told me: you should try bringing code into your own life sometime.\n\n##Falling Back in Love##At the time I only half got it. It didn't really click until I finished this site. It let me build more of what I actually wanted, and share it with friends, and every time someone tells me \"this is scarily accurate,\" it makes me want to make it even better.",
       },
     ],
   },
