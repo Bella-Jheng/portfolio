@@ -66,6 +66,15 @@ Build 設定已經寫在 `vercel.json`，在 Vercel 匯入時只要設定兩件�
 
 截圖本身不會保存，只留一張縮小的縮圖和選填的首圖。
 
+### 照片（Firebase Storage）
+
+- 登入後，首圖和截圖縮圖會上傳到 Firebase Storage（`/api/photos`），資料庫和手機只存網址，手機空間不會隨照片變大
+- 路徑：`rental/{上傳者 uid}/{物件 id}/{隨機 id}.jpg`，用 Firebase download token 網址，分享連結頁也能直接顯示
+- 以前存成 data URL 的照片，登入同步後會在背景自動搬過去
+- 刪除物件時，一併刪除自己替這間上傳的照片
+- 沒登入，或伺服器沒設定 Storage（`/api/photos` 回 501）時，照片照舊存在資料裡
+- 需要在 Firebase Console 啟用 Storage；bucket 名稱見 `.env.template` 的 `FIREBASE_STORAGE_BUCKET`
+
 ## 資料存取層（可切換 Firestore／PostgreSQL）
 
 API 不直接碰資料庫，而是透過 `src/lib/data/` 的 repository 介面：

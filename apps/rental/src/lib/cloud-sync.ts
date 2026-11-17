@@ -41,15 +41,24 @@ export async function resyncCloud() {
   if (getToken) await startCloudSync(getToken);
 }
 
+class ApiError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+  ) {
+    super(message);
+  }
+}
+
 async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   const token = getToken ? await getToken() : null;
-  if (!token) throw new Error('請先用 Google 登入');
+  if (!token) throw new ApiError('請先用 Google 登入', 401);
   const res = await fetch(path, {
     ...init,
     headers: { ...init.headers, 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
   });
   const data = (await res.json().catch(() => ({}))) as T & { error?: string };
-  if (!res.ok) throw new Error(data.error ?? '雲端同步失敗');
+  if (!res.ok) throw new ApiError(data.error ?? '雲端同步失敗', res.status);
   return data;
 }
 
@@ -64,6 +73,47 @@ async function run(task: () => Promise<unknown>) {
   }
 }
 
+// 伺服器沒設定照片儲存空間（回 501）時記下來，之後照片就照舊以 data URL 存，不再一直重試
+let photosUnsupported = false;
+const PHOTO_KEYS = ['coverImage', 'thumbnail'] as const;
+
+function hasLocalPhoto(listing: Listing): boolean {
+  return PHOTO_KEYS.some((key) => listing[key]?.startsWith('data:'));
+}
+
+/**
+ * 把物件裡還是 data URL 的照片上傳到 Firebase Storage，換成網址後回傳要送上雲端的那一筆。
+ * 手機上的資料也一起換成網址，裝置就不用再存整張照片。
+ */
+async function uploadPhotos(listing: Listing): Promise<Listing> {
+  if (photosUnsupported || !hasLocalPhoto(listing)) return listing;
+  let result = listing;
+  for (const key of PHOTO_KEYS) {
+    const dataUrl = listing[key];
+    if (!dataUrl?.startsWith('data:')) continue;
+    try {
+      const { url } = await api<{ url: string }>('/api/photos', {
+        method: 'POST',
+        body: JSON.stringify({ listingId: listing.id, dataUrl }),
+      });
+      useListings.getState().replacePhoto(listing.id, key, dataUrl, url);
+      result = { ...result, [key]: url };
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 501) {
+        photosUnsupported = true;
+        return result;
+      }
+      throw error;
+    }
+  }
+  return result;
+}
+
+async function putListing(listing: Listing) {
+  const withUrls = await uploadPhotos(listing);
+  await api(`/api/listings/${encodeURIComponent(withUrls.id)}`, { method: 'PUT', body: JSON.stringify(withUrls) });
+}
+
 function saveListing(listing: Listing) {
   clearTimeout(listingTimers.get(listing.id));
   listingTimers.set(
@@ -72,7 +122,7 @@ function saveListing(listing: Listing) {
       listingTimers.delete(listing.id);
       // 送出時拿最新的那一筆，避免把延遲期間的修改漏掉
       const latest = useListings.getState().listings.find((l) => l.id === listing.id) ?? listing;
-      run(() => api(`/api/listings/${encodeURIComponent(latest.id)}`, { method: 'PUT', body: JSON.stringify(latest) }));
+      run(() => putListing(latest));
     }, SAVE_DELAY_MS),
   );
   setStatus('syncing');
@@ -95,7 +145,11 @@ function saveTemplates() {
 }
 
 function newer(a: Listing, b: Listing): Listing {
-  return (a.updatedAt ?? '') >= (b.updatedAt ?? '') ? a : b;
+  const ta = a.updatedAt ?? '';
+  const tb = b.updatedAt ?? '';
+  // 一樣新時，選照片已經換成網址的那筆（另一台裝置已經上傳過照片），避免同一張照片重複上傳
+  if (ta === tb && hasLocalPhoto(a) !== hasLocalPhoto(b)) return hasLocalPhoto(a) ? b : a;
+  return ta >= tb ? a : b;
 }
 
 export async function startCloudSync(tokenGetter: () => Promise<string | null>) {
@@ -126,9 +180,7 @@ export async function startCloudSync(tokenGetter: () => Promise<string | null>) 
     }
     const listings = [...merged.values()].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
     useListings.getState().replaceAll(listings);
-    for (const l of toUpload) {
-      await api(`/api/listings/${encodeURIComponent(l.id)}`, { method: 'PUT', body: JSON.stringify(l) });
-    }
+    for (const l of toUpload) await putListing(l);
 
     // 範本：雲端有就用雲端的；雲端還沒有、這台有改過，就把這台的上傳
     const localTemplates = usePreferences.getState().templates;
@@ -143,6 +195,19 @@ export async function startCloudSync(tokenGetter: () => Promise<string | null>) 
     listingSyncHooks.remove = removeListing;
     preferencesSyncHooks.save = saveTemplates;
     setStatus('synced');
+
+    // 以前存成 data URL 的照片（雲端或手機上）在背景搬到 Firebase Storage，搬完那筆就變輕了
+    const uploaded = new Set(toUpload.map((l) => l.id));
+    const legacy = listings.filter((l) => !uploaded.has(l.id) && hasLocalPhoto(l)).map((l) => l.id);
+    if (legacy.length > 0) {
+      void run(async () => {
+        for (const id of legacy) {
+          if (!getToken || photosUnsupported) return;
+          const latest = useListings.getState().listings.find((l) => l.id === id);
+          if (latest && hasLocalPhoto(latest)) await putListing(latest);
+        }
+      });
+    }
   } catch (error) {
     // 例如帳號不在允許名單：保留這台裝置的資料，不同步
     getToken = null;
@@ -164,7 +229,7 @@ export async function flushCloudSync() {
     Promise.all([
       ...pendingIds.flatMap((id) => {
         const l = listings.find((x) => x.id === id);
-        return l ? [api(`/api/listings/${encodeURIComponent(id)}`, { method: 'PUT', body: JSON.stringify(l) })] : [];
+        return l ? [putListing(l)] : [];
       }),
       ...(pendingTemplates
         ? [api('/api/preferences', { method: 'PUT', body: JSON.stringify({ templates: usePreferences.getState().templates }) })]
