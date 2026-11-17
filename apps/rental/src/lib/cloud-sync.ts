@@ -1,7 +1,7 @@
 'use client';
 
 import { create } from 'zustand';
-import { listingSyncHooks, useListings } from './store';
+import { listingSyncHooks, useListings, whenListingsHydrated } from './store';
 import { preferencesSyncHooks, usePreferences } from './preferences';
 import type { Listing } from './types';
 
@@ -102,6 +102,8 @@ export async function startCloudSync(tokenGetter: () => Promise<string | null>) 
   getToken = tokenGetter;
   setStatus('syncing');
   try {
+    // 裝置上的資料（IndexedDB）讀完才能合併，否則只在這台的物件會被雲端蓋掉
+    await whenListingsHydrated();
     // 先記下 uid ↔ email 的對應，同時確認這個帳號在白名單裡
     await api('/api/session', { method: 'POST' });
     const [{ listings: remote }, { templates: remoteTemplates }] = await Promise.all([
