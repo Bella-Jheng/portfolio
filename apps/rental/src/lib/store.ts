@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { createJSONStorage, persist } from 'zustand/middleware';
+import { idbStorage } from './idb-storage';
 import type { Listing, Note, ParsedField, Status } from './types';
 
 type PersistedListing = Omit<Listing, 'status' | 'igIds'> & { status: Status | 'contacting' | 'favorite'; igIds?: string[] };
@@ -63,7 +64,7 @@ interface ListingState {
   removeNote: (id: string, noteId: string) => void;
 }
 
-// 資料先存在這台裝置（localStorage），登入後會同步到 Firebase（見 cloud-sync.ts）。
+// 資料先存在這台裝置（IndexedDB，見 idb-storage.ts），登入後會同步到雲端（見 cloud-sync.ts）。
 // 每個會改資料的動作做完後呼叫 changed()，把那一筆交給雲端同步上傳。
 export const useListings = create<ListingState>()(
   persist(
@@ -129,6 +130,8 @@ export const useListings = create<ListingState>()(
     },
     {
       name: 'rental-helper:listings',
+      // 首圖照片很佔空間，localStorage 約 5MB 很快就滿，改存 IndexedDB（舊資料會自動搬過去）
+      storage: createJSONStorage(() => idbStorage),
       version: 3,
       // v1 → v2：「聯絡中」拆成「尚未聯絡／已聯絡」，舊的聯絡中視為已聯絡；新增 IG 聯絡方式
       migrate: (persisted, version) => {
@@ -152,7 +155,21 @@ export const useListings = create<ListingState>()(
   ),
 );
 
-/** localStorage 讀進來之前先不要渲染資料，避免 SSR/CSR 不一致 */
+/**
+ * 等這台裝置的資料讀進來。IndexedDB 是非同步的，讀完之前 listings 還是空陣列；
+ * 雲端同步要在這之後才合併，不然只存在這台裝置的物件會被雲端資料蓋掉。
+ */
+export function whenListingsHydrated(): Promise<void> {
+  if (useListings.persist.hasHydrated()) return Promise.resolve();
+  return new Promise((resolve) => {
+    const unsub = useListings.persist.onFinishHydration(() => {
+      unsub();
+      resolve();
+    });
+  });
+}
+
+/** 裝置上的資料讀進來之前先不要渲染資料，避免 SSR/CSR 不一致、也避免顯示空清單 */
 export function useHydrated(): boolean {
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => {

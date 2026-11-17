@@ -451,7 +451,7 @@ function CoverSection({ listing: l }: { listing: Listing }) {
       update(l.id, { coverImage });
       setError(null);
     } catch {
-      // localStorage 容量用完時寫入會失敗：還原，避免畫面顯示了但其實沒存到
+      // 保險：同步寫入失敗時還原（資料已改存 IndexedDB，容量大很多，正常不會發生）
       update(l.id, { coverImage: previous });
       setError('裝置空間不足，首圖沒有存到。可以刪掉一些不需要的物件或首圖再試一次。');
     }
