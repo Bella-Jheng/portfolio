@@ -34,6 +34,9 @@ import {
   Rental4,
   Rental5,
   Rental6,
+  Rental7,
+  Rental8,
+  Rental9,
 } from '@/public/img';
 
 export const PROJECTS_DATA_ZH: FullProject[] = [
@@ -44,7 +47,7 @@ export const PROJECTS_DATA_ZH: FullProject[] = [
     displayCategory: 'AI 實作',
     period: '2026',
     description:
-      '準備搬家找房時，我習慣把 591、FB 社團上的物件截圖，再一張張丟到 Google Maps 查位置、複製資料私訊代管，來回切換很花時間，所以做了這個自用工具。\n\n把租屋截圖丟進來，AI 自動讀出地址、租金、房型、電話和 LINE，標在地圖上，再一鍵產生私訊範本。\n\n• 地圖首頁依狀態上色：聯絡中、已看房、已出租，「最想要」用愛心另外標記\n• 一次上傳多張截圖，AI 沒把握的欄位會用黃色提醒確認\n• 電話一鍵撥打、LINE ID 一鍵開啟，私訊範本自動帶入物件資料\n• 預約看房行程、分享物件連結、邀請家人一起找房\n• 借給認識的房仲試用後，發現他們管理物件也需要類似工具',
+      '準備搬家找房時，我習慣把 591、FB 社團上的物件截圖，再一張張丟到 Google Maps 查位置、複製資料私訊代管，來回切換很花時間，所以做了這個自用工具。\n\n把租屋截圖丟進來，AI 自動讀出地址、租金、房型、電話和 LINE，標在地圖上，再一鍵產生私訊範本。\n\n• 地圖首頁依進度上色：尚未聯絡、已聯絡、已看房、已出租，喜歡的按愛心收進「最想要」\n• 一次上傳多張截圖，AI 沒把握的欄位會用黃色提醒確認\n• 電話、LINE、IG 一鍵聯絡，私訊範本自動帶入物件資料\n• 在物件裡預約看房，行程管理用月曆一次看完；也能分享物件連結\n• 借給認識的房仲試用後，發現他們管理物件也需要類似工具',
     imageUrl: Rental1.src,
     link: '/projects/rental',
     tags: ['AI Integration', 'Google Maps', 'Firebase', 'Full-Stack'],
@@ -63,6 +66,9 @@ export const PROJECTS_DATA_ZH: FullProject[] = [
       { type: 'image', url: Rental4.src },
       { type: 'image', url: Rental5.src },
       { type: 'image', url: Rental6.src },
+      { type: 'image', url: Rental7.src },
+      { type: 'image', url: Rental8.src },
+      { type: 'image', url: Rental9.src },
     ],
     links: [
       {

@@ -34,6 +34,9 @@ import {
   Rental4,
   Rental5,
   Rental6,
+  Rental7,
+  Rental8,
+  Rental9,
 } from '@/public/img';
 
 export const PROJECTS_DATA_EN: FullProject[] = [
@@ -44,7 +47,7 @@ export const PROJECTS_DATA_EN: FullProject[] = [
     displayCategory: 'AI Implementation',
     period: '2026',
     description:
-      "While apartment hunting for my move, I kept screenshotting listings from 591 and Facebook groups, checking each location in Google Maps, and copying details to message landlords' agents one by one. So I built a tool for myself.\n\nDrop in listing screenshots and AI reads the address, rent, room type, phone and LINE ID, pins them on a map, and generates a message template in one tap.\n\n• Map home colors each listing by status: contacted, viewed, rented, with a separate heart for favorites\n• Upload several screenshots at once; fields the AI isn't sure about are highlighted in yellow\n• Tap to call, tap to open LINE, and message templates auto-filled with listing details\n• Viewing schedule, shareable listing links, and inviting family to search together\n• After lending it to real-estate agents I know, I found they need a similar tool to manage their listings",
+      "While apartment hunting for my move, I kept screenshotting listings from 591 and Facebook groups, checking each location in Google Maps, and copying details to message landlords' agents one by one. So I built a tool for myself.\n\nDrop in listing screenshots and AI reads the address, rent, room type, phone and LINE ID, pins them on a map, and generates a message template in one tap.\n\n• Map home colors each listing by progress: not contacted, contacted, viewed, rented; tap the heart to save favorites\n• Upload several screenshots at once; fields the AI isn't sure about are highlighted in yellow\n• One tap to call or open LINE or Instagram, with message templates auto-filled with listing details\n• Book viewings from a listing and see them all on a calendar; listings can also be shared by link\n• After lending it to real-estate agents I know, I found they need a similar tool to manage their listings",
     imageUrl: Rental1.src,
     link: '/projects/rental',
     tags: ['AI Integration', 'Google Maps', 'Firebase', 'Full-Stack'],
@@ -63,6 +66,9 @@ export const PROJECTS_DATA_EN: FullProject[] = [
       { type: 'image', url: Rental4.src },
       { type: 'image', url: Rental5.src },
       { type: 'image', url: Rental6.src },
+      { type: 'image', url: Rental7.src },
+      { type: 'image', url: Rental8.src },
+      { type: 'image', url: Rental9.src },
     ],
     links: [
       {
