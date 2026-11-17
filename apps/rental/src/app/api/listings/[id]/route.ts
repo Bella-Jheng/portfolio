@@ -3,6 +3,7 @@ import { verifyUser } from '../../../../lib/verify-user';
 import { ForbiddenError } from '../../../../lib/data';
 import { isValidListing } from '../../../../lib/data/validate';
 import { saveListing } from '../../../../lib/data/access';
+import { deleteListingPhotos } from '../../../../lib/photo-storage';
 
 // 物件含首圖（約 100–200KB）與截圖縮圖；Firestore 單一文件上限 1MB，留一點緩衝
 const MAX_LISTING_BYTES = 900_000;
@@ -48,6 +49,8 @@ export async function DELETE(request: NextRequest, { params }: Params) {
   const { id } = await params;
   try {
     await user.repos.listings.remove(user.uid, id);
+    // 順便清掉這個帳號替這間上傳的照片；清不掉只記 log，不影響刪除結果
+    await deleteListingPhotos(user.uid, id).catch((error) => console.error('Delete listing photos failed:', error));
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error('Delete listing failed:', error);

@@ -77,8 +77,8 @@ export interface Listing {
   lineIds: string[];
   igIds: string[];
   notes: Note[];
-  thumbnail?: string; // 截圖縮小過的 data URL
-  coverImage?: string; // 首圖：房子的照片（跟截圖分開），縮小過的 data URL
+  thumbnail?: string; // 截圖縮圖：登入後是 Firebase Storage 網址，未登入或還沒上傳時是 data URL
+  coverImage?: string; // 首圖：房子的照片（跟截圖分開），格式同 thumbnail
   uncertain: ParsedField[];
 }
 

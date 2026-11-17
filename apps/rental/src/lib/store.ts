@@ -55,6 +55,8 @@ interface ListingState {
   listings: Listing[];
   /** 同步用：整批換掉（不會觸發上傳） */
   replaceAll: (listings: Listing[]) => void;
+  /** 同步用：照片上傳完，把 data URL 換成網址（不會觸發上傳、不改 updatedAt）；期間被換過就不動 */
+  replacePhoto: (id: string, key: 'coverImage' | 'thumbnail', from: string, to: string) => void;
   add: (listing: Listing) => void;
   update: (id: string, patch: Partial<Listing>, touched?: ParsedField[]) => void;
   remove: (id: string) => void;
@@ -81,6 +83,10 @@ export const useListings = create<ListingState>()(
       return {
       listings: [],
       replaceAll: (listings) => set({ listings }),
+      replacePhoto: (id, key, from, to) =>
+        set((s) => ({
+          listings: s.listings.map((l) => (l.id === id && l[key] === from ? { ...l, [key]: to } : l)),
+        })),
       add: (listing) => setAndSync(listing.id, (s) => ({ listings: [listing, ...s.listings] })),
       update: (id, patch, touched = []) =>
         setAndSync(id, (s) => ({
