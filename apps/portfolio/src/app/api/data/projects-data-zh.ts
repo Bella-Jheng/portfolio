@@ -28,6 +28,12 @@ import {
   Bazi4,
   Bazi5,
   Bazi6,
+  Rental1,
+  Rental2,
+  Rental3,
+  Rental4,
+  Rental5,
+  Rental6,
 } from '@/public/img';
 
 export const PROJECTS_DATA_ZH: FullProject[] = [
@@ -84,6 +90,64 @@ export const PROJECTS_DATA_ZH: FullProject[] = [
         ],
         learnings:
           '##離職緣由##這是我離職後做的作品。離職前我有點職業倦怠，AI 取代了我很多解 bug 的成就感，加上在公司大多是做別人的東西、很多決定不由自己，即使喜歡公司環境，我還是選擇離開。\n\n##主管的話##離職前和主管閒聊，他提到自己在用 AI 做一個以前想都不敢想的皮克敏外掛，過去不懂前端總是卡關，現在靠 AI 終於實現了。他說做了 20 年，成就感也該跟著時代迭代，以前土法煉鋼完成一個專案很有成就感，現在能快速做出過去不敢想的東西更快樂，寫程式不只是為了賺錢，也能把它帶進生活裡。他說：你不妨試試看把程式帶入你的生活。\n\n##重新愛上##當下我似懂非懂，直到做完這個網站才真正明白。它讓我完成更多想做的事，還能跟朋友分享，每次聽到「算得很準」，都讓我更想把它做得更好，更在短短一周內快速學習後端，把我以往不敢嘗試的內容通通做出來。或許本身要做同一個工作這麼久就需要勇氣，還有各種契機去調整自己的心態，這次的嘗試除了打開我的眼界外，更讓我重新愛上寫程式',
+      },
+    ],
+  },
+  {
+    id: 'rental',
+    title: '租屋小幫手：AI 截圖解析找房工具',
+    category: 'AI 實作',
+    displayCategory: 'AI 實作',
+    period: '2026',
+    description:
+      '準備搬家找房時，我習慣把 591、FB 社團上的物件截圖，再一張張丟到 Google Maps 查位置、複製資料私訊代管，來回切換很花時間，所以做了這個自用工具。\n\n把租屋截圖丟進來，AI 自動讀出地址、租金、房型、電話和 LINE，標在地圖上，再一鍵產生私訊範本。\n\n• 地圖首頁依狀態上色：聯絡中、已看房、已出租，「最想要」用愛心另外標記\n• 一次上傳多張截圖，AI 沒把握的欄位會用黃色提醒確認\n• 電話一鍵撥打、LINE ID 一鍵開啟，私訊範本自動帶入物件資料\n• 預約看房行程、分享物件連結、邀請家人一起找房\n• 借給認識的房仲試用後，發現他們管理物件也需要類似工具',
+    imageUrl: Rental1.src,
+    link: '/projects/rental',
+    tags: ['AI Integration', 'Google Maps', 'Firebase', 'Full-Stack'],
+    technologies: [
+      'Next.js 16',
+      'Google Gemini API',
+      'Google Maps JavaScript API',
+      'Firebase Auth / Firestore',
+      'Zustand',
+      'Vitest',
+    ],
+    media: [
+      { type: 'image', url: Rental1.src },
+      { type: 'image', url: Rental2.src },
+      { type: 'image', url: Rental3.src },
+      { type: 'image', url: Rental4.src },
+      { type: 'image', url: Rental5.src },
+      { type: 'image', url: Rental6.src },
+    ],
+    links: [
+      {
+        label: '專案說明 README',
+        url: 'https://github.com/Bella-Jheng/portfolio/blob/main/apps/rental/README.md',
+        type: 'document',
+      },
+    ],
+    sections: [
+      {
+        title: '專案動機與開發重點',
+        tabLabel: '開發重點',
+        whatIDid:
+          '##找房痛點##找房時大部分時間都花在重複動作：截圖物件、到 Google Maps 查位置、再把資料一筆筆複製去私訊代管。我想把「截圖 → 整理 → 私訊」縮成一個流程，所以做了這個工具。\n\n##核心流程##上傳截圖後由 Gemini 解析成結構化欄位，地址轉成座標標到地圖上，用狀態顏色和「最想要」愛心一眼看出進度，最後依範本產生私訊，複製就能傳給代管。',
+        techUsed: [
+          'Next.js 16',
+          'Google Gemini API',
+          '@vis.gl/react-google-maps',
+          'Firebase',
+          'TypeScript',
+        ],
+        challenges: [
+          '##AI 額度保護##網址一旦外流，任何人都能呼叫 AI 解析消耗額度。後端改成先驗證 Google 登入憑證，再到 Firestore 允許名單確認，名單只在伺服器端讀取',
+          '##離線與雲端同步##沒登入時資料存在瀏覽器，登入後要同步到雲端。登入時把裝置與雲端資料合併，同一筆以最後修改時間為準，登入前新增的物件不會不見',
+          '##解析結果不一定可靠##截圖常常沒拍到完整地址或物件編號，所以 AI 沒把握的欄位用黃色標出，所有欄位都能就地編輯',
+          '##聯絡方式格式多樣##LINE 有官方帳號 @ID、一般 ID、「LINE 同電話」等寫法，需要分別處理才能一鍵開啟',
+        ],
+        learnings:
+          '##從自己的需求出發##這是為了自己搬家做的工具，邊找房邊用、邊用邊改，每個功能都來自實際卡住的地方。\n\n##意外的使用者##把工具借給認識的房仲試用後，發現他們管理手上物件也有一樣的困擾，讓我開始思考把它發展成房仲版本的可能。\n\n##架構預留彈性##資料存取透過 repository 介面，可以在 Firestore 與 PostgreSQL 之間切換，為之後的規模和成本調整留下空間。',
       },
     ],
   },

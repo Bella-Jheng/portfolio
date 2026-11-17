@@ -28,6 +28,12 @@ import {
   Bazi4,
   Bazi5,
   Bazi6,
+  Rental1,
+  Rental2,
+  Rental3,
+  Rental4,
+  Rental5,
+  Rental6,
 } from '@/public/img';
 
 export const PROJECTS_DATA_EN: FullProject[] = [
@@ -81,6 +87,64 @@ export const PROJECTS_DATA_EN: FullProject[] = [
           "##Cost Spike##As the knowledge base grew, stuffing the entire thing into the AI prompt drove up token cost and hurt reading quality\n\n##Login Blocked##A friend opening the link in LINE got blocked at Google sign-in with a 403; the in-app browser was the culprit, and login didn't work at all\n\n##Scattered Logic##Firestore read/write logic was scattered across many API routes, with the same business flow copy-pasted several times",
         learnings:
           "##Why I Left##I built this after leaving my job. Before I left, I was burned out, AI had taken over a lot of the bug-fixing that used to be my main source of satisfaction, and at work I was mostly building other people's ideas, with most of the real decisions out of my hands. Even though I liked the company and the people, I still chose to leave.\n\n##My Manager's Words##Before I left, I was chatting with my manager, we were more like friends by that point, and he mentioned he was using AI to build a Pikmin-related plugin he'd never dared attempt before; frontend used to stump him completely, but AI finally let him pull it off. After 20 years in the industry, he said, your sense of accomplishment has to evolve too: grinding out a project by hand used to feel rewarding, but now being able to quickly build something you never thought you could is an even better kind of happy. He used to code for a paycheck; now the resources his job gives him let him bring that into his actual life, and that's what makes him happiest these days. He told me: you should try bringing code into your own life sometime.\n\n##Falling Back in Love##At the time I only half got it. It didn't really click until I finished this site. It let me build more of what I actually wanted, and share it with friends, and every time someone tells me \"this is scarily accurate,\" it makes me want to make it even better.",
+      },
+    ],
+  },
+  {
+    id: 'rental',
+    title: 'Rental Helper: AI Screenshot-to-Map Apartment Hunting Tool',
+    category: 'AI 實作',
+    displayCategory: 'AI Implementation',
+    period: '2026',
+    description:
+      "While apartment hunting for my move, I kept screenshotting listings from 591 and Facebook groups, checking each location in Google Maps, and copying details to message landlords' agents one by one. So I built a tool for myself.\n\nDrop in listing screenshots and AI reads the address, rent, room type, phone and LINE ID, pins them on a map, and generates a message template in one tap.\n\n• Map home colors each listing by status: contacted, viewed, rented, with a separate heart for favorites\n• Upload several screenshots at once; fields the AI isn't sure about are highlighted in yellow\n• Tap to call, tap to open LINE, and message templates auto-filled with listing details\n• Viewing schedule, shareable listing links, and inviting family to search together\n• After lending it to real-estate agents I know, I found they need a similar tool to manage their listings",
+    imageUrl: Rental1.src,
+    link: '/projects/rental',
+    tags: ['AI Integration', 'Google Maps', 'Firebase', 'Full-Stack'],
+    technologies: [
+      'Next.js 16',
+      'Google Gemini API',
+      'Google Maps JavaScript API',
+      'Firebase Auth / Firestore',
+      'Zustand',
+      'Vitest',
+    ],
+    media: [
+      { type: 'image', url: Rental1.src },
+      { type: 'image', url: Rental2.src },
+      { type: 'image', url: Rental3.src },
+      { type: 'image', url: Rental4.src },
+      { type: 'image', url: Rental5.src },
+      { type: 'image', url: Rental6.src },
+    ],
+    links: [
+      {
+        label: 'README',
+        url: 'https://github.com/Bella-Jheng/portfolio/blob/main/apps/rental/README.md',
+        type: 'document',
+      },
+    ],
+    sections: [
+      {
+        title: 'Motivation & Key Engineering Work',
+        tabLabel: 'Dev Notes',
+        whatIDid:
+          "##The Pain Point##Most of my apartment-hunting time went into repetitive steps: screenshot a listing, look it up in Google Maps, then copy the details into a message to the agent. I wanted to collapse \"screenshot → organize → message\" into a single flow.\n\n##Core Flow##Uploaded screenshots are parsed by Gemini into structured fields, addresses are geocoded onto the map, status colors and a favorite heart show progress at a glance, and a template turns the listing into a ready-to-send message.",
+        techUsed: [
+          'Next.js 16',
+          'Google Gemini API',
+          '@vis.gl/react-google-maps',
+          'Firebase',
+          'TypeScript',
+        ],
+        challenges: [
+          '##Protecting AI Quota##If the URL leaked, anyone could burn through the AI quota. The backend now verifies the Google sign-in token and checks a Firestore allowlist that is only read server-side',
+          '##Offline & Cloud Sync##Signed-out data lives in the browser; once signed in it syncs to the cloud. On sign-in, device and cloud data are merged by last-modified time, so nothing added before signing in is lost',
+          "##Imperfect Parsing##Screenshots often miss the full address or listing ID, so fields the AI isn't confident about are flagged in yellow, and every field can be edited in place",
+          '##Many Contact Formats##LINE IDs show up as official @IDs, regular IDs, or "LINE is the same as my phone", and each needs its own handling to open LINE in one tap',
+        ],
+        learnings:
+          "##Built From My Own Need##I built this for my own move, using it while I searched and changing it as I went, so every feature came from a real point where I got stuck.\n\n##Unexpected Users##After lending it to real-estate agents I know, I found they have the same problem managing their listings, which got me thinking about an agent version.\n\n##Room to Grow##Data access goes through a repository interface that can switch between Firestore and PostgreSQL, leaving room to adjust for scale and cost later.",
       },
     ],
   },
