@@ -40,9 +40,11 @@ module.exports = {
         'splash-out': { to: { opacity: '0', visibility: 'hidden' } },
       },
       animation: {
-        'fade-up': 'fade-up 0.35s cubic-bezier(0.22, 1, 0.36, 1) both',
-        'fade-in': 'fade-in 0.25s ease-out both',
-        'slide-up': 'slide-up 0.35s cubic-bezier(0.22, 1, 0.36, 1) both',
+        // fill-mode 用 backwards 不用 both：動畫結束後不能再留著 opacity／transform 的效果，
+        // 否則元素會一直是獨立的 stacking context，蓋在 layout 的地圖上把點擊攔走（標記點不到）
+        'fade-up': 'fade-up 0.35s cubic-bezier(0.22, 1, 0.36, 1) backwards',
+        'fade-in': 'fade-in 0.25s ease-out backwards',
+        'slide-up': 'slide-up 0.35s cubic-bezier(0.22, 1, 0.36, 1) backwards',
         pop: 'pop 0.35s cubic-bezier(0.22, 1, 0.36, 1)',
         'dot-bounce': 'dot-bounce 1.2s ease-in-out infinite',
         'draw-line': 'draw-line 1s ease-out both',
