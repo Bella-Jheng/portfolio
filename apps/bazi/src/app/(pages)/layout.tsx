@@ -10,7 +10,10 @@ export const metadata = {
   description: '輸入出生年月日，透過 AI 解析你的八字命盤，了解天生個性與命格。',
   icons: {
     icon: '/favicon.png',
+    apple: '/apple-touch-icon.png',
   },
+  // 加入主畫面後以 App 形式打開（iPhone 要這樣才能開推播通知）
+  appleWebApp: { capable: true, title: '命格貓', statusBarStyle: 'default' as const },
   openGraph: {
     title: ' 八字算命 | 命格貓',
     description: '輸入出生年月日，透過 AI 解析你的八字命盤，了解天生個性與命格。',

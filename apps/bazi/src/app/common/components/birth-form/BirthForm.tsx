@@ -98,7 +98,8 @@ export function BirthForm({ onSubmit, isPending = false, apiError }: BirthFormPr
     );
   }
 
-  if (isPending) return <Loading />;
+  // 排盤在伺服器背景跑，等待時可以切到其他 App
+  if (isPending) return <Loading canLeave />;
 
   const displayError = error || apiError;
 

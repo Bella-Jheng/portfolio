@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState } from 'react';
+import { LeaveHint } from './LeaveHint';
 
 const STEPS = [
   '排四柱八字',
@@ -27,7 +28,7 @@ const KNOWLEDGE = [
   { title: '命盤是說明書，不是判決書', body: '它告訴你天生的個性和傾向，你可以照著它走比較順的路，也可以選擇逆著走、闖出自己的路。看懂命盤不是要你認命，是讓你更清楚自己在選什麼。' },
 ];
 
-export function Loading({ message = '正在解析命盤…' }: { message?: string }) {
+export function Loading({ message = '正在解析命盤…', canLeave = false }: { message?: string; canLeave?: boolean }) {
   const [stepIdx, setStepIdx] = useState(0);
   const [cardIdx, setCardIdx] = useState(0);
 
@@ -173,6 +174,8 @@ export function Loading({ message = '正在解析命盤…' }: { message?: strin
       >
         {message}
       </motion.p>
+      {/* 背景排盤時：提醒可以切走、開啟推播 */}
+      {canLeave && <LeaveHint />}
     </div>
   );
 }
