@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import clsx from 'clsx';
 import { emptyListing, useListings } from '../../lib/store';
-import { resizeCoverImage, resizeImage } from '../../lib/image';
+import { resizeCoverImage, resizeForUpload, resizeImage } from '../../lib/image';
+import { postParse, trackHidden } from '../../lib/parse-request';
 import { useGeocode } from '../../lib/geocode';
 import type { ParseResult, Source } from '../../lib/types';
 import { SourcePicker } from '../../components/SourcePicker';
@@ -100,18 +101,18 @@ export default function AddPage() {
     });
 
   async function parseGroup(files: File[]): Promise<{ result: ParseResult; thumbnail: string }> {
-    const images = await Promise.all(files.map((f) => resizeImage(f, 1600)));
+    const images = await resizeForUpload(files);
     const thumb = await resizeImage(files[0], 240, 0.7);
     const token = await getToken();
     if (!token) throw new Error('請先用 Google 登入');
-    const res = await fetch('/api/parse', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ images: images.map((i) => ({ mimeType: i.mimeType, data: i.base64 })) }),
-    });
-    const data = (await res.json()) as ParseResult & { error?: string };
-    if (!res.ok) throw new Error(data.error ?? '解析失敗');
-    return { result: data, thumbnail: thumb.dataUrl };
+    const body = JSON.stringify({ images: images.map((i) => ({ mimeType: i.mimeType, data: i.base64 })) });
+    const visibility = trackHidden();
+    try {
+      const data = await postParse(body, token, { wasHidden: visibility.wasHidden });
+      return { result: data, thumbnail: thumb.dataUrl };
+    } finally {
+      visibility.stop();
+    }
   }
 
   async function createFrom({ values, thumbnail }: Draft, coverImage?: string) {
@@ -150,7 +151,7 @@ export default function AddPage() {
       const groups = sameListing ? [picked.map((p) => p.file)] : picked.map((p) => [p.file]);
       const parsed: Draft[] = [];
       for (let i = 0; i < groups.length; i++) {
-        setBusy(groups.length > 1 ? `解析中 ${i + 1} / ${groups.length}…` : '解析中…');
+        setBusy(groups.length > 1 ? `解析中 ${i + 1} / ${groups.length}，請停在這個畫面…` : '解析中，請停在這個畫面…');
         const { result, thumbnail } = await parseGroup(groups[i]);
         parsed.push({ values: draftFromResult(result, source, coverApplies ? sourceUrl.trim() : ''), thumbnail });
       }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { GoogleGenerativeAI, SchemaType, type ResponseSchema } from '@google/generative-ai';
+import { GoogleGenerativeAI, SchemaType, type GenerationConfig, type ResponseSchema } from '@google/generative-ai';
 import type { ParsedField, ParseResult } from '../../../lib/types';
 import { verifyUser } from '../../../lib/verify-user';
 
@@ -119,10 +119,17 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const model = new GoogleGenerativeAI(apiKey).getGenerativeModel({
-      model: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
-      generationConfig: { responseMimeType: 'application/json', responseSchema: schema, temperature: 0 },
-    });
+    const modelName = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+    const generationConfig: GenerationConfig & { thinkingConfig?: { thinkingBudget: number } } = {
+      responseMimeType: 'application/json',
+      responseSchema: schema,
+      temperature: 0,
+    };
+    // 從截圖讀欄位不需要「思考」；Flash 系列可以關掉，回應快很多，也比較不會撞到請求逾時。
+    // （Pro 系列不允許關閉，所以只對 flash 設定；這版 SDK 沒有型別，但會原樣送給 API）
+    if (/flash/i.test(modelName)) generationConfig.thinkingConfig = { thinkingBudget: 0 };
+
+    const model = new GoogleGenerativeAI(apiKey).getGenerativeModel({ model: modelName, generationConfig });
 
     const result = await model.generateContent([
       { text: PROMPT },
