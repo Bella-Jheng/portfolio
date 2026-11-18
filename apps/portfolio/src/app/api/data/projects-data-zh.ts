@@ -129,6 +129,11 @@ export const PROJECTS_DATA_ZH: FullProject[] = [
         type: 'website',
       },
       {
+        label: 'UI 設計稿',
+        url: 'https://claude.ai/artifact/EVsqsZE9XoH1tHu5LjdPiZ',
+        type: 'external',
+      },
+      {
         label: '開發記錄 DEVLOG',
         url: 'https://github.com/Bella-Jheng/portfolio/blob/main/apps/bazi/DEVLOG.md',
         type: 'document',
