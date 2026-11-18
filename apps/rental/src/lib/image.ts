@@ -26,3 +26,22 @@ export async function resizeCoverImage(file: Blob): Promise<string> {
   const { dataUrl } = await resizeImage(file, 1024, 0.78);
   return dataUrl;
 }
+
+// Vercel 的 Serverless Function 請求上限約 4.5MB；超過時連線會直接被切斷，iOS 只會顯示「Load failed」
+const MAX_UPLOAD_CHARS = 3_500_000;
+const UPLOAD_STEPS: [maxSide: number, quality: number][] = [
+  [1600, 0.82],
+  [1280, 0.75],
+  [1024, 0.7],
+];
+
+/** 把要給 AI 解析的截圖縮到合起來不超過上傳上限：先用清楚的設定，太大再逐步縮小 */
+export async function resizeForUpload(files: Blob[]) {
+  let images: Awaited<ReturnType<typeof resizeImage>>[] = [];
+  for (const [maxSide, quality] of UPLOAD_STEPS) {
+    images = await Promise.all(files.map((f) => resizeImage(f, maxSide, quality)));
+    const total = images.reduce((sum, img) => sum + img.base64.length, 0);
+    if (total <= MAX_UPLOAD_CHARS) return images;
+  }
+  return images;
+}
