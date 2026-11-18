@@ -9,6 +9,7 @@ import { resizeCoverImage, resizeForUpload, resizeImage } from '../../lib/image'
 import {
   clearPending,
   loadPending,
+  ParseAbortedError,
   savePending,
   startParseJob,
   trackHidden,
@@ -18,6 +19,7 @@ import {
 import { useGeocode } from '../../lib/geocode';
 import type { Source } from '../../lib/types';
 import { SourcePicker } from '../../components/SourcePicker';
+import { NotificationSettings } from '../../components/NotificationSettings';
 import { BackIcon, CloseIcon, ImageIcon, PlusIcon, SparkIcon } from '../../components/icons';
 import {
   ListingDraftForm,
@@ -131,8 +133,11 @@ export default function AddPage() {
         ? `AI 解析 ${pending.jobs.length} 間中…可以先切到其他 App，回來就會看到結果`
         : 'AI 解析中…可以先切到其他 App，回來就會看到結果',
     );
+    waitAbort.current?.abort();
+    const controller = new AbortController();
+    waitAbort.current = controller;
     const results = await Promise.all(
-      pending.jobs.map((job) => waitForParseJob(job.jobId, getToken, { startedAt: pending.startedAt })),
+      pending.jobs.map((job) => waitForParseJob(job.jobId, getToken, { signal: controller.signal })),
     );
     setDrafts(
       results.map((result, i) => ({
@@ -142,6 +147,10 @@ export default function AddPage() {
     );
     window.scrollTo({ top: 0 });
   }
+
+  // 離開新增頁就停止詢問（伺服器照樣會解析完，回到新增頁再接）
+  const waitAbort = useRef<AbortController | null>(null);
+  useEffect(() => () => waitAbort.current?.abort(), []);
 
   // 解析途中離開（或 iOS 把頁面重新載入）後回來：接著拿上次的結果
   const resumed = useRef(false);
@@ -155,6 +164,7 @@ export default function AddPage() {
     setError(null);
     collectResults(pending)
       .catch((e) => {
+        if (e instanceof ParseAbortedError) return;
         clearPending();
         setError(e instanceof Error ? e.message : '解析失敗');
       })
@@ -214,6 +224,7 @@ export default function AddPage() {
       savePending(pending);
       await collectResults(pending);
     } catch (e) {
+      if (e instanceof ParseAbortedError) return;
       clearPending();
       setError(e instanceof Error ? e.message : '解析失敗');
     } finally {
@@ -461,6 +472,8 @@ export default function AddPage() {
         <aside className="rounded-2xl border border-line bg-white p-3.5 text-[13px] leading-relaxed text-[#4A3326]">
           截圖時讓<b>地址</b>、<b>物件編號</b>和<b>聯絡電話／LINE／IG</b> 入鏡，解析會更準。
         </aside>
+
+        <NotificationSettings compact />
 
         {error && (
           <p role="alert" className="rounded-xl bg-warn-bg px-3 py-2.5 text-sm text-warn-text">

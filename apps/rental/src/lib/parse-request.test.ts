@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { startParseJob, waitForParseJob } from './parse-request';
+import { ParseAbortedError, startParseJob, waitForParseJob } from './parse-request';
 
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status });
 const noWait = async () => undefined;
@@ -90,5 +90,21 @@ describe('waitForParseJob', () => {
     await expect(
       waitForParseJob('job-1', token, { fetchImpl, wait, now: () => t, startedAt: 0 }),
     ).rejects.toThrow('太久');
+  });
+
+  it('隔很久才回來：先問一次，結果好了就直接拿，不會先判定逾時', async () => {
+    const fetchImpl = async () => json({ status: 'done', result: { title: 'C' } });
+    await expect(
+      waitForParseJob('job-1', token, { fetchImpl, wait: noWait, now: () => 10 * 60 * 1000, startedAt: 0 }),
+    ).resolves.toMatchObject({ title: 'C' });
+  });
+
+  it('離開頁面（abort）時停止等待', async () => {
+    const controller = new AbortController();
+    const fetchImpl = async () => json({ status: 'pending' });
+    const wait = async () => controller.abort();
+    await expect(
+      waitForParseJob('job-1', token, { fetchImpl, wait, signal: controller.signal }),
+    ).rejects.toBeInstanceOf(ParseAbortedError);
   });
 });

@@ -359,6 +359,29 @@ export function createPostgresRepositories(sql: SqlClient): Repositories {
         );
       },
     },
+
+    pushSubscriptions: {
+      async save(ownerUid, sub) {
+        await ready();
+        await sql.query(
+          `INSERT INTO rental_push_subscriptions (endpoint, owner_uid, p256dh, auth) VALUES ($1, $2, $3, $4)
+           ON CONFLICT (endpoint) DO UPDATE SET owner_uid = EXCLUDED.owner_uid, p256dh = EXCLUDED.p256dh, auth = EXCLUDED.auth`,
+          [sub.endpoint, ownerUid, sub.p256dh, sub.auth],
+        );
+      },
+      async list(ownerUid) {
+        await ready();
+        const { rows } = await sql.query<{ endpoint: string; p256dh: string; auth: string }>(
+          'SELECT endpoint, p256dh, auth FROM rental_push_subscriptions WHERE owner_uid = $1',
+          [ownerUid],
+        );
+        return rows;
+      },
+      async remove(endpoint) {
+        await ready();
+        await sql.query('DELETE FROM rental_push_subscriptions WHERE endpoint = $1', [endpoint]);
+      },
+    },
   };
   return repos;
 }

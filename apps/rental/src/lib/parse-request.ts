@@ -14,8 +14,12 @@ type Wait = (ms: number) => Promise<void>;
 
 export class ParseRequestError extends Error {}
 
+/** 離開新增頁時停止等待（不是失敗，伺服器那邊照樣會跑完，回來再接） */
+export class ParseAbortedError extends Error {}
+
 const RETRY_DELAY_MS = 1500;
 const POLL_MS = 2000;
+// 從開始等算起；伺服器那邊等待超過 3 分鐘就會回報失敗，這只是保險
 const GIVE_UP_MS = 5 * 60 * 1000;
 
 const defaultFetch: FetchLike = (input, init) => fetch(input, init);
@@ -97,16 +101,18 @@ export async function waitForParseJob(
     isVisible = () => typeof document === 'undefined' || document.visibilityState === 'visible',
     now = () => Date.now(),
     startedAt = now(),
+    signal,
   }: {
     fetchImpl?: FetchLike;
     wait?: Wait;
     isVisible?: () => boolean;
     now?: () => number;
     startedAt?: number;
+    signal?: AbortSignal;
   } = {},
 ): Promise<ParseResult> {
   for (;;) {
-    if (now() - startedAt > GIVE_UP_MS) throw new ParseRequestError('AI 解析太久沒有完成，請再試一次');
+    if (signal?.aborted) throw new ParseAbortedError('已停止等待');
     if (isVisible()) {
       const token = await getToken();
       if (!token) throw new ParseRequestError('請先用 Google 登入');
@@ -114,6 +120,7 @@ export async function waitForParseJob(
         const res = await fetchImpl(`/api/parse-jobs/${encodeURIComponent(jobId)}`, {
           headers: { Authorization: `Bearer ${token}` },
           cache: 'no-store',
+          signal,
         });
         const data = await readJson<{ status?: string; result?: ParseResult }>(res);
         if (res.status === 404 || res.status === 401 || res.status === 403) {
@@ -123,9 +130,12 @@ export async function waitForParseJob(
         if (res.ok && data?.status === 'error') throw new ParseRequestError(data.error ?? 'AI 解析失敗，請再試一次');
         // pending、5xx、讀不懂的回應：下一輪再問
       } catch (error) {
+        if (signal?.aborted) throw new ParseAbortedError('已停止等待');
         if (!isNetworkError(error)) throw error;
       }
     }
+    // 先問過一次才判斷逾時：隔很久才回來時，結果多半早就好了
+    if (now() - startedAt > GIVE_UP_MS) throw new ParseRequestError('AI 解析太久沒有完成，請再試一次');
     await wait(POLL_MS);
   }
 }
@@ -133,7 +143,8 @@ export async function waitForParseJob(
 // ---------- 進行中的解析記在這台裝置 ----------
 
 const PENDING_KEY = 'rental-helper:pending-parse';
-const PENDING_MAX_AGE_MS = 15 * 60 * 1000;
+// 跟伺服器保留解析結果的時間一樣（一天），晚點才回來也接得上
+const PENDING_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
 export interface PendingParse {
   startedAt: number;

@@ -2,6 +2,7 @@ import { randomUUID } from 'crypto';
 import { after, NextRequest, NextResponse } from 'next/server';
 import { parseListingImages, validateImages, type ParseImage } from '../../../lib/listing-parser';
 import { verifyUser } from '../../../lib/verify-user';
+import { notifyUser } from '../../../lib/push-notify';
 
 // after() 裡的 AI 解析也算在這支 Function 的執行時間內
 export const maxDuration = 60;
@@ -40,11 +41,24 @@ export async function POST(request: NextRequest) {
     try {
       const result = await parseListingImages(apiKey, images);
       await user.repos.parseJobs.complete(user.uid, jobId, result);
+      // 通知使用者回來確認（有開推播的裝置才會收到）；點通知打開新增頁，會自動接上這次的結果
+      await notifyUser(user.repos, user.uid, {
+        title: '截圖解析好了',
+        body: result.title ? `「${result.title}」點開確認物件資訊` : '點開確認物件資訊',
+        url: '/add',
+        tag: 'rental-parse',
+      });
     } catch (error) {
       console.error('Background parse failed:', error);
       await user.repos.parseJobs
         .fail(user.uid, jobId, 'AI 解析失敗，請再試一次')
         .catch((e) => console.error('Mark parse job failed:', e));
+      await notifyUser(user.repos, user.uid, {
+        title: '截圖解析失敗',
+        body: '點開再試一次',
+        url: '/add',
+        tag: 'rental-parse',
+      });
     }
   });
 

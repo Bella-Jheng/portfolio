@@ -8,6 +8,7 @@
  * - rental_list_members      一起找房：擁有者邀請的成員（email）
  * - rental_share_links       單一物件的分享連結（token），物件刪掉時一起刪
  * - rental_parse_jobs        AI 解析工作（背景執行），結果存成 JSONB，一天後清掉
+ * - rental_push_subscriptions 推播通知的訂閱，一台裝置一列
  * 子表都 ON DELETE CASCADE，刪物件時一起刪掉。全部用 IF NOT EXISTS，重跑也安全。
  */
 export const SCHEMA_SQL = `
@@ -100,4 +101,13 @@ CREATE TABLE IF NOT EXISTS rental_parse_jobs (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS rental_parse_jobs_owner_created_idx ON rental_parse_jobs (owner_uid, created_at);
+
+CREATE TABLE IF NOT EXISTS rental_push_subscriptions (
+  endpoint   TEXT PRIMARY KEY,
+  owner_uid  TEXT NOT NULL,
+  p256dh     TEXT NOT NULL,
+  auth       TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS rental_push_subscriptions_owner_idx ON rental_push_subscriptions (owner_uid);
 `;

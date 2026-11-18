@@ -176,4 +176,18 @@ describe('PostgreSQL 資料存取層', () => {
     expect(await repos.parseJobs.get('me', 'new')).not.toBeNull();
     expect(await repos.parseJobs.get('other', 'other-old')).not.toBeNull();
   });
+
+  it('推播訂閱：一台裝置一筆，換帳號時改掛過去，可以刪掉', async () => {
+    const sub = { endpoint: 'https://push.example.com/abc', p256dh: 'key', auth: 'secret' };
+    await repos.pushSubscriptions.save('me', sub);
+    await repos.pushSubscriptions.save('me', { ...sub, auth: 'secret-2' });
+    expect(await repos.pushSubscriptions.list('me')).toEqual([{ ...sub, auth: 'secret-2' }]);
+
+    await repos.pushSubscriptions.save('other', sub);
+    expect(await repos.pushSubscriptions.list('me')).toEqual([]);
+    expect(await repos.pushSubscriptions.list('other')).toHaveLength(1);
+
+    await repos.pushSubscriptions.remove(sub.endpoint);
+    expect(await repos.pushSubscriptions.list('other')).toEqual([]);
+  });
 });

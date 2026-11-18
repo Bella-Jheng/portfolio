@@ -71,6 +71,21 @@ export interface ParseJobRepository {
   fail(ownerUid: string, id: string, error: string): Promise<void>;
 }
 
+/** 推播通知的訂閱：一台裝置（瀏覽器）一筆，endpoint 是瀏覽器給的推播網址 */
+export interface PushSubscriptionRecord {
+  endpoint: string;
+  p256dh: string;
+  auth: string;
+}
+
+export interface PushSubscriptionRepository {
+  /** 新增或更新（同一個 endpoint 換帳號登入時改掛到新帳號） */
+  save(ownerUid: string, sub: PushSubscriptionRecord): Promise<void>;
+  list(ownerUid: string): Promise<PushSubscriptionRecord[]>;
+  /** 使用者關掉通知，或推播服務回報這個 endpoint 已失效時刪掉 */
+  remove(endpoint: string): Promise<void>;
+}
+
 /** 可以使用 AI 與雲端資料的帳號白名單 */
 export interface AllowlistRepository {
   isAllowed(email: string): Promise<boolean>;
@@ -84,6 +99,7 @@ export interface Repositories {
   members: MemberRepository;
   shareLinks: ShareLinkRepository;
   parseJobs: ParseJobRepository;
+  pushSubscriptions: PushSubscriptionRepository;
 }
 
 export class ForbiddenError extends Error {}

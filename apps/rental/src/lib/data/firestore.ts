@@ -1,3 +1,4 @@
+import { createHash } from 'crypto';
 import type { Firestore } from 'firebase-admin/firestore';
 import type { Listing } from '../types';
 import type { ParseJob, Repositories } from './types';
@@ -10,6 +11,7 @@ import type { ParseJob, Repositories } from './types';
  * - rentalMembers/{ownerUid}__{email} 一起找房的成員
  * - rentalShareLinks/{token}          單一物件的分享連結
  * - rentalParseJobs/{id}             AI 解析工作（背景執行），一天後清掉
+ * - rentalPushSubscriptions/{hash}   推播通知的訂閱（文件 id 是 endpoint 的 SHA-256，endpoint 太長又有斜線）
  * 資料放在各自的 uid 底下，天生就只讀得到自己的物件。
  */
 export function createFirestoreRepositories(db: Firestore): Repositories {
@@ -18,6 +20,8 @@ export function createFirestoreRepositories(db: Firestore): Repositories {
   const members = db.collection('rentalMembers');
   const shareLinks = db.collection('rentalShareLinks');
   const parseJobs = db.collection('rentalParseJobs');
+  const pushSubs = db.collection('rentalPushSubscriptions');
+  const subId = (endpoint: string) => createHash('sha256').update(endpoint).digest('hex');
   const memberId = (ownerUid: string, email: string) => `${ownerUid}__${email.toLowerCase()}`;
   const linksOf = (ownerUid: string, listingId: string) =>
     shareLinks.where('ownerUid', '==', ownerUid).where('listingId', '==', listingId).get();
@@ -130,6 +134,21 @@ export function createFirestoreRepositories(db: Firestore): Repositories {
       },
       async fail(ownerUid, id, error) {
         await parseJobs.doc(id).update({ status: 'error', error, updatedAt: new Date().toISOString() });
+      },
+    },
+    pushSubscriptions: {
+      async save(ownerUid, sub) {
+        await pushSubs.doc(subId(sub.endpoint)).set({ ...sub, ownerUid, createdAt: new Date().toISOString() });
+      },
+      async list(ownerUid) {
+        const snapshot = await pushSubs.where('ownerUid', '==', ownerUid).get();
+        return snapshot.docs.map((d) => {
+          const { endpoint, p256dh, auth } = d.data();
+          return { endpoint, p256dh, auth } as { endpoint: string; p256dh: string; auth: string };
+        });
+      },
+      async remove(endpoint) {
+        await pushSubs.doc(subId(endpoint)).delete();
       },
     },
   };

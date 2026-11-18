@@ -10,7 +10,8 @@ export const metadata: Metadata = {
   title: '租屋小幫手',
   description: '上傳租屋截圖，自動整理地址、租金和聯絡方式，標在地圖上',
   manifest: '/manifest.webmanifest',
-  icons: { icon: '/icon.svg', apple: '/icon.svg' },
+  // iOS 主畫面圖示要用 PNG（SVG 會變成網頁截圖）
+  icons: { icon: '/icon.svg', apple: '/apple-touch-icon.png' },
   appleWebApp: { capable: true, title: '租屋小幫手', statusBarStyle: 'default' },
   robots: { index: false, follow: false },
 };
