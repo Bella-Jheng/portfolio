@@ -3,13 +3,16 @@
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { BirthForm } from '../../common/components/birth-form/BirthForm';
-import { useCalculate } from './api/use-calculate';
+import { useCalculate, useResumeCalculation } from './api/use-calculate';
+import { CalcJobAbortedError } from '../../lib/calc-job-client';
 
 const STEPS = ['了解功能', '填寫資料', '查看結果'];
 
 export default function FormPage() {
   const router = useRouter();
   const mutation = useCalculate();
+  // 排盤途中切走或頁面被重新載入，回來時接著等結果
+  const resume = useResumeCalculation();
 
   return (
     <div className="min-h-[calc(100vh-3.5rem)] flex flex-col items-center justify-start px-5 pt-10 pb-16 relative overflow-hidden bg-[#FFFDF5]">
@@ -90,8 +93,12 @@ export default function FormPage() {
         >
           <BirthForm
             onSubmit={(form) => mutation.mutate(form)}
-            isPending={mutation.isPending}
-            apiError={mutation.error instanceof Error ? mutation.error.message : undefined}
+            isPending={mutation.isPending || resume.resuming}
+            apiError={
+              mutation.error instanceof Error && !(mutation.error instanceof CalcJobAbortedError)
+                ? mutation.error.message
+                : (resume.error ?? undefined)
+            }
           />
         </motion.div>
       </div>

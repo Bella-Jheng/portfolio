@@ -43,6 +43,7 @@
   - [20. 建立 Vitest 測試框架：Node 版本相容性踩雷](#20-建立-vitest-測試框架：node-版本相容性踩雷)
   - [21. 同一個 fixed 定位跑版 bug，在兩個獨立元件上各踩一次](#21-同一個-fixed-定位跑版-bug，在兩個獨立元件上各踩一次)
   - [22. 資安強化：CSP 標頭、關閉正式站 source maps、XSS 防護、API 補身份驗證](#22-資安強化：csp-標頭、關閉正式站-source-maps、xss-防護、api-補身份驗證)
+  - [23. 排盤改成背景執行＋推播通知：切到別的 App 也不會中斷](#23-排盤改成背景執行推播通知切到別的-app-也不會中斷)
 - [待辦事項](#待辦事項)
 
 </details>
@@ -208,6 +209,9 @@ readings        ← key: uuid（每人一筆）
 | `FIREBASE_PROJECT_ID` | Firestore 連線 | Firebase Console > 專案設定 |
 | `FIREBASE_CLIENT_EMAIL` | Firestore 認證 | Firebase Console > 服務帳號 |
 | `FIREBASE_PRIVATE_KEY` | Firestore 認證 | Firebase Console > 服務帳號 |
+| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | 推播通知公鑰（選填，沒填就沒有通知） | `npx web-push generate-vapid-keys` |
+| `VAPID_PRIVATE_KEY` | 推播通知私鑰 | 同上 |
+| `VAPID_SUBJECT` | 推播服務聯絡方式，例如 `mailto:你的信箱` | 自填 |
 
 本地開發亦可將 Firebase 服務帳號金鑰存為 `apps/bazi/service-account.json`（已加入 `.gitignore`）。
 
@@ -928,6 +932,26 @@ it('1996/03/08 23:08 → 丙子 / 辛卯 / 乙巳 / 丙子', () => {
 - `dangerouslySetInnerHTML` 渲染的內容是否要清洗，不能只看「現在是誰在寫」，要看「寫入權限實際上有多寬鬆」——這裡是 Firestore rules 允許任何登入者寫入，就算目前只有 AI 會寫，也要當成不可信輸入處理。
 - 會觸發付費 API 呼叫的端點，身份驗證不是「之後可以補」的 TODO，是上線前的必要條件；這次盤點時發現兩支都已經能被未登入訪客直接打。
 - CSP 這類全站安全標頭容易在「加太嚴」和「漏放網域導致功能壞掉」之間抓不準，尤其 Google OAuth 這類涉及跨 origin iframe/redirect 的流程，一定要實際測過登入，不能只看 CSP 報不報錯。
+
+---
+
+### 23. 排盤改成背景執行＋推播通知：切到別的 App 也不會中斷
+
+**問題發現：** 排盤要等 AI 產生整份命盤，Loading 畫面常常要等一段時間。手機上只要切到別的 App，iOS 就會暫停網頁、中斷進行中的連線，回來看到的是錯誤（Safari 顯示「Load failed」），等於白等。
+
+**解法：**
+
+- **伺服器背景執行**：`/api/calculate` 收到 `background: true` 時，先用 `readingService.planCreate` 判斷（不呼叫 AI，很快）：沿用既有命盤就直接回 `{ id }`；要重算就建立 `baziCalcJobs/{jobId}`（pending），**馬上回 202 `{ jobId }`**，AI 排盤放進 Next.js 的 `after()`，在回應送出後才跑，跑完把 `readingId` 寫回工作。原本的 `createOrReuse` 拆成 `planCreate` ＋ `generateAndSave` 兩步，舊流程照樣用
+- **查進度**：`GET /api/calculate/jobs/[id]`，只查得到自己的；pending 超過 10 分鐘當成失敗
+- **前端**：`use-calculate` 拿到 `jobId` 後記在 localStorage，每 2.5 秒查一次，頁面在背景時不查、回到畫面再繼續；iOS 把頁面重新載入的話，回到表單頁會自動接上（`useResumeCalculation`）。離開表單頁就停止詢問
+- **推播通知（Web Push）**：`public/sw.js` 處理 `push` 和點通知；算好推「你的命盤算好了」，點開直接到 `/result/[id]`。Loading 畫面下方新增「算好時通知我」，訂閱存在 `baziPushSubscriptions`，失效的訂閱（404／410）自動刪除
+- **加入主畫面**：新增 `app/manifest.ts` 和 PNG 圖示（`icon-192/512`、`apple-touch-icon`）。iPhone 要先加入主畫面、從主畫面打開，才能開啟推播（iOS 16.4 以上）
+- 舊版前端（沒帶 `background`）維持原本的同步流程，部署當下開著舊頁面的人不受影響
+
+**學到的事：**
+- iOS 的網頁不能在背景維持連線，「讓使用者可以切走」只能從伺服器端下手：先回應、後處理（`after()`），結果存起來讓前端回來拿
+- Web Push 在 iPhone 上只有「加入主畫面」的網頁能用，Safari 分頁裡根本沒有 `PushManager`，所以 UI 要分情況提示
+- `after()` 仍然算在同一支 Function 的執行時間內，背景工作要有「太久沒完成」的判斷，不然前端會永遠等下去
 
 ---
 

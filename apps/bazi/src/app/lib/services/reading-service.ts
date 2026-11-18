@@ -109,20 +109,40 @@ class ReadingService {
     input: IncomingReadingInput;
     hasBeenViewed: (existingReadingId: string) => boolean;
   }): Promise<{ id: string; reused: boolean }> {
-    const { createdBy, isAdmin, input, hasBeenViewed } = params;
+    const plan = await this.planCreate(params);
+    if (plan.reuseId) return { id: plan.reuseId, reused: true };
+    const id = await this.generateAndSave({ ...params, overwriteId: plan.overwriteId });
+    return { id, reused: false };
+  }
 
-    let overwriteId: string | null = null;
+  // 第一步（很快，不呼叫 AI）：決定要沿用既有命盤、覆蓋重算，還是新建
+  // 背景排盤時先跑這一步：沿用的話直接回傳，不用排背景工作
+  async planCreate(params: {
+    createdBy: string | null;
+    isAdmin: boolean;
+    input: IncomingReadingInput;
+    hasBeenViewed: (existingReadingId: string) => boolean;
+  }): Promise<{ reuseId: string | null; overwriteId: string | null }> {
+    const { createdBy, isAdmin, input, hasBeenViewed } = params;
     if (createdBy && !isAdmin) {
       const existing = await readingsRepository.findLatestByUser(createdBy);
       if (existing) {
         const action = resolveResubmitAction(existing as unknown as ExistingReadingInput, input, hasBeenViewed(existing.id));
-        if (action === 'reuse') {
-          return { id: existing.id, reused: true };
-        }
-        overwriteId = existing.id;
+        if (action === 'reuse') return { reuseId: existing.id, overwriteId: null };
+        return { reuseId: null, overwriteId: existing.id };
       }
     }
+    return { reuseId: null, overwriteId: null };
+  }
 
+  // 第二步（很久，呼叫 AI）：排盤、產生命盤內容並存檔，回傳命盤 id
+  async generateAndSave(params: {
+    createdBy: string | null;
+    isAdmin: boolean;
+    input: IncomingReadingInput;
+    overwriteId: string | null;
+  }): Promise<string> {
+    const { createdBy, isAdmin, input, overwriteId } = params;
     const pillars = calculateBaziPillars(input.birthYear, input.birthMonth, input.birthDay, input.birthHour);
     const context = await this.buildGenerationContext(
       pillars,
@@ -147,7 +167,7 @@ class ReadingService {
         fortune,
         updatedAt: now,
       });
-      return { id: overwriteId, reused: false };
+      return overwriteId;
     }
 
     const id = uuidv4();
@@ -165,7 +185,7 @@ class ReadingService {
       createdAt: now,
       updatedAt: now,
     });
-    return { id, reused: false };
+    return id;
   }
 
   // 重算 pillars → 建 context → 呼叫 AI 重新生成 fortune → 存回去
