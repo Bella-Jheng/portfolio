@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { toPng } from 'html-to-image';
 import { isMobileDevice } from '../../../lib/detect-browser';
+import { useLocale } from '../../../lib/i18n/locale-context';
 
 interface DownloadCardButtonProps {
   cardRef: React.RefObject<HTMLDivElement | null>;
@@ -78,6 +79,7 @@ async function capturePng(el: HTMLElement, width: number, height: number): Promi
 }
 
 export function DownloadCardButton({ cardRef, name }: DownloadCardButtonProps) {
+  const { t } = useLocale();
   const [downloading, setDownloading] = useState(false);
 
   const handleDownload = async () => {
@@ -109,7 +111,7 @@ export function DownloadCardButton({ cardRef, name }: DownloadCardButtonProps) {
       const file = new File([blob], fileName, { type: 'image/png' });
 
       if (isMobileDevice() && navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ files: [file], title: '我的天生卡', text: '快來看看我的八字天生卡！' });
+        await navigator.share({ files: [file], title: t('card.shareTitle'), text: t('card.shareText') });
       } else {
         const link = document.createElement('a');
         link.href = dataUrl;
@@ -119,7 +121,7 @@ export function DownloadCardButton({ cardRef, name }: DownloadCardButtonProps) {
     } catch (err) {
       if ((err as Error)?.name !== 'AbortError') {
         console.error(err); // 建議開發時 log 出來看看具體錯誤
-        alert('生成圖卡失敗，請稍後再試');
+        alert(t('card.shareFailed'));
       }
     } finally {
       restoreImages?.();
@@ -136,7 +138,7 @@ export function DownloadCardButton({ cardRef, name }: DownloadCardButtonProps) {
     >
       {downloading ? (
         <>
-          生成中
+          {t('card.sharing')}
           <span className="flex items-center h-4">
             <span className="animate-dot1 inline-block">.</span>
             <span className="animate-dot2 inline-block">.</span>
@@ -145,7 +147,7 @@ export function DownloadCardButton({ cardRef, name }: DownloadCardButtonProps) {
         </>
       ) : (
         <>
-          分享天生卡
+          {t('card.share')}
           <span className="text-base leading-none">→</span>
         </>
       )}

@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { type CalculateRequest, type Reading } from '../../../types/bazi';
 import { useFetcher } from '../../../lib/use-fetcher';
 import { useAuth } from '../../../lib/auth-context';
+import { getClientLocale } from '../../../lib/i18n/client-locale';
 import {
   CalcJobAbortedError,
   clearPendingCalc,
@@ -57,7 +58,8 @@ export function useCalculate() {
       const res = await apiFetch<{ id?: string; jobId?: string }>('/api/calculate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...data, background: true }),
+        // 帶上介面語言：英文介面排盤時，伺服器產生中文主版本後會接著翻成英文
+        body: JSON.stringify({ ...data, locale: getClientLocale(), background: true }),
       });
       if (res.id) return { id: res.id };
       if (!res.jobId) throw new Error('命盤計算失敗，請稍後再試');

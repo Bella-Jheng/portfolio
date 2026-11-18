@@ -4,6 +4,7 @@ import { readingsRepository } from '../../../lib/repositories/readings-repositor
 import { readingService, ServiceError } from '../../../lib/services/reading-service';
 import { VIEWED_READING_COOKIE } from '../../../lib/cookies';
 import type { AskQuestionRequest } from '../../../types/bazi';
+import { isLocale } from '../../../lib/i18n/locale';
 
 const ADMIN_UID = process.env.ADMIN_UID ?? '';
 
@@ -90,6 +91,7 @@ export async function POST(
     const { id } = await params;
     const body = (await request.json()) as AskQuestionRequest;
     const { question, adminQuestion } = body;
+    const locale = isLocale(body.locale) ? body.locale : 'zh';
 
     if (!question?.trim()) {
       return NextResponse.json({ error: '請輸入問題' }, { status: 400 });
@@ -98,7 +100,7 @@ export async function POST(
     const isAdmin = userId === ADMIN_UID;
     const tz = QUESTION_LIMIT_TZ;
 
-    const result = await readingService.askQuestion({ id, question, userId, isAdmin, adminQuestion, tz });
+    const result = await readingService.askQuestion({ id, question, userId, isAdmin, adminQuestion, tz, locale });
 
     return NextResponse.json(result, { headers: { 'Cache-Control': 'no-store, private' } });
   } catch (error) {

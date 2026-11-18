@@ -7,6 +7,7 @@ import { calcJobsRepository } from '../../lib/repositories/calc-jobs-repository'
 import { pushSubscriptionsRepository } from '../../lib/repositories/push-subscriptions-repository';
 import { notifyUser } from '../../lib/push-notify';
 import type { CalculateRequest } from '../../types/bazi';
+import { isLocale } from '../../lib/i18n/locale';
 
 async function extractUid(request: NextRequest): Promise<string | null> {
   const token = request.headers.get('Authorization')?.replace('Bearer ', '');
@@ -31,6 +32,7 @@ export async function POST(request: NextRequest) {
     const isAdmin = !!ADMIN_UID && createdBy === ADMIN_UID;
     const body = (await request.json()) as CalculateRequest & { background?: boolean };
     const { name, gender, birthYear, birthMonth, birthDay, birthHour, strengthCalibration } = body;
+    const locale = isLocale(body.locale) ? body.locale : 'zh';
 
     if (!name?.trim()) {
       return NextResponse.json({ error: '請填寫姓名' }, { status: 400 });
@@ -47,6 +49,7 @@ export async function POST(request: NextRequest) {
       isAdmin,
       input: { name, gender, birthYear, birthMonth, birthDay, birthHour, strengthCalibration },
       hasBeenViewed: (readingId: string) => request.cookies.get(VIEWED_READING_COOKIE)?.value === readingId,
+      locale,
     };
 
     // 舊版前端：等 AI 算完才回應

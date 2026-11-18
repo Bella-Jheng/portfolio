@@ -3,6 +3,8 @@ import { Header } from '../common/components/layout/Header';
 import { Footer } from '../common/components/layout/Footer';
 import { Providers } from '../common/components/layout/Providers';
 import { Modal } from '../common/components/modal/Modal';
+import { cookies, headers } from 'next/headers';
+import { HTML_LANG, isLocale, localeFromAcceptLanguage, LOCALE_COOKIE } from '../lib/i18n/locale';
 
 export const metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'),
@@ -29,11 +31,17 @@ export const metadata = {
   },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // 語言：先看 cookie（使用者切換過），沒有就看瀏覽器語言；伺服器第一次渲染就用對的語言
+  const cookieLocale = (await cookies()).get(LOCALE_COOKIE)?.value;
+  const locale = isLocale(cookieLocale)
+    ? cookieLocale
+    : localeFromAcceptLanguage((await headers()).get('accept-language'));
+
   return (
-    <html lang="zh-TW">
+    <html lang={HTML_LANG[locale]}>
       <body>
-        <Providers>
+        <Providers initialLocale={locale}>
           <Header />
           <main>{children}</main>
           <Footer />

@@ -1,7 +1,14 @@
 import { v4 as uuidv4 } from 'uuid';
 import { readingsRepository, type ReadingDoc } from '../repositories/readings-repository';
 import { knowledgeRepository } from '../repositories/knowledge-repository';
-import { generateBaziReading, generateDetailedAnalysis, answerCustomQuestion, type DetailSection } from '../anthropic';
+import {
+  generateBaziReading,
+  generateDetailedAnalysis,
+  answerCustomQuestion,
+  translateFortuneToEnglish,
+  translateQuestionAnswer,
+  type DetailSection,
+} from '../anthropic';
 import {
   calculateBaziPillars,
   getDominantElements,
@@ -15,7 +22,17 @@ import {
   BRANCHES,
 } from '../bazi-calculator';
 import { resolveResubmitAction, type ExistingReadingInput, type IncomingReadingInput } from '../reading-resubmit';
-import type { BaziPillars, FortuneReading, Gender, QuestionAnswer, StrengthCalibrationAnswer } from '../../types/bazi';
+import {
+  SUMMARY_FORTUNE_KEYS,
+  TRANSLATABLE_FORTUNE_KEYS,
+  type BaziPillars,
+  type FortuneReading,
+  type Gender,
+  type QuestionAnswer,
+  type StrengthCalibrationAnswer,
+  type TranslatableFortuneKey,
+} from '../../types/bazi';
+import type { Locale } from '../i18n/locale';
 
 // 業務邏輯層拋出的預期錯誤（找不到資料、權限不足、超過額度等），route.ts 統一 catch 後轉成對應的 HTTP status
 export class ServiceError extends Error {
@@ -51,6 +68,20 @@ export interface ReadingGenerationContext {
 
 function sanitizeQuestions(questions: QuestionAnswer[] | undefined): Omit<QuestionAnswer, 'userId'>[] {
   return (questions ?? []).map(({ userId: _uid, ...q }) => q);
+}
+
+// 挑出中文有內容、但英文還沒翻的欄位
+function pickUntranslated(
+  fortune: FortuneReading,
+  fortuneEn: Partial<FortuneReading> | undefined,
+  keys: readonly TranslatableFortuneKey[],
+): Partial<Record<TranslatableFortuneKey, string>> {
+  const fields: Partial<Record<TranslatableFortuneKey, string>> = {};
+  for (const key of keys) {
+    const zh = fortune[key];
+    if (typeof zh === 'string' && zh.trim() && !fortuneEn?.[key]) fields[key] = zh;
+  }
+  return fields;
 }
 
 class ReadingService {
@@ -108,6 +139,7 @@ class ReadingService {
     isAdmin: boolean;
     input: IncomingReadingInput;
     hasBeenViewed: (existingReadingId: string) => boolean;
+    locale?: Locale;
   }): Promise<{ id: string; reused: boolean }> {
     const plan = await this.planCreate(params);
     if (plan.reuseId) return { id: plan.reuseId, reused: true };
@@ -141,8 +173,9 @@ class ReadingService {
     isAdmin: boolean;
     input: IncomingReadingInput;
     overwriteId: string | null;
+    locale?: Locale;
   }): Promise<string> {
-    const { createdBy, isAdmin, input, overwriteId } = params;
+    const { createdBy, isAdmin, input, overwriteId, locale } = params;
     const pillars = calculateBaziPillars(input.birthYear, input.birthMonth, input.birthDay, input.birthHour);
     const context = await this.buildGenerationContext(
       pillars,
@@ -153,6 +186,16 @@ class ReadingService {
       input.strengthCalibration,
     );
     const fortune = await generateBaziReading({ ...input, gender: input.gender as Gender, pillars, ...context });
+    // 英文介面排盤：中文主版本產生完，接著把結果頁一打開就看得到的部分翻成英文。
+    // 翻譯失敗不影響排盤，結果頁切到英文時會再補翻
+    let fortuneEn: Partial<FortuneReading> = {};
+    if (locale === 'en') {
+      try {
+        fortuneEn = await translateFortuneToEnglish(pickUntranslated(fortune, undefined, SUMMARY_FORTUNE_KEYS));
+      } catch (error) {
+        console.error('Translate fortune after calculate failed:', error);
+      }
+    }
     const now = new Date().toISOString();
 
     if (overwriteId) {
@@ -165,6 +208,8 @@ class ReadingService {
         birthHour: input.birthHour ?? null,
         pillars,
         fortune,
+        // 覆蓋重算時，舊的英文翻譯對不上新內容，一律換成這次的（中文介面就是清空）
+        fortuneEn,
         updatedAt: now,
       });
       return overwriteId;
@@ -180,6 +225,7 @@ class ReadingService {
       birthHour: input.birthHour ?? null,
       pillars,
       fortune,
+      fortuneEn,
       questions: [],
       createdBy: isAdmin ? null : (createdBy ?? null),
       createdAt: now,
@@ -225,6 +271,8 @@ class ReadingService {
       birthHour: birthHour ?? null,
       pillars,
       fortune,
+      // 中文內容重算了，舊的英文翻譯作廢，切到英文時再重翻
+      fortuneEn: {},
       updatedAt: now,
       ...extraFields,
     });
@@ -239,13 +287,14 @@ class ReadingService {
     isAdmin: boolean;
     adminQuestion?: boolean;
     tz: string;
+    locale?: Locale;
   }): Promise<{
     answer: string;
     questions?: Omit<QuestionAnswer, 'userId'>[];
     adminQuestions?: Omit<QuestionAnswer, 'userId'>[];
     remainingToday?: number | null;
   }> {
-    const { id, question, userId, isAdmin, adminQuestion, tz } = params;
+    const { id, question, userId, isAdmin, adminQuestion, tz, locale = 'zh' } = params;
 
     const data = await readingsRepository.getById(id);
     if (!data) throw new ServiceError(404, '找不到此命盤');
@@ -278,9 +327,10 @@ class ReadingService {
       name: data.name as string | undefined,
       gender: data.gender as Gender | undefined,
       majorFortuneInfo: context.majorFortuneInfo,
+      locale,
     });
 
-    const newQA: QuestionAnswer = { question, answer, createdAt: new Date().toISOString(), userId };
+    const newQA: QuestionAnswer = { question, answer, createdAt: new Date().toISOString(), userId, lang: locale };
 
     if (adminQuestion) {
       const updatedAdminQs = [...((data.adminQuestions ?? []) as QuestionAnswer[]), newQA];
@@ -304,7 +354,7 @@ class ReadingService {
     section: DetailSection;
     userId: string;
     isAdmin: boolean;
-  }): Promise<{ fortune: FortuneReading }> {
+  }): Promise<{ fortune: FortuneReading; fortuneEn: Partial<FortuneReading> }> {
     const { id, section, userId, isAdmin } = params;
     const data = await readingsRepository.getById(id);
     if (!data) throw new ServiceError(404, '找不到此命盤');
@@ -330,8 +380,57 @@ class ReadingService {
     });
 
     const updatedFortune = { ...fortune, ...detail };
-    await readingsRepository.update(id, { fortune: updatedFortune, updatedAt: new Date().toISOString() });
-    return { fortune: updatedFortune };
+    // 這幾個欄位的中文換新了，對應的英文翻譯作廢，前端切到英文時會再補翻
+    const fortuneEn = { ...((data.fortuneEn ?? {}) as Partial<FortuneReading>) };
+    for (const key of Object.keys(detail) as (keyof FortuneReading)[]) delete fortuneEn[key];
+    await readingsRepository.update(id, { fortune: updatedFortune, fortuneEn, updatedAt: new Date().toISOString() });
+    return { fortune: updatedFortune, fortuneEn };
+  }
+
+  // 把指定欄位翻成英文並存起來；已經翻過的不會再翻，所以重複呼叫不會重複花錢
+  async translateFortune(params: {
+    id: string;
+    keys: string[];
+    userId: string;
+    isAdmin: boolean;
+  }): Promise<{ fortuneEn: Partial<FortuneReading> }> {
+    const { id, keys, userId, isAdmin } = params;
+    const data = await readingsRepository.getById(id);
+    if (!data) throw new ServiceError(404, '找不到此命盤');
+    assertCanAccessReading(data, userId, isAdmin);
+    const fortune = data.fortune as FortuneReading;
+    const existing = (data.fortuneEn ?? {}) as Partial<FortuneReading>;
+    const validKeys = keys.filter((key): key is TranslatableFortuneKey =>
+      (TRANSLATABLE_FORTUNE_KEYS as readonly string[]).includes(key),
+    );
+    const fields = pickUntranslated(fortune, existing, validKeys);
+    if (Object.keys(fields).length === 0) return { fortuneEn: existing };
+    const translated = await translateFortuneToEnglish(fields);
+    const fortuneEn = { ...existing, ...translated };
+    await readingsRepository.update(id, { fortuneEn });
+    return { fortuneEn };
+  }
+
+  // 翻譯一則 AI 追問；不扣每日提問額度，翻過就存起來
+  async translateQuestion(params: {
+    id: string;
+    index: number;
+    target: Locale;
+    userId: string;
+    isAdmin: boolean;
+  }): Promise<{ questions: Omit<QuestionAnswer, 'userId'>[] }> {
+    const { id, index, target, userId, isAdmin } = params;
+    const data = await readingsRepository.getById(id);
+    if (!data) throw new ServiceError(404, '找不到此命盤');
+    assertCanAccessReading(data, userId, isAdmin);
+    const questions = [...((data.questions ?? []) as QuestionAnswer[])];
+    const qa = questions[index];
+    if (!qa) throw new ServiceError(404, '找不到這則提問');
+    if (qa.translations?.[target]) return { questions: sanitizeQuestions(questions) };
+    const translated = await translateQuestionAnswer({ question: qa.question, answer: qa.answer, target });
+    questions[index] = { ...qa, translations: { ...qa.translations, [target]: translated } };
+    await readingsRepository.update(id, { questions });
+    return { questions: sanitizeQuestions(questions) };
   }
 
   async requestCorrection(params: {

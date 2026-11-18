@@ -11,11 +11,13 @@ vi.mock('../anthropic', () => ({
   generateBaziReading: vi.fn(),
   generateDetailedAnalysis: vi.fn(),
   answerCustomQuestion: vi.fn(),
+  translateFortuneToEnglish: vi.fn(),
+  translateQuestionAnswer: vi.fn(),
 }));
 
 import { readingService, ServiceError } from './reading-service';
 import { readingsRepository } from '../repositories/readings-repository';
-import { generateDetailedAnalysis, answerCustomQuestion } from '../anthropic';
+import { generateDetailedAnalysis, answerCustomQuestion, translateFortuneToEnglish, translateQuestionAnswer } from '../anthropic';
 
 const OWNER = 'owner-uid';
 const STRANGER = 'stranger-uid';
@@ -68,5 +70,67 @@ describe('readingService 命盤擁有者檢查', () => {
     await expectForbidden(
       readingService.requestCorrection({ id: 'reading-1', uid: STRANGER, isAdmin: false, year: 2000, month: 1, day: 1, hour: null }),
     );
+  });
+});
+
+describe('readingService 英文翻譯', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('只翻中文有內容、英文還沒翻過的欄位，翻完合併存回 fortuneEn', async () => {
+    vi.mocked(readingsRepository.getById).mockResolvedValue({
+      id: 'reading-1',
+      createdBy: OWNER,
+      fortune: { personality: '個性', traits: '熱情・直覺', wealth: '財運', career: '', fortune: '', romance: '', health: '' },
+      fortuneEn: { personality: 'Personality' },
+    });
+    vi.mocked(translateFortuneToEnglish).mockResolvedValue({ traits: 'Warm · Intuitive', wealth: 'Wealth' });
+
+    const { fortuneEn } = await readingService.translateFortune({
+      id: 'reading-1',
+      keys: ['personality', 'traits', 'wealth', 'career', 'notAField'],
+      userId: OWNER,
+      isAdmin: false,
+    });
+
+    expect(translateFortuneToEnglish).toHaveBeenCalledWith({ traits: '熱情・直覺', wealth: '財運' });
+    expect(fortuneEn).toEqual({ personality: 'Personality', traits: 'Warm · Intuitive', wealth: 'Wealth' });
+    expect(readingsRepository.update).toHaveBeenCalledWith('reading-1', { fortuneEn });
+  });
+
+  it('全部都翻過了就不打 AI、不寫資料庫', async () => {
+    vi.mocked(readingsRepository.getById).mockResolvedValue({
+      id: 'reading-1',
+      createdBy: OWNER,
+      fortune: { personality: '個性', fortune: '', career: '', romance: '', health: '' },
+      fortuneEn: { personality: 'Personality' },
+    });
+    await readingService.translateFortune({ id: 'reading-1', keys: ['personality'], userId: OWNER, isAdmin: false });
+    expect(translateFortuneToEnglish).not.toHaveBeenCalled();
+    expect(readingsRepository.update).not.toHaveBeenCalled();
+  });
+
+  it('非本人不能翻譯命盤', async () => {
+    vi.mocked(readingsRepository.getById).mockResolvedValue({ id: 'reading-1', createdBy: OWNER, fortune: {} });
+    await expectForbidden(
+      readingService.translateFortune({ id: 'reading-1', keys: ['personality'], userId: STRANGER, isAdmin: false }),
+    );
+    expect(translateFortuneToEnglish).not.toHaveBeenCalled();
+  });
+
+  it('翻譯 AI 追問會存下譯文，且不檢查每日提問額度', async () => {
+    vi.mocked(readingsRepository.getById).mockResolvedValue({
+      id: 'reading-1',
+      createdBy: OWNER,
+      questions: [{ question: '明年適合換工作嗎？', answer: '適合', createdAt: '2026-11-01T00:00:00Z', userId: OWNER }],
+    });
+    vi.mocked(translateQuestionAnswer).mockResolvedValue({ question: 'Should I change jobs?', answer: 'Yes' });
+
+    const { questions } = await readingService.translateQuestion({ id: 'reading-1', index: 0, target: 'en', userId: OWNER, isAdmin: false });
+
+    expect(readingsRepository.countTodayQuestionsForUser).not.toHaveBeenCalled();
+    expect(questions[0].translations?.en).toEqual({ question: 'Should I change jobs?', answer: 'Yes' });
+    expect(questions[0]).not.toHaveProperty('userId');
   });
 });

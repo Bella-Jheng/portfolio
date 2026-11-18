@@ -5,6 +5,9 @@ import {
   getTenGod,
   getBranchHiddenStems,
 } from '../../../lib/bazi-calculator';
+import { useLocale } from '../../../lib/i18n/locale-context';
+import { elementLabel, patternLabel, strengthLabel, tenGodLabel } from '../../../lib/i18n/glossary';
+import type { MessageKey } from '../../../lib/i18n/messages';
 
 const FIVE_ELEMENTS = new Set(['木', '火', '土', '金', '水']);
 
@@ -39,11 +42,11 @@ function parseTenGodSummary(text?: string | null) {
   };
 }
 
-const PILLAR_ORDER = [
-  { type: 'hour' as const, label: '時' },
-  { type: 'day' as const, label: '日' },
-  { type: 'month' as const, label: '月' },
-  { type: 'year' as const, label: '年' },
+const PILLAR_ORDER: { type: 'hour' | 'day' | 'month' | 'year'; label: MessageKey }[] = [
+  { type: 'hour', label: 'table.hour' },
+  { type: 'day', label: 'table.day' },
+  { type: 'month', label: 'table.month' },
+  { type: 'year', label: 'table.year' },
 ];
 
 interface BaziTableSlideProps {
@@ -53,6 +56,9 @@ interface BaziTableSlideProps {
 }
 
 export function BaziTableSlide({ reading, theme, mobile }: BaziTableSlideProps) {
+  const { locale, t } = useLocale();
+  const el = (element: string) => elementLabel(element, locale);
+  const tg = (tenGod: string) => tenGodLabel(tenGod, locale, true);
   const dayStem = reading.pillars.day?.stem ?? '';
   const dayElement = STEM_ELEMENT[dayStem] ?? '';
   const elementEn = ELEMENT_ENGLISH[dayElement] ?? 'BAZI READING';
@@ -61,27 +67,30 @@ export function BaziTableSlide({ reading, theme, mobile }: BaziTableSlideProps) 
   const activePillars = PILLAR_ORDER.filter(({ type }) => !!reading.pillars[type]);
 
   const HL = theme.accent + '20';
-  const tgs = parseTenGodSummary(reading.fortune.tenGodAnalysis);
+  // 格局、用神忌神從中文主版本解析（英文翻譯的格式對不上）
+  const tgs = parseTenGodSummary((reading.fortuneZh ?? reading.fortune).tenGodAnalysis);
 
   return (
     <div className={`w-full h-full flex flex-col gap-4 text-left ${mobile ? '' : 'overflow-y-auto'}`}>
       {/* Header */}
       <div className="flex items-center justify-between pb-3 border-b border-[#EAE5DF] shrink-0">
         <div>
-          <h4 className="font-black text-sm text-[#4A4A4A] tracking-wider">基本排盤</h4>
+          <h4 className="font-black text-sm text-[#4A4A4A] tracking-wider">{t('table.title')}</h4>
           <p className="text-[10px] text-[#6B6159] font-mono tracking-widest mt-0.5">{elementEn}</p>
         </div>
         <div className="text-right text-[10px]">
           <p className="font-bold text-[#4A4A4A]">
-            {reading.birthYear}.{String(reading.birthMonth).padStart(2, '0')}.{String(reading.birthDay).padStart(2, '0')}
-            {reading.pillars.hour && ` · ${reading.pillars.hour.branch}時`}
+            {locale === 'en'
+              ? new Date(reading.birthYear, reading.birthMonth - 1, reading.birthDay).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+              : `${reading.birthYear}.${String(reading.birthMonth).padStart(2, '0')}.${String(reading.birthDay).padStart(2, '0')}`}
+            {reading.pillars.hour && t('table.hourBranch', { branch: reading.pillars.hour.branch })}
           </p>
           {reading.gender && (
             <span
               className="inline-block text-[9px] px-2 py-0.5 rounded-full font-bold mt-1"
               style={{ backgroundColor: HL, color: theme.text }}
             >
-              {reading.gender === 'male' ? '男命' : '女命'}
+              {reading.gender === 'male' ? t('table.male') : t('table.female')}
             </span>
           )}
         </div>
@@ -94,17 +103,17 @@ export function BaziTableSlide({ reading, theme, mobile }: BaziTableSlideProps) 
           <div className="flex flex-wrap gap-2 items-center">
             {dayStem && (
               <span className="px-4 py-1.5 rounded-full border border-[#D5CEC7] text-sm font-bold text-[#4A4A4A] bg-white whitespace-nowrap">
-                日主 {dayStem}（{dayElement}）
+                {t('table.dayMaster', { stem: dayStem, element: el(dayElement) })}
               </span>
             )}
             {tgs.strength && (
               <span className="px-4 py-1.5 rounded-full text-sm font-bold whitespace-nowrap" style={{ backgroundColor: '#FFF8E0', color: '#8B6914' }}>
-                {tgs.strength}
+                {strengthLabel(tgs.strength, locale)}
               </span>
             )}
             {tgs.pattern && (
               <span className="px-4 py-1.5 rounded-full text-sm font-bold text-white whitespace-nowrap" style={{ backgroundColor: theme.accent }}>
-                {tgs.pattern}
+                {patternLabel(tgs.pattern, locale)}
               </span>
             )}
           </div>
@@ -114,14 +123,14 @@ export function BaziTableSlide({ reading, theme, mobile }: BaziTableSlideProps) 
             <div className="flex flex-wrap gap-x-5 gap-y-2 items-center">
               {tgs.helpful && tgs.helpful.length > 0 && (
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-[#6B6159] whitespace-nowrap">用神・喜</span>
+                  <span className="text-xs text-[#6B6159] whitespace-nowrap">{t('table.helpful')}</span>
                   <div className="flex gap-1.5">
-                    {tgs.helpful.map((el) => {
-                      const badge = ELEMENT_BADGE[el];
+                    {tgs.helpful.map((element) => {
+                      const badge = ELEMENT_BADGE[element];
                       return badge ? (
-                        <span key={el} className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap ${badge.pill}`}>
+                        <span key={element} className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap ${badge.pill}`}>
                           <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${badge.dot}`} />
-                          {el}
+                          {elementLabel(element, locale)}
                         </span>
                       ) : null;
                     })}
@@ -130,14 +139,14 @@ export function BaziTableSlide({ reading, theme, mobile }: BaziTableSlideProps) 
               )}
               {tgs.harmful && tgs.harmful.length > 0 && (
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-[#6B6159] whitespace-nowrap">忌神・避</span>
+                  <span className="text-xs text-[#6B6159] whitespace-nowrap">{t('table.harmful')}</span>
                   <div className="flex gap-1.5">
-                    {tgs.harmful.map((el) => {
-                      const badge = ELEMENT_BADGE[el];
+                    {tgs.harmful.map((element) => {
+                      const badge = ELEMENT_BADGE[element];
                       return badge ? (
-                        <span key={el} className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap ${badge.pill}`}>
+                        <span key={element} className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap ${badge.pill}`}>
                           <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${badge.dot}`} />
-                          {el}
+                          {elementLabel(element, locale)}
                         </span>
                       ) : null;
                     })}
@@ -152,43 +161,43 @@ export function BaziTableSlide({ reading, theme, mobile }: BaziTableSlideProps) 
       {/* Structured Grid Layout for Bazi Chart */}
       <div className="grid grid-cols-5 gap-y-3 gap-x-1 items-center text-center bg-[#FAF8F5] border border-[#EAE5DF]/60 p-4 rounded-2xl shrink-0">
         {/* Row 1: 柱別 */}
-        <div className="text-left text-xs font-bold text-[#6E665D]">柱別</div>
+        <div className="text-left text-xs font-bold text-[#6E665D]">{t('table.rowPillar')}</div>
         {/* Hour — always shown */}
-        <div className={`text-xs font-black tracking-widest ${hasHour ? 'text-[#5C5449]' : 'text-[#B0A898]'}`}>時柱</div>
+        <div className={`text-xs font-black tracking-widest ${hasHour ? 'text-[#5C5449]' : 'text-[#B0A898]'}`}>{t('table.hour')}</div>
         {/* Day, Month, Year */}
         {activePillars.filter(({ type }) => type !== 'hour').map(({ type, label }) => (
           <div key={type} className="text-xs font-black tracking-widest text-[#5C5449]" style={type === 'day' ? { color: theme.accent } : {}}>
-            {label}柱
+            {t(label)}
           </div>
         ))}
 
         {/* Row 2: 主星 */}
-        <div className="text-left text-xs font-bold text-[#6E665D]">主星</div>
+        <div className="text-left text-xs font-bold text-[#6E665D]">{t('table.rowMain')}</div>
         <div className={`text-xs font-bold ${hasHour ? 'text-[#5C544C]' : 'text-[#C8BFB6]'}`}>
-          {hasHour ? getTenGod(dayStem, hourPillar?.stem ?? '') : '未填寫時柱'}
+          {hasHour ? tg(getTenGod(dayStem, hourPillar?.stem ?? '')) : t('table.noHour')}
         </div>
         {activePillars.filter(({ type }) => type !== 'hour').map(({ type }) => {
           const pillar = reading.pillars[type];
           if (!pillar) return null;
-          const tg = type === 'day' ? '日主' : getTenGod(dayStem, pillar.stem);
+          const tenGod = type === 'day' ? '日主' : getTenGod(dayStem, pillar.stem);
           return (
             <div key={type} className="text-xs font-bold text-[#5C544C]" style={type === 'day' ? { color: theme.accent } : {}}>
-              {tg}
+              {tg(tenGod)}
             </div>
           );
         })}
 
         {/* Row 3: 天干 */}
-        <div className="text-left text-xs font-bold text-[#6E665D] self-center">天干</div>
+        <div className="text-left text-xs font-bold text-[#6E665D] self-center">{t('table.rowStem')}</div>
         <div className="flex justify-center w-full">
           {hasHour ? (
             <div className="flex flex-col items-center justify-center bg-white border py-2.5 rounded-xl shadow-sm w-full max-w-[50px]" style={{ borderColor: 'rgba(234,229,223,0.8)' }}>
               <span className="text-2xl font-black leading-none text-[#3A3A3A]">{hourPillar?.stem}</span>
-              <span className="text-[10px] text-[#A09587] font-bold mt-1">{STEM_ELEMENT[hourPillar?.stem ?? ''] ?? ''}</span>
+              <span className="text-[10px] text-[#A09587] font-bold mt-1">{el(STEM_ELEMENT[hourPillar?.stem ?? ''] ?? '')}</span>
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center border border-dashed border-[#D5CEC7] py-2.5 rounded-xl w-full max-w-[50px]">
-              <span className="text-[9px] text-[#B0A898] font-bold leading-tight text-center">未知</span>
+              <span className="text-[9px] text-[#B0A898] font-bold leading-tight text-center">{t('table.unknown')}</span>
             </div>
           )}
         </div>
@@ -206,23 +215,23 @@ export function BaziTableSlide({ reading, theme, mobile }: BaziTableSlideProps) 
                 <span className="text-2xl font-black leading-none text-[#3A3A3A]" style={isDay ? { color: theme.accent } : {}}>
                   {pillar.stem}
                 </span>
-                <span className="text-[10px] text-[#A09587] font-bold mt-1">{stemEl}</span>
+                <span className="text-[10px] text-[#A09587] font-bold mt-1">{el(stemEl)}</span>
               </div>
             </div>
           );
         })}
 
         {/* Row 4: 地支 */}
-        <div className="text-left text-xs font-bold text-[#6E665D] self-center">地支</div>
+        <div className="text-left text-xs font-bold text-[#6E665D] self-center">{t('table.rowBranch')}</div>
         <div className="flex justify-center w-full">
           {hasHour ? (
             <div className="flex flex-col items-center justify-center bg-white border py-2.5 rounded-xl shadow-sm w-full max-w-[50px]" style={{ borderColor: 'rgba(234,229,223,0.8)' }}>
               <span className="text-2xl font-black leading-none text-[#3A3A3A]">{hourPillar?.branch}</span>
-              <span className="text-[10px] text-[#A09587] font-bold mt-1">{hourPillar?.element.split('/')[1] ?? ''}</span>
+              <span className="text-[10px] text-[#A09587] font-bold mt-1">{el(hourPillar?.element.split('/')[1] ?? '')}</span>
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center border border-dashed border-[#D5CEC7] py-2.5 rounded-xl w-full max-w-[50px]">
-              <span className="text-[9px] text-[#B0A898] font-bold leading-tight text-center">未知</span>
+              <span className="text-[9px] text-[#B0A898] font-bold leading-tight text-center">{t('table.unknown')}</span>
             </div>
           )}
         </div>
@@ -240,14 +249,14 @@ export function BaziTableSlide({ reading, theme, mobile }: BaziTableSlideProps) 
                 <span className="text-2xl font-black leading-none text-[#3A3A3A]" style={isDay ? { color: theme.accent } : {}}>
                   {pillar.branch}
                 </span>
-                <span className="text-[10px] text-[#A09587] font-bold mt-1">{branchEl}</span>
+                <span className="text-[10px] text-[#A09587] font-bold mt-1">{el(branchEl)}</span>
               </div>
             </div>
           );
         })}
 
         {/* Row 5: 藏干 */}
-        <div className="text-left text-xs font-bold text-[#6E665D]">藏干</div>
+        <div className="text-left text-xs font-bold text-[#6E665D]">{t('table.rowHidden')}</div>
         <div className="flex gap-1 justify-center flex-wrap min-h-[22px] items-center">
           {hasHour && getBranchHiddenStems(hourPillar?.branch ?? '', dayStem).map((h) => (
             <span key={h.stem} className="text-[11px] font-bold text-[#6B5D57] bg-white border border-[#EAE5DF]/60 px-1 py-0.5 rounded shadow-sm">
@@ -271,10 +280,10 @@ export function BaziTableSlide({ reading, theme, mobile }: BaziTableSlideProps) 
         })}
 
         {/* Row 6: 副星 */}
-        <div className="text-left text-xs font-bold text-[#6E665D]">副星</div>
+        <div className="text-left text-xs font-bold text-[#6E665D]">{t('table.rowSub')}</div>
         <div className="flex flex-col items-center justify-center min-h-[28px]">
           {hasHour && getBranchHiddenStems(hourPillar?.branch ?? '', dayStem).map((h) => (
-            <span key={h.stem} className="text-[10px] text-[#5C5449] font-medium leading-tight">{h.tenGod}</span>
+            <span key={h.stem} className="text-[10px] text-[#5C5449] font-medium leading-tight text-center">{tg(h.tenGod)}</span>
           ))}
         </div>
         {activePillars.filter(({ type }) => type !== 'hour').map(({ type }) => {
@@ -284,7 +293,7 @@ export function BaziTableSlide({ reading, theme, mobile }: BaziTableSlideProps) 
           return (
             <div key={type} className="flex flex-col items-center justify-center min-h-[28px]">
               {hidden.map((h) => (
-                <span key={h.stem} className="text-[10px] text-[#5C5449] font-medium leading-tight">{h.tenGod}</span>
+                <span key={h.stem} className="text-[10px] text-[#5C5449] font-medium leading-tight text-center">{tg(h.tenGod)}</span>
               ))}
             </div>
           );

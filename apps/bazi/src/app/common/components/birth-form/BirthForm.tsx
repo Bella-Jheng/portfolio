@@ -7,6 +7,7 @@ import { Loading } from '../loading/Loading';
 import { useModalStore } from '../../../lib/modal-store';
 import { calculateBaziPillars, calculateDayMasterStrength, getDayMasterElement, findStrongElementYears } from '../../../lib/bazi-calculator';
 import { StrengthCalibrationModal } from './StrengthCalibrationModal';
+import { useLocale } from '../../../lib/i18n/locale-context';
 
 const inputClass =
   'w-full bg-[#FAF7F4] border border-[#EAE5DF] rounded-xl px-4 py-3 text-[#4A4A4A] placeholder:text-[#636363] focus:outline-none focus:border-[#FCD060] transition-colors text-sm';
@@ -20,6 +21,7 @@ interface BirthFormProps {
 export function BirthForm({ onSubmit, isPending = false, apiError }: BirthFormProps) {
   const [error, setError] = useState('');
   const { show } = useModalStore();
+  const { locale, t } = useLocale();
   const [calibration, setCalibration] = useState<{
     form: CalculateRequest;
     element: string;
@@ -37,34 +39,34 @@ export function BirthForm({ onSubmit, isPending = false, apiError }: BirthFormPr
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    if (!form.name?.trim()) { setError('請填寫姓名'); return; }
-    if (!form.gender) { setError('請選擇性別'); return; }
-    if (!form.birthYear || !form.birthMonth || !form.birthDay) { setError('請填寫正確的出生年月日'); return; }
+    if (!form.name?.trim()) { setError(t('form.errName')); return; }
+    if (!form.gender) { setError(t('form.errGender')); return; }
+    if (!form.birthYear || !form.birthMonth || !form.birthDay) { setError(t('form.errDate')); return; }
     setError('');
 
     show({
-      title: '請確認您的資料',
-      confirmLabel: '確認送出',
-      cancelLabel: '返回修改',
+      title: t('form.confirmTitle'),
+      confirmLabel: t('form.confirmSubmit'),
+      cancelLabel: t('form.confirmEdit'),
       content: (
         <div className="space-y-2 text-sm">
           <div className="flex justify-between border-b border-bz-border/60 pb-2">
-            <span className="text-bz-mid">姓名</span>
+            <span className="text-bz-mid">{t('form.name')}</span>
             <span className="text-bz-brown font-medium">{form.name}</span>
           </div>
           <div className="flex justify-between border-b border-bz-border/60 pb-2">
-            <span className="text-bz-mid">性別</span>
-            <span className="text-bz-brown font-medium">{form.gender === 'male' ? '男' : '女'}</span>
+            <span className="text-bz-mid">{t('form.gender')}</span>
+            <span className="text-bz-brown font-medium">{form.gender === 'male' ? t('common.male') : t('common.female')}</span>
           </div>
           <div className="flex justify-between border-b border-bz-border/60 pb-2">
-            <span className="text-bz-mid">出生日期</span>
-            <span className="text-bz-brown font-medium">{form.birthYear} 年 {form.birthMonth} 月 {form.birthDay} 日</span>
+            <span className="text-bz-mid">{t('form.birthDate')}</span>
+            <span className="text-bz-brown font-medium">{t('form.dateValue', { year: form.birthYear, month: form.birthMonth, day: form.birthDay })}</span>
           </div>
           <div className="flex justify-between pb-1">
-            <span className="text-bz-mid">出生時辰</span>
-            <span className="text-bz-brown font-medium">{form.birthHour !== undefined ? `${form.birthHour} 時` : '未提供'}</span>
+            <span className="text-bz-mid">{t('form.birthHour')}</span>
+            <span className="text-bz-brown font-medium">{form.birthHour !== undefined ? t('form.hourValue', { hour: form.birthHour }) : t('form.notProvided')}</span>
           </div>
-          <p className="text-red-500 text-xs pt-1">⚠ 送出後即無法更改，請確認以上資料正確無誤。</p>
+          <p className="text-red-500 text-xs pt-1">{t('form.cannotChange')}</p>
         </div>
       ),
       onConfirm: () => {
@@ -99,7 +101,7 @@ export function BirthForm({ onSubmit, isPending = false, apiError }: BirthFormPr
   }
 
   // 排盤在伺服器背景跑，等待時可以切到其他 App
-  if (isPending) return <Loading canLeave />;
+  if (isPending) return <Loading canLeave translating={locale === 'en'} />;
 
   const displayError = error || apiError;
 
@@ -109,20 +111,20 @@ export function BirthForm({ onSubmit, isPending = false, apiError }: BirthFormPr
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <div className="space-y-2">
           <label className="text-[#4A4A4A] text-xs font-bold tracking-widest">
-            姓名 <span className="text-red-400">*</span>
+            {t('form.name')} <span className="text-red-400">*</span>
           </label>
           <input
             type="text"
             value={form.name}
             onChange={(event) => setForm({ ...form, name: event.target.value })}
-            placeholder="例：王小明"
+            placeholder={t('form.namePlaceholder')}
             className={inputClass}
           />
         </div>
 
         <div className="space-y-2">
           <label className="text-[#4A4A4A] text-xs font-bold tracking-widest">
-            性別 <span className="text-red-400">*</span>
+            {t('form.gender')} <span className="text-red-400">*</span>
           </label>
           <div className="flex gap-3">
             {(['male', 'female'] as Gender[]).map((gender) => (
@@ -136,7 +138,7 @@ export function BirthForm({ onSubmit, isPending = false, apiError }: BirthFormPr
                     : 'border-[#EAE5DF] text-[#636363] hover:border-[#4A4A4A] hover:text-[#4A4A4A] bg-[#FAF7F4]'
                 }`}
               >
-                {gender === 'male' ? '男 ♂' : '女 ♀'}
+                {gender === 'male' ? t('form.maleOption') : t('form.femaleOption')}
               </button>
             ))}
           </div>
@@ -162,7 +164,7 @@ export function BirthForm({ onSubmit, isPending = false, apiError }: BirthFormPr
         disabled={isPending}
         className="w-full bg-[#FCD060] text-[#4A4A4A] font-bold py-4 rounded-xl tracking-widest hover:bg-[#FDE49B] shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm"
       >
-        開始排盤 ✦
+        {t('form.submit')}
       </button>
     </form>
   );

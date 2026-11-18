@@ -1,5 +1,6 @@
 import styles from '../../styles/bazi-content.module.css';
 import { sanitizeHtml } from '../../../lib/sanitize-html';
+import { useLocale } from '../../../lib/i18n/locale-context';
 
 interface StandardSlideProps {
   title: string;
@@ -13,11 +14,12 @@ interface StandardSlideProps {
 }
 
 export function StandardSlide({ title, emoji, content, detail, accentColor, tabNum, subtitle }: StandardSlideProps) {
+  const { t } = useLocale();
   if (!content) {
     return (
       <div className="flex flex-col items-center justify-center w-full h-full py-12 text-[#636363]">
         <span className="text-4xl mb-3">🔍</span>
-        <p className="text-sm">尚未有此項解析資料，可使用下方 Admin 重新排盤</p>
+        <p className="text-sm">{t('slide.empty')}</p>
       </div>
     );
   }
@@ -50,7 +52,7 @@ export function StandardSlide({ title, emoji, content, detail, accentColor, tabN
         <div className="flex flex-col gap-3 pt-2">
           <div className="flex items-center gap-3">
             <div className="flex-1 border-t border-[#EAE5DF]" />
-            <span className="text-[10px] font-mono tracking-widest text-[#B0A898] uppercase shrink-0">完整分析</span>
+            <span className="text-[10px] font-mono tracking-widest text-[#B0A898] uppercase shrink-0">{t('slide.fullAnalysis')}</span>
             <div className="flex-1 border-t border-[#EAE5DF]" />
           </div>
           <div className={styles.htmlContent} dangerouslySetInnerHTML={{ __html: sanitizeHtml(detail) }} />

@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 import type { ReactNode } from 'react';
+import { getClientLocale } from './i18n/client-locale';
+import { translate } from './i18n/messages';
 
 interface ModalState {
   open: boolean;
@@ -34,8 +36,8 @@ export const useModalStore = create<ModalState>((set) => ({
       title: opts.title,
       message: opts.message ?? '',
       content: opts.content ?? null,
-      confirmLabel: opts.confirmLabel ?? '確定',
-      cancelLabel: opts.cancelLabel ?? '取消',
+      confirmLabel: opts.confirmLabel ?? translate(getClientLocale(), 'common.confirm'),
+      cancelLabel: opts.cancelLabel ?? translate(getClientLocale(), 'common.cancel'),
       onConfirm: opts.onConfirm,
     }),
   close: () => set({ open: false }),

@@ -1,6 +1,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import type { BaziPillars, FortuneReading, Gender } from '../types/bazi';
 import { formatPillarsForPrompt } from './bazi-calculator';
+import { glossaryForPrompt } from './i18n/glossary';
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY ?? '');
 const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
@@ -304,8 +305,9 @@ export async function answerCustomQuestion(params: {
   name?: string;
   gender?: Gender;
   majorFortuneInfo?: { currentCycle: string; currentAnnual: string };
+  locale?: 'zh' | 'en';
 }): Promise<string> {
-  const { question, pillars, fortune, knowledge, name, gender, majorFortuneInfo } = params;
+  const { question, pillars, fortune, knowledge, name, gender, majorFortuneInfo, locale = 'zh' } = params;
 
   const genderText = gender === 'male' ? '男' : gender === 'female' ? '女' : '未提供';
   const knowledgeSection = knowledge
@@ -335,7 +337,9 @@ ${formatPillarsForPrompt(pillars)}
 【問題】
 ${question}
 
-請用繁體中文回答（200-500字），結合命盤格局（身強/身弱）、用神忌神與十神關係作答，直接回答問題，不需要重複問題或加入額外說明。請使用 Markdown 格式：段落用空行分隔，重點用 **粗體**，條列用 \`-\`，不要使用 HTML 標籤。`;
+${locale === 'en'
+  ? `請用英文回答（150-350 words），讀者是不懂八字的外國人。結合命盤格局（身強/身弱）、用神忌神與十神關係作答，直接回答問題，不需要重複問題或加入額外說明。術語第一次出現時用英文並附上中文，例如「Day Master (日主)」，並用一句話白話解釋。術語英文請依照以下對照表：\n${glossaryForPrompt()}\n請使用 Markdown 格式：段落用空行分隔，重點用 **粗體**，條列用 \`-\`，不要使用 HTML 標籤。`
+  : '請用繁體中文回答（200-500字），結合命盤格局（身強/身弱）、用神忌神與十神關係作答，直接回答問題，不需要重複問題或加入額外說明。請使用 Markdown 格式：段落用空行分隔，重點用 **粗體**，條列用 `-`，不要使用 HTML 標籤。'}`;
 
   const result = await withRetry(() => model.generateContent(prompt));
   return result.response.text();
@@ -362,4 +366,75 @@ ${content.slice(0, 800)}
   const text = result.response.text().trim();
   const match = text.match(/\[.*\]/s);
   return match ? JSON.parse(match[0]) : [];
+}
+
+// ─── 翻譯 ────────────────────────────────────────────────────────────────────
+// 中文分析是主版本（知識庫是中文，用中文產生品質最好），英文版一律從中文翻譯，
+// 這樣中英內容保證一致，也比用英文重跑整套分析便宜。
+
+const TRANSLATION_RULES = `Translation rules:
+- Translate from Traditional Chinese into natural, warm, plain English for a Western reader who knows nothing about Bazi.
+- Keep every HTML tag (<p>, <ul>, <ol>, <li>, <strong>, <h3>, <h4>) exactly as it is; translate only the text inside.
+- Keep plain-text fields plain text (no HTML, no Markdown). Keep line breaks (\\n) and numbered lists ("1. ", "2. ") as they are.
+- Keep the 【...】 section markers, but translate the label inside, e.g. 【核心性格】 → 【Core Personality】. Keep the ｜ separators.
+- Heavenly Stems and Earthly Branches (甲乙丙丁戊己庚辛壬癸, 子丑寅卯辰巳午未申酉戌亥) may stay as Chinese characters; add the English meaning the first time, e.g. "丁 (Yin Fire)".
+- For traits ("A・B・C"), translate each keyword into one short English word or phrase and join them with " · ".
+- Use this glossary for every Bazi term so the wording matches the chart on screen:
+${glossaryForPrompt()}`;
+
+/** 把中文 fortune 欄位翻成英文，回傳同樣的 key */
+export async function translateFortuneToEnglish(
+  fields: Partial<Record<keyof FortuneReading, string>>,
+): Promise<Partial<FortuneReading>> {
+  const entries = Object.entries(fields).filter(([, value]) => typeof value === 'string' && value.trim());
+  if (entries.length === 0) return {};
+  const source = JSON.stringify(Object.fromEntries(entries), null, 2);
+  const prompt = `You are a professional translator who specialises in Chinese astrology (Bazi / 子平八字).
+Translate the values of this JSON object. Do not change the keys. Do not add, remove or reinterpret any meaning — this is a translation, not a new reading.
+
+${TRANSLATION_RULES}
+
+Return only the translated JSON object, with the same keys, and no other text.
+
+${source}`;
+  const result = await withRetry(() => model.generateContent(prompt));
+  const text = result.response.text();
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) throw new Error('Failed to parse translation response as JSON');
+  const parsed = JSON.parse(sanitizeJsonControlChars(jsonMatch[0])) as Record<string, unknown>;
+  // 只收原本要求翻譯的 key，避免模型多回其他欄位
+  const translated: Partial<Record<keyof FortuneReading, string>> = {};
+  for (const [key] of entries) {
+    const value = parsed[key];
+    if (typeof value === 'string') translated[key as keyof FortuneReading] = value;
+  }
+  return translated as Partial<FortuneReading>;
+}
+
+/** 翻譯一則 AI 追問（使用者在另一種語言介面按「翻譯」時用），答案保留 Markdown */
+export async function translateQuestionAnswer(params: {
+  question: string;
+  answer: string;
+  target: 'zh' | 'en';
+}): Promise<{ question: string; answer: string }> {
+  const { question, answer, target } = params;
+  const targetText = target === 'en'
+    ? 'natural, plain English for a Western reader who knows nothing about Bazi'
+    : '繁體中文（台灣用語），語氣親切自然';
+  const prompt = `You are a professional translator who specialises in Chinese astrology (Bazi / 子平八字).
+Translate the "question" and "answer" values into ${targetText}. Keep the Markdown formatting (bold, lists, blank lines). Do not add or change any meaning.
+${target === 'en' ? `Use this glossary for Bazi terms:\n${glossaryForPrompt()}` : '命理術語請使用原本的中文說法（例如日主、正官、用神）。'}
+
+Return only a JSON object: {"question": "...", "answer": "..."}
+
+${JSON.stringify({ question, answer }, null, 2)}`;
+  const result = await withRetry(() => model.generateContent(prompt));
+  const text = result.response.text();
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) throw new Error('Failed to parse translation response as JSON');
+  const parsed = JSON.parse(sanitizeJsonControlChars(jsonMatch[0])) as { question?: unknown; answer?: unknown };
+  return {
+    question: typeof parsed.question === 'string' ? parsed.question : question,
+    answer: typeof parsed.answer === 'string' ? parsed.answer : answer,
+  };
 }

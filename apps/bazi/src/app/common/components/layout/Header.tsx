@@ -9,12 +9,15 @@ import { GoogleLoginButton } from '../google-login-button/GoogleLoginButton';
 import { motion, AnimatePresence } from 'framer-motion';
 import { NavLink } from '../nav-link/NavLink';
 import { UserAvatar } from '../user-avatar/UserAvatar';
+import { LanguageToggle } from '../language-toggle/LanguageToggle';
+import { useLocale } from '../../../lib/i18n/locale-context';
 
 export function Header() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, loading, isAdmin, readingId, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+  const { locale, t } = useLocale();
 
   const isPaiPanActive = pathname === '/' || pathname.startsWith('/result/');
 
@@ -30,30 +33,34 @@ export function Header() {
   return (
     <>
       <header className="top-0 left-0 right-0 z-50">
-        <div className="flex items-center justify-between h-16 px-8">
+        <div className="flex items-center justify-between h-16 pl-8 pr-4 md:px-8">
 
           {/* Logo — px-8 aligns with homepage top-left text */}
           <Link href="/" className="flex items-center gap-3 group">
             <Image
               src="/cats/bazi-cat-default.webp"
-              alt="Bazi Cat Logo"
+              alt={t('header.logoAlt')}
               width={30}
               height={30}
               className="transition-transform group-hover:scale-105"
             />
-            <span className="text-bz-brown font-black text-xl tracking-[0.15em]">八字命理</span>
+            <span className={`text-bz-brown font-black text-xl whitespace-nowrap ${locale === 'zh' ? 'tracking-[0.15em]' : 'tracking-wide'}`}>{t('header.title')}</span>
           </Link>
 
+          <div className="flex items-center gap-1">
+          {/* 中 / EN 切換 */}
+          <LanguageToggle />
           {/* Hamburger */}
           <button
             onClick={() => setIsOpen(true)}
             className="p-2 text-bz-brown focus:outline-none"
-            aria-label="Open menu"
+            aria-label={t('header.openMenu')}
           >
             <svg className="w-6 h-6" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" stroke="currentColor" viewBox="0 0 24 24">
               <path d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
+          </div>
         </div>
       </header>
 
@@ -83,7 +90,7 @@ export function Header() {
             >
               {/* Close */}
               <div className="flex justify-end mb-10">
-                <button onClick={close} className="p-1 text-bz-brown" aria-label="Close menu">
+                <button onClick={close} className="p-1 text-bz-brown" aria-label={t('header.closeMenu')}>
                   <svg className="w-6 h-6" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" stroke="currentColor" viewBox="0 0 24 24">
                     <path d="M6 18L18 6M6 6l12 12" />
                   </svg>
@@ -92,15 +99,15 @@ export function Header() {
 
               {/* Nav links */}
               <div className="flex flex-col gap-5 flex-1">
-                <NavLink mobile active={isPaiPanActive} onClick={handlePaiPan}>排盤</NavLink>
+                <NavLink mobile active={isPaiPanActive} onClick={handlePaiPan}>{t('nav.chart')}</NavLink>
                 {isAdmin && (
                   <>
-                    <NavLink mobile href="/dashboard" active={pathname === '/dashboard'} onClick={close}>命盤列表</NavLink>
-                    <NavLink mobile href="/knowledge" active={pathname === '/knowledge'} onClick={close}>知識庫</NavLink>
-                    <NavLink mobile href="/test" active={pathname === '/test'} onClick={close}>排盤測試</NavLink>
+                    <NavLink mobile href="/dashboard" active={pathname === '/dashboard'} onClick={close}>{t('nav.dashboard')}</NavLink>
+                    <NavLink mobile href="/knowledge" active={pathname === '/knowledge'} onClick={close}>{t('nav.knowledge')}</NavLink>
+                    <NavLink mobile href="/test" active={pathname === '/test'} onClick={close}>{t('nav.test')}</NavLink>
                   </>
                 )}
-                <NavLink mobile href="/feedback" active={pathname === '/feedback'} onClick={close}>許願池</NavLink>
+                <NavLink mobile href="/feedback" active={pathname === '/feedback'} onClick={close}>{t('nav.feedback')}</NavLink>
               </div>
 
               {/* Auth */}
@@ -111,13 +118,13 @@ export function Header() {
                       {user.photoURL && (
                         <UserAvatar src={user.photoURL} alt={user.displayName ?? ''} size={36} />
                       )}
-                      <span className="text-sm font-medium text-bz-brown">{user.displayName ?? '使用者'}</span>
+                      <span className="text-sm font-medium text-bz-brown">{user.displayName ?? t('common.user')}</span>
                     </div>
                     <button
                       onClick={() => { logout(); close(); }}
                       className="text-sm text-bz-mid tracking-wide hover:text-bz-brown transition-colors"
                     >
-                      登出
+                      {t('common.logout')}
                     </button>
                   </div>
                 ) : (

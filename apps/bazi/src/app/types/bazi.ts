@@ -41,6 +41,10 @@ export interface QuestionAnswer {
   answer: string;
   createdAt: string;
   userId?: string;
+  /** 提問時的介面語言；舊資料沒有這個欄位，視為中文 */
+  lang?: 'zh' | 'en';
+  /** 使用者按「翻譯」後存下的譯文，依目標語言分開存 */
+  translations?: Partial<Record<'zh' | 'en', { question: string; answer: string }>>;
 }
 
 export interface Reading {
@@ -54,6 +58,10 @@ export interface Reading {
   birthHour?: number;
   pillars: BaziPillars;
   fortune: FortuneReading;
+  /** 英文翻譯版：中文 fortune 是主版本，英文用到才翻、翻完存這裡，切換語言不用再打 API */
+  fortuneEn?: Partial<FortuneReading>;
+  /** 前端顯示英文時，原本的中文 fortune 放這裡，給需要解析中文格式的元件用（例如格局、用神標籤） */
+  fortuneZh?: FortuneReading;
   questions: QuestionAnswer[];
   adminQuestions?: QuestionAnswer[];
   createdAt: string;
@@ -102,12 +110,31 @@ export interface CalculateRequest {
   birthDay: number;
   birthHour?: number;
   strengthCalibration?: StrengthCalibrationAnswer[];
+  /** 介面語言；英文時排完盤會接著把結果翻成英文 */
+  locale?: 'zh' | 'en';
 }
 
 export interface AskQuestionRequest {
   question: string;
   adminQuestion?: boolean;
+  locale?: 'zh' | 'en';
 }
+
+/** 可以翻譯成英文的 fortune 欄位 */
+export const TRANSLATABLE_FORTUNE_KEYS = [
+  'personality', 'traits', 'tenGodAnalysis', 'tenGodAnalysisDetail',
+  'cycleAnalysis', 'cycleAnalysisDetail', 'monthlyFortune', 'monthlyFortuneDetail',
+  'wealth', 'wealthDetail', 'career', 'careerDetail', 'romance', 'romanceDetail',
+  'health', 'healthDetail', 'remedy', 'remedyDetail', 'actions',
+] as const satisfies readonly (keyof FortuneReading)[];
+
+export type TranslatableFortuneKey = (typeof TRANSLATABLE_FORTUNE_KEYS)[number];
+
+/** 排盤當下就翻好的欄位（結果頁一打開就看得到的部分），其他詳細分析等使用者點開才翻 */
+export const SUMMARY_FORTUNE_KEYS: TranslatableFortuneKey[] = [
+  'personality', 'traits', 'tenGodAnalysis', 'cycleAnalysis', 'monthlyFortune',
+  'wealth', 'career', 'romance', 'health', 'remedy', 'actions',
+];
 
 export const SHICHEN = [
   { branch: '子', label: '子時 (23:00–01:00)', hours: [23, 0] },
