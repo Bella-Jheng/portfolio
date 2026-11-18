@@ -1,5 +1,5 @@
 import type { Listing, Note, ParsedField, Source, Status } from '../types';
-import { ForbiddenError, type Repositories } from './types';
+import { ForbiddenError, type ParseJob, type Repositories } from './types';
 import { SCHEMA_SQL } from './schema';
 
 /**
@@ -306,6 +306,80 @@ export function createPostgresRepositories(sql: SqlClient): Repositories {
           [token],
         );
         return rows[0] ? { ownerUid: rows[0].owner_uid, listingId: rows[0].listing_id } : null;
+      },
+    },
+
+    parseJobs: {
+      async create(ownerUid, id) {
+        await ready();
+        await sql.query(
+          "DELETE FROM rental_parse_jobs WHERE owner_uid = $1 AND created_at < now() - interval '1 day'",
+          [ownerUid],
+        );
+        await sql.query("INSERT INTO rental_parse_jobs (id, owner_uid, status) VALUES ($1, $2, 'pending')", [
+          id,
+          ownerUid,
+        ]);
+      },
+      async get(ownerUid, id) {
+        await ready();
+        const { rows } = await sql.query<{
+          id: string;
+          status: ParseJob['status'];
+          result: ParseJob['result'] | string | null;
+          error: string | null;
+          created_at: Date | string;
+        }>('SELECT id, status, result, error, created_at FROM rental_parse_jobs WHERE id = $1 AND owner_uid = $2', [
+          id,
+          ownerUid,
+        ]);
+        const row = rows[0];
+        if (!row) return null;
+        const result = typeof row.result === 'string' ? JSON.parse(row.result) : row.result;
+        return {
+          id: row.id,
+          status: row.status,
+          ...(result ? { result } : {}),
+          ...(row.error ? { error: row.error } : {}),
+          createdAt: new Date(row.created_at).toISOString(),
+        };
+      },
+      async complete(ownerUid, id, result) {
+        await ready();
+        await sql.query(
+          "UPDATE rental_parse_jobs SET status = 'done', result = $3, updated_at = now() WHERE id = $1 AND owner_uid = $2",
+          [id, ownerUid, JSON.stringify(result)],
+        );
+      },
+      async fail(ownerUid, id, error) {
+        await ready();
+        await sql.query(
+          "UPDATE rental_parse_jobs SET status = 'error', error = $3, updated_at = now() WHERE id = $1 AND owner_uid = $2",
+          [id, ownerUid, error],
+        );
+      },
+    },
+
+    pushSubscriptions: {
+      async save(ownerUid, sub) {
+        await ready();
+        await sql.query(
+          `INSERT INTO rental_push_subscriptions (endpoint, owner_uid, p256dh, auth) VALUES ($1, $2, $3, $4)
+           ON CONFLICT (endpoint) DO UPDATE SET owner_uid = EXCLUDED.owner_uid, p256dh = EXCLUDED.p256dh, auth = EXCLUDED.auth`,
+          [sub.endpoint, ownerUid, sub.p256dh, sub.auth],
+        );
+      },
+      async list(ownerUid) {
+        await ready();
+        const { rows } = await sql.query<{ endpoint: string; p256dh: string; auth: string }>(
+          'SELECT endpoint, p256dh, auth FROM rental_push_subscriptions WHERE owner_uid = $1',
+          [ownerUid],
+        );
+        return rows;
+      },
+      async remove(endpoint) {
+        await ready();
+        await sql.query('DELETE FROM rental_push_subscriptions WHERE endpoint = $1', [endpoint]);
       },
     },
   };

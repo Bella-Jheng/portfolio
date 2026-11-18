@@ -84,6 +84,7 @@ API 不直接碰資料庫，而是透過 `src/lib/data/` 的 repository 介面�
 - `rentalAllowedUsers/{小寫 email}`：白名單
 - `rentalUsers/{uid}`：email、最後登入時間、私訊範本（登入時記下 uid 對應的 email，後台看得出是誰的資料）；`rentalUsers/{uid}/listings/{id}`：物件
 - `rentalMembers/{ownerUid}__{email}`：一起找房的成員；`rentalShareLinks/{token}`：分享連結
+- `rentalParseJobs/{id}`：AI 解析工作（背景執行，一天後自動清掉）
 
 ### PostgreSQL
 
@@ -110,3 +111,21 @@ cd apps/rental && npx vitest run
 ```
 
 PostgreSQL 的測試用 [PGlite](https://pglite.dev)（記憶體裡的 PostgreSQL）執行，不需要另外架資料庫。
+
+## 截圖解析（背景執行）
+
+iOS 的網頁一切到別的 App，進行中的連線就會被中斷（出現「Load failed」），所以解析改成背景工作：
+
+1. `POST /api/parse-jobs`：上傳截圖，馬上回 `jobId`；AI 在回應送出後用 `after()` 繼續跑，結果存進資料庫（`parseJobs`）
+2. `GET /api/parse-jobs/[id]`：查進度（`pending`／`done`／`error`），超過 3 分鐘還在等待就當成失敗
+3. 前端只有「上傳」需要停在畫面上；之後可以切走，回到畫面會接著查結果。進行中的工作記在 localStorage，頁面被重新載入也接得回來
+
+舊的同步 `POST /api/parse` 保留給還沒更新的頁面。
+
+## 推播通知
+
+- 設定頁「通知」或新增頁可以開啟；這台裝置的訂閱存在 `pushSubscriptions`（PostgreSQL `rental_push_subscriptions`／Firestore `rentalPushSubscriptions`）
+- 背景解析完成或失敗時（`/api/parse-jobs` 的 `after()`）推給這個帳號的每一台裝置，點通知打開新增頁並接上結果
+- `public/sw.js` 處理 `push` 與 `notificationclick`；App 啟動時註冊
+- iPhone：iOS 16.4 以上，要先「加入主畫面」並從主畫面打開才能開啟（Safari 分頁不支援）
+- 需要 `NEXT_PUBLIC_VAPID_PUBLIC_KEY`、`VAPID_PRIVATE_KEY`、`VAPID_SUBJECT`（見 `.env.template`），沒設定時不顯示開關

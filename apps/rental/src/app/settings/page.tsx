@@ -6,6 +6,7 @@ import { useAuth } from '../../lib/auth';
 import { usePreferences } from '../../lib/preferences';
 import { useSyncStatus } from '../../lib/cloud-sync';
 import { MembersSection } from '../../components/MembersSection';
+import { NotificationSettings } from '../../components/NotificationSettings';
 import { PROFILE_TEMPLATE_ID, TEMPLATES, TEMPLATE_VARIABLES } from '../../lib/templates';
 
 export default function SettingsPage() {
@@ -52,6 +53,8 @@ export default function SettingsPage() {
           )}
           {error && <p role="alert" className="text-[13px] text-warn-text">{error}</p>}
         </section>
+
+        <NotificationSettings />
 
         <MembersSection />
 

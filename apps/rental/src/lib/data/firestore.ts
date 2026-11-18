@@ -1,6 +1,7 @@
+import { createHash } from 'crypto';
 import type { Firestore } from 'firebase-admin/firestore';
 import type { Listing } from '../types';
-import type { Repositories } from './types';
+import type { ParseJob, Repositories } from './types';
 
 /**
  * Firestore 實作。跟 apps/bazi 共用同一個 Firebase 專案，所以集合名稱都加 rental 前綴：
@@ -9,6 +10,8 @@ import type { Repositories } from './types';
  * - rentalUsers/{uid}/listings/{id}   物件（整筆存成一份文件）
  * - rentalMembers/{ownerUid}__{email} 一起找房的成員
  * - rentalShareLinks/{token}          單一物件的分享連結
+ * - rentalParseJobs/{id}             AI 解析工作（背景執行），一天後清掉
+ * - rentalPushSubscriptions/{hash}   推播通知的訂閱（文件 id 是 endpoint 的 SHA-256，endpoint 太長又有斜線）
  * 資料放在各自的 uid 底下，天生就只讀得到自己的物件。
  */
 export function createFirestoreRepositories(db: Firestore): Repositories {
@@ -16,6 +19,9 @@ export function createFirestoreRepositories(db: Firestore): Repositories {
   const listings = (uid: string) => userDoc(uid).collection('listings');
   const members = db.collection('rentalMembers');
   const shareLinks = db.collection('rentalShareLinks');
+  const parseJobs = db.collection('rentalParseJobs');
+  const pushSubs = db.collection('rentalPushSubscriptions');
+  const subId = (endpoint: string) => createHash('sha256').update(endpoint).digest('hex');
   const memberId = (ownerUid: string, email: string) => `${ownerUid}__${email.toLowerCase()}`;
   const linksOf = (ownerUid: string, listingId: string) =>
     shareLinks.where('ownerUid', '==', ownerUid).where('listingId', '==', listingId).get();
@@ -100,6 +106,49 @@ export function createFirestoreRepositories(db: Firestore): Repositories {
         const doc = await shareLinks.doc(token).get();
         if (!doc.exists) return null;
         return { ownerUid: doc.data()?.ownerUid as string, listingId: doc.data()?.listingId as string };
+      },
+    },
+    parseJobs: {
+      async create(ownerUid, id) {
+        // 只用 ownerUid 一個條件查（兩個欄位一起篩選要另建複合索引），舊的在這裡挑出來刪
+        const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+        const mine = await parseJobs.where('ownerUid', '==', ownerUid).get();
+        const stale = mine.docs.filter((d) => String(d.data().createdAt ?? '') < cutoff);
+        await Promise.all(stale.map((d) => d.ref.delete()));
+        await parseJobs.doc(id).set({ ownerUid, status: 'pending', createdAt: new Date().toISOString() });
+      },
+      async get(ownerUid, id) {
+        const doc = await parseJobs.doc(id).get();
+        const data = doc.data();
+        if (!doc.exists || !data || data.ownerUid !== ownerUid) return null;
+        return {
+          id,
+          status: data.status as ParseJob['status'],
+          ...(data.result ? { result: data.result as ParseJob['result'] } : {}),
+          ...(data.error ? { error: data.error as string } : {}),
+          createdAt: data.createdAt as string,
+        };
+      },
+      async complete(ownerUid, id, result) {
+        await parseJobs.doc(id).update({ status: 'done', result, updatedAt: new Date().toISOString() });
+      },
+      async fail(ownerUid, id, error) {
+        await parseJobs.doc(id).update({ status: 'error', error, updatedAt: new Date().toISOString() });
+      },
+    },
+    pushSubscriptions: {
+      async save(ownerUid, sub) {
+        await pushSubs.doc(subId(sub.endpoint)).set({ ...sub, ownerUid, createdAt: new Date().toISOString() });
+      },
+      async list(ownerUid) {
+        const snapshot = await pushSubs.where('ownerUid', '==', ownerUid).get();
+        return snapshot.docs.map((d) => {
+          const { endpoint, p256dh, auth } = d.data();
+          return { endpoint, p256dh, auth } as { endpoint: string; p256dh: string; auth: string };
+        });
+      },
+      async remove(endpoint) {
+        await pushSubs.doc(subId(endpoint)).delete();
       },
     },
   };
