@@ -6,9 +6,17 @@ import { useRouter } from 'next/navigation';
 import clsx from 'clsx';
 import { emptyListing, useListings } from '../../lib/store';
 import { resizeCoverImage, resizeForUpload, resizeImage } from '../../lib/image';
-import { postParse, trackHidden } from '../../lib/parse-request';
+import {
+  clearPending,
+  loadPending,
+  savePending,
+  startParseJob,
+  trackHidden,
+  waitForParseJob,
+  type PendingParse,
+} from '../../lib/parse-request';
 import { useGeocode } from '../../lib/geocode';
-import type { ParseResult, Source } from '../../lib/types';
+import type { Source } from '../../lib/types';
 import { SourcePicker } from '../../components/SourcePicker';
 import { BackIcon, CloseIcon, ImageIcon, PlusIcon, SparkIcon } from '../../components/icons';
 import {
@@ -100,7 +108,8 @@ export default function AddPage() {
       return prev.filter((_, idx) => idx !== i);
     });
 
-  async function parseGroup(files: File[]): Promise<{ result: ParseResult; thumbnail: string }> {
+  /** 上傳一組截圖、開始背景解析；只有這一步需要停在畫面上 */
+  async function uploadGroup(files: File[]): Promise<{ jobId: string; thumbnail: string }> {
     const images = await resizeForUpload(files);
     const thumb = await resizeImage(files[0], 240, 0.7);
     const token = await getToken();
@@ -108,12 +117,50 @@ export default function AddPage() {
     const body = JSON.stringify({ images: images.map((i) => ({ mimeType: i.mimeType, data: i.base64 })) });
     const visibility = trackHidden();
     try {
-      const data = await postParse(body, token, { wasHidden: visibility.wasHidden });
-      return { result: data, thumbnail: thumb.dataUrl };
+      const jobId = await startParseJob(body, token, { wasHidden: visibility.wasHidden });
+      return { jobId, thumbnail: thumb.dataUrl };
     } finally {
       visibility.stop();
     }
   }
+
+  /** 等背景解析完成（可以切到別的 App），全部完成就進到確認畫面 */
+  async function collectResults(pending: PendingParse) {
+    setBusy(
+      pending.jobs.length > 1
+        ? `AI 解析 ${pending.jobs.length} 間中…可以先切到其他 App，回來就會看到結果`
+        : 'AI 解析中…可以先切到其他 App，回來就會看到結果',
+    );
+    const results = await Promise.all(
+      pending.jobs.map((job) => waitForParseJob(job.jobId, getToken, { startedAt: pending.startedAt })),
+    );
+    setDrafts(
+      results.map((result, i) => ({
+        values: draftFromResult(result, pending.source, pending.sourceUrl),
+        thumbnail: pending.jobs[i].thumbnail,
+      })),
+    );
+    window.scrollTo({ top: 0 });
+  }
+
+  // 解析途中離開（或 iOS 把頁面重新載入）後回來：接著拿上次的結果
+  const resumed = useRef(false);
+  useEffect(() => {
+    if (resumed.current || authLoading || !user) return;
+    const pending = loadPending();
+    if (!pending) return;
+    resumed.current = true;
+    setSource(pending.source);
+    setSourceUrl(pending.sourceUrl);
+    setError(null);
+    collectResults(pending)
+      .catch((e) => {
+        clearPending();
+        setError(e instanceof Error ? e.message : '解析失敗');
+      })
+      .finally(() => setBusy(null));
+    // collectResults 只依賴 setter 和 getToken；只在登入狀態確定後跑一次
+  }, [authLoading, user]);
 
   async function createFrom({ values, thumbnail }: Draft, coverImage?: string) {
     const address = values.address.trim();
@@ -149,15 +196,25 @@ export default function AddPage() {
     setError(null);
     try {
       const groups = sameListing ? [picked.map((p) => p.file)] : picked.map((p) => [p.file]);
-      const parsed: Draft[] = [];
+      const pending: PendingParse = {
+        startedAt: Date.now(),
+        source,
+        sourceUrl: coverApplies ? sourceUrl.trim() : '',
+        jobs: [],
+      };
       for (let i = 0; i < groups.length; i++) {
-        setBusy(groups.length > 1 ? `解析中 ${i + 1} / ${groups.length}，請停在這個畫面…` : '解析中，請停在這個畫面…');
-        const { result, thumbnail } = await parseGroup(groups[i]);
-        parsed.push({ values: draftFromResult(result, source, coverApplies ? sourceUrl.trim() : ''), thumbnail });
+        setBusy(
+          groups.length > 1
+            ? `上傳截圖中 ${i + 1} / ${groups.length}…上傳完就可以切走`
+            : '上傳截圖中…上傳完就可以切到其他 App',
+        );
+        pending.jobs.push(await uploadGroup(groups[i]));
       }
-      setDrafts(parsed);
-      window.scrollTo({ top: 0 });
+      // 記在這台裝置：切走回來、頁面被重新載入，都還接得回這次的解析
+      savePending(pending);
+      await collectResults(pending);
     } catch (e) {
+      clearPending();
       setError(e instanceof Error ? e.message : '解析失敗');
     } finally {
       setBusy(null);
@@ -172,6 +229,7 @@ export default function AddPage() {
       const coverImage = cover && drafts.length === 1 ? await resizeCoverImage(cover.file) : undefined;
       let last = null;
       for (const draft of drafts) last = await createFrom(draft, coverImage);
+      clearPending();
       if (drafts.length === 1 && last) router.replace(`/listing/${last.id}`);
       else router.replace('/');
     } catch {
@@ -190,7 +248,10 @@ export default function AddPage() {
           <button
             type="button"
             aria-label="返回重新選截圖"
-            onClick={() => setDrafts(null)}
+            onClick={() => {
+              clearPending();
+              setDrafts(null);
+            }}
             className="flex h-11 w-11 items-center justify-center"
           >
             <BackIcon size={22} />

@@ -148,4 +148,32 @@ describe('PostgreSQL 資料存取層', () => {
     await db.query("INSERT INTO rental_allowed_users (email) VALUES ('me@gmail.com')");
     expect(await repos.allowlist.isAllowed('Me@Gmail.com')).toBe(true);
   });
+
+  it('AI 解析工作：建立後是等待中，完成或失敗後讀得到結果，別人讀不到', async () => {
+    await repos.parseJobs.create('me', 'job-1');
+    expect(await repos.parseJobs.get('me', 'job-1')).toMatchObject({ id: 'job-1', status: 'pending' });
+    expect(await repos.parseJobs.get('someone-else', 'job-1')).toBeNull();
+
+    const result = {
+      title: '西屯區套房', address: '台中市西屯區', rent: 9500, layout: '套房', size: '8 坪', floor: '', fees: '',
+      pets: '', listingNo: '', contactName: '王小姐', contactRole: '', phones: ['0912-345-678'], lineIds: [],
+      igIds: [], uncertain: ['address' as const],
+    };
+    await repos.parseJobs.complete('me', 'job-1', result);
+    expect(await repos.parseJobs.get('me', 'job-1')).toMatchObject({ status: 'done', result });
+
+    await repos.parseJobs.create('me', 'job-2');
+    await repos.parseJobs.fail('me', 'job-2', 'AI 解析失敗');
+    expect(await repos.parseJobs.get('me', 'job-2')).toMatchObject({ status: 'error', error: 'AI 解析失敗' });
+  });
+
+  it('AI 解析工作：建立新工作時清掉自己一天以前的舊工作', async () => {
+    await repos.parseJobs.create('me', 'old');
+    await repos.parseJobs.create('other', 'other-old');
+    await db.query("UPDATE rental_parse_jobs SET created_at = now() - interval '2 days'");
+    await repos.parseJobs.create('me', 'new');
+    expect(await repos.parseJobs.get('me', 'old')).toBeNull();
+    expect(await repos.parseJobs.get('me', 'new')).not.toBeNull();
+    expect(await repos.parseJobs.get('other', 'other-old')).not.toBeNull();
+  });
 });

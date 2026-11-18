@@ -1,4 +1,4 @@
-import type { Listing } from '../types';
+import type { Listing, ParseResult } from '../types';
 
 /**
  * 資料存取層（Repository）：API route 只依賴這些介面，不直接碰資料庫。
@@ -51,6 +51,26 @@ export interface ShareLinkRepository {
   resolve(token: string): Promise<{ ownerUid: string; listingId: string } | null>;
 }
 
+/** AI 解析工作：上傳截圖後伺服器在背景解析，前端切到別的 App 再回來也拿得到結果 */
+export type ParseJobStatus = 'pending' | 'done' | 'error';
+
+export interface ParseJob {
+  id: string;
+  status: ParseJobStatus;
+  result?: ParseResult;
+  error?: string;
+  createdAt: string;
+}
+
+export interface ParseJobRepository {
+  /** 建立一筆等待中的工作；順便清掉這個帳號一天以前的舊工作 */
+  create(ownerUid: string, id: string): Promise<void>;
+  /** 只讀得到自己的工作；不存在時回傳 null */
+  get(ownerUid: string, id: string): Promise<ParseJob | null>;
+  complete(ownerUid: string, id: string, result: ParseResult): Promise<void>;
+  fail(ownerUid: string, id: string, error: string): Promise<void>;
+}
+
 /** 可以使用 AI 與雲端資料的帳號白名單 */
 export interface AllowlistRepository {
   isAllowed(email: string): Promise<boolean>;
@@ -63,6 +83,7 @@ export interface Repositories {
   allowlist: AllowlistRepository;
   members: MemberRepository;
   shareLinks: ShareLinkRepository;
+  parseJobs: ParseJobRepository;
 }
 
 export class ForbiddenError extends Error {}
