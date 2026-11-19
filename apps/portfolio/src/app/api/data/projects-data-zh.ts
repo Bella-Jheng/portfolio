@@ -34,17 +34,19 @@ import {
   Rental4,
   Rental5,
   Rental6,
+  Rental7,
+  Rental8,
 } from '@/public/img';
 
 export const PROJECTS_DATA_ZH: FullProject[] = [
   {
     id: 'rental',
-    title: '租屋小幫手：AI 截圖解析找房工具',
+    title: '租屋小幫手：從自用找房工具到房仲版的 AI 租屋 App',
     category: 'AI 實作',
     displayCategory: 'AI 實作',
     period: '2026',
     description:
-      '準備搬家找房時，我習慣把 591、FB 社團上的物件截圖，再一張張丟到 Google Maps 查位置、複製資料私訊代管，來回切換很花時間，所以做了這個自用工具。\n\n把租屋截圖丟進來，AI 自動讀出地址、租金、房型、電話和 LINE，標在地圖上，再一鍵產生私訊範本。\n\n• 地圖首頁依狀態上色：聯絡中、已看房、已出租，「最想要」用愛心另外標記\n• 一次上傳多張截圖，AI 沒把握的欄位會用黃色提醒確認\n• 電話一鍵撥打、LINE ID 一鍵開啟，私訊範本自動帶入物件資料\n• 預約看房行程、分享物件連結、邀請家人一起找房\n• 借給認識的房仲試用後，發現他們管理物件也需要類似工具',
+      '準備搬家找房時，我習慣把 591、FB 社團上的物件截圖，再一張張丟到 Google Maps 查位置、複製資料私訊代管，來回切換很花時間，所以先做了自用版。借給認識的房仲試用後，發現他們管理貨源、配對客戶也有一樣的困擾，於是把兩邊合併成同一個 App：第一次打開選「我在找房」或「我是房仲」，之後在設定切換。\n\n把截圖或貼文丟進來，AI 自動讀出地址、租金、房型和聯絡方式，標在地圖上；房仲挑好物件傳一個推薦連結，客戶就能存進自己的清單。\n\n• 租屋者：地圖依狀態上色、「最想要」愛心、看房行程、一鍵私訊範本\n• 房仲：貨源與委託到期提醒、客戶需求自動配對、帶看行程\n• 推薦連結：客戶不用登入就能看，屋主電話和門牌不會外流；房仲標記已出租時，客戶會收到提醒\n• 背景解析＋推播：上傳完就能切到別的 App，解析好了通知手機\n• 照片存 Firebase Storage、資料存 IndexedDB 並同步雲端，LINE 分享有縮圖預覽',
     imageUrl: Rental1.src,
     link: '/projects/rental',
     tags: ['AI Integration', 'Google Maps', 'Firebase', 'Full-Stack'],
@@ -52,8 +54,10 @@ export const PROJECTS_DATA_ZH: FullProject[] = [
       'Next.js 16',
       'Google Gemini API',
       'Google Maps JavaScript API',
-      'Firebase Auth / Firestore',
-      'Zustand',
+      'Firebase Auth / Firestore / Storage',
+      'PostgreSQL',
+      'Web Push',
+      'Zustand + IndexedDB',
       'Vitest',
     ],
     media: [
@@ -63,8 +67,20 @@ export const PROJECTS_DATA_ZH: FullProject[] = [
       { type: 'image', url: Rental4.src },
       { type: 'image', url: Rental5.src },
       { type: 'image', url: Rental6.src },
+      { type: 'image', url: Rental7.src },
+      { type: 'image', url: Rental8.src },
     ],
     links: [
+      {
+        label: 'UI 設計稿',
+        url: 'https://claude.ai/artifact/TFyYwJKPadM5QVNGHyAqcg',
+        type: 'external',
+      },
+      {
+        label: '房仲版設計稿',
+        url: 'https://claude.ai/artifact/6enWiVLj6XwPhPKwW1p6TD',
+        type: 'external',
+      },
       {
         label: '專案說明 README',
         url: 'https://github.com/Bella-Jheng/portfolio/blob/main/apps/rental/README.md',
@@ -76,22 +92,24 @@ export const PROJECTS_DATA_ZH: FullProject[] = [
         title: '專案動機與開發重點',
         tabLabel: '開發重點',
         whatIDid:
-          '##找房痛點##找房時大部分時間都花在重複動作：截圖物件、到 Google Maps 查位置、再把資料一筆筆複製去私訊代管。我想把「截圖 → 整理 → 私訊」縮成一個流程，所以做了這個工具。\n\n##核心流程##上傳截圖後由 Gemini 解析成結構化欄位，地址轉成座標標到地圖上，用狀態顏色和「最想要」愛心一眼看出進度，最後依範本產生私訊，複製就能傳給代管。',
+          '##找房痛點##找房時大部分時間都花在重複動作：截圖物件、到 Google Maps 查位置、再把資料一筆筆複製去私訊代管。我想把「截圖 → 整理 → 私訊」縮成一個流程，所以做了自用版。\n\n##從自用到房仲版##房仲試用後回饋，他們要管的是「貨源 × 客戶 × 帶看」。我把兩個版本合併成同一個 App，用身分切換主色和功能：租屋者看到的是找房清單，房仲看到的是貨源、客戶需求與配對。\n\n##兩邊串起來##房仲勾選物件產生推薦連結，客戶點開就能存進自己的清單；之後房仲把物件標成已出租，客戶的 App 會跳出提醒，讓雙方的資料保持一致。',
         techUsed: [
           'Next.js 16',
           'Google Gemini API',
           '@vis.gl/react-google-maps',
           'Firebase',
+          'PostgreSQL',
+          'Web Push',
           'TypeScript',
         ],
         challenges: [
-          '##AI 額度保護##網址一旦外流，任何人都能呼叫 AI 解析消耗額度。後端改成先驗證 Google 登入憑證，再到 Firestore 允許名單確認，名單只在伺服器端讀取',
-          '##離線與雲端同步##沒登入時資料存在瀏覽器，登入後要同步到雲端。登入時把裝置與雲端資料合併，同一筆以最後修改時間為準，登入前新增的物件不會不見',
-          '##解析結果不一定可靠##截圖常常沒拍到完整地址或物件編號，所以 AI 沒把握的欄位用黃色標出，所有欄位都能就地編輯',
-          '##聯絡方式格式多樣##LINE 有官方帳號 @ID、一般 ID、「LINE 同電話」等寫法，需要分別處理才能一鍵開啟',
+          '##屋主資料不能外流##房仲最怕客戶跳過自己直接找屋主。分享與推薦連結的公開欄位改用白名單：房仲物件只給路名、首圖和租金條件，屋主電話、門牌、物件編號、鑰匙位置、截圖一律不出現，並用測試鎖住',
+          '##手機切走就斷線##iOS 切到別的 App 時會中斷請求，AI 解析常常白跑一趟。改成上傳完立刻拿到工作編號，AI 在伺服器背景執行，完成後用 Web Push 通知；回到 App 會自動接上結果，用量失敗時也會還回去',
+          '##資料量撐爆 localStorage##物件首圖讓 localStorage 的 5MB 很快滿掉。改存 IndexedDB，照片上傳 Firebase Storage，舊資料在背景自動搬家',
+          '##AI 額度與方案##租屋者免費版每月有解析次數上限，房仲不限。後端驗證 Google 登入後用交易計數扣額度，同時送出也不會超過',
         ],
         learnings:
-          '##從自己的需求出發##這是為了自己搬家做的工具，邊找房邊用、邊用邊改，每個功能都來自實際卡住的地方。\n\n##意外的使用者##把工具借給認識的房仲試用後，發現他們管理手上物件也有一樣的困擾，讓我開始思考把它發展成房仲版本的可能。\n\n##架構預留彈性##資料存取透過 repository 介面，可以在 Firestore 與 PostgreSQL 之間切換，為之後的規模和成本調整留下空間。',
+          '##從自己的需求出發##這是為了自己搬家做的工具，邊找房邊用、邊用邊改，每個功能都來自實際卡住的地方。\n\n##聽使用者的回饋##房仲的回饋讓我重新思考產品定位：同一套資料，兩種角色看到不同的介面，再用推薦連結把雙方串起來。\n\n##架構預留彈性##資料存取透過 repository 介面，可以在 Firestore 與 PostgreSQL 之間切換，測試用 PGlite 直接跑真的 SQL。',
       },
     ],
   },
