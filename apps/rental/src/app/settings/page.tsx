@@ -114,8 +114,53 @@ export default function SettingsPage() {
                 }[sync.status]
               : '還沒登入，資料只存在這台裝置的瀏覽器，換手機或清除瀏覽器資料就會不見。登入後會自動上傳到雲端。'}
           </p>
+          <ExportButton />
         </section>
       </main>
+    </div>
+  );
+}
+
+/** 匯出資料：下載一個 JSON 檔，可以在新版（房仲＋租屋者合併版）的設定頁匯入 */
+function ExportButton() {
+  const [message, setMessage] = useState<string | null>(null);
+
+  const exportData = async () => {
+    // 只匯出自己的物件；別人共用給我的留在對方那邊
+    const listings = useListings.getState().listings.filter((l) => !l.sharedBy);
+    const json = JSON.stringify({ app: 'rental-helper', version: 1, exportedAt: new Date().toISOString(), listings });
+    const name = `租屋小幫手-${new Date().toISOString().slice(0, 10)}.json`;
+    const file = new File([json], name, { type: 'application/json' });
+    try {
+      // 手機上用分享選單（可以存到「檔案」或傳給自己）；不支援時直接下載
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file], title: name });
+      } else {
+        const url = URL.createObjectURL(file);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = name;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 10_000);
+      }
+      setMessage(`已匯出 ${listings.length} 間物件，到新版的「設定 → 從自用版搬資料」選這個檔案。`);
+    } catch (e) {
+      // 使用者關掉分享選單不算錯
+      if (e instanceof DOMException && e.name === 'AbortError') return;
+      setMessage('匯出失敗，請再試一次');
+    }
+  };
+
+  return (
+    <div className="mt-2 flex flex-col gap-1.5">
+      <button type="button" onClick={exportData} className="btn-outline h-10 self-start">
+        匯出資料
+      </button>
+      {message && (
+        <p role="status" className="text-[13px] text-sub">
+          {message}
+        </p>
+      )}
     </div>
   );
 }
