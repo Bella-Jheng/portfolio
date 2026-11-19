@@ -8,6 +8,7 @@ import { CardSlide } from './CardSlide';
 import { BaziTableSlide } from './BaziTableSlide';
 import { MajorFortuneSlide } from './MajorFortuneSlide';
 import { PersonalitySummaryCard } from './PersonalitySummaryCard';
+import { useLocale } from '../../../lib/i18n/locale-context';
 
 interface MobileCardCarouselProps {
   reading: Reading;
@@ -19,6 +20,7 @@ const SPRING = { type: 'spring', stiffness: 260, damping: 26 } as const;
 const SLIDE_COUNT = 2; // 基本排盤、大運分析
 
 export function MobileCardCarousel({ reading, theme }: MobileCardCarouselProps) {
+  const { t } = useLocale();
   const [index, setIndex] = useState(0);
   const [transitionConfig, setTransitionConfig] = useState<React.ComponentProps<typeof motion.div>['transition']>(SPRING);
   const [containerWidth, setContainerWidth] = useState(0);
@@ -91,7 +93,7 @@ export function MobileCardCarousel({ reading, theme }: MobileCardCarouselProps) 
             <button
               key={i}
               onClick={() => { setTransitionConfig(SPRING); setIndex(i); }}
-              aria-label={`第 ${i + 1} 張`}
+              aria-label={t('result.slideN', { n: i + 1 })}
               className={`h-2 rounded-full transition-all ${
                 i === index ? 'w-5 bg-[#4A4A4A]' : 'w-2 bg-[#D8D2C8]'
               }`}

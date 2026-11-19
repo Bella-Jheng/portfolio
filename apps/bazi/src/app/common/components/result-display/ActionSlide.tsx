@@ -1,3 +1,5 @@
+
+import { useLocale } from '../../../lib/i18n/locale-context';
 function splitIntoActions(text: string): string[] {
   if (!text) return [];
   const numbered = text
@@ -19,11 +21,12 @@ interface ActionSlideProps {
 }
 
 export function ActionSlide({ actionsText, accentColor, mobile }: ActionSlideProps) {
+  const { locale, t } = useLocale();
   if (!actionsText) {
     return (
       <div className="flex flex-col items-center justify-center w-full h-full py-12 text-[#636363]">
         <span className="text-4xl mb-3">🎯</span>
-        <p className="text-sm">尚未有行動建議資料，可使用下方 Admin 重新排盤</p>
+        <p className="text-sm">{t('slide.actionsEmpty')}</p>
       </div>
     );
   }
@@ -34,7 +37,7 @@ export function ActionSlide({ actionsText, accentColor, mobile }: ActionSlidePro
     <div className="space-y-6 w-full h-full flex flex-col justify-start text-left">
       <div className="flex items-center gap-3">
         <span className="text-2xl">🎯</span>
-        <h2 className="text-xl font-black tracking-widest text-[#4A4A4A]">年度重點行動建議</h2>
+        <h2 className={`text-xl font-black text-[#4A4A4A] ${locale === 'zh' ? 'tracking-widest' : 'tracking-normal'}`}>{t('tab.actions')}</h2>
         <div className="h-px flex-1 bg-[#EAE5DF]" />
       </div>
       <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 pr-2 ${mobile ? '' : 'flex-1 overflow-y-auto'}`}>

@@ -7,40 +7,16 @@ import { useEffect } from 'react';
 import { useAuth } from '../lib/auth-context';
 import { useModalStore } from '../lib/modal-store';
 import styles from './page.module.scss';
-
-const TAGLINES = ['用天干地支解讀', '你天生的個性與命格', '命格貓八字解析'];
-
-const STEPS = [
-  { num: '01', emoji: '📝', title: '輸入生辰', desc: '填入出生年月日時，系統換算成天干地支，排出專屬於你的命盤。' },
-  { num: '02', emoji: '🤖', title: 'AI 解密命盤', desc: '提供專業知識庫給 AI，請 AI 比對五行生剋與十神關係，把艱澀的命理轉譯成看得懂的白話。' },
-  { num: '03', emoji: '📖', title: '拿到完整報告', desc: '個性、財運、事業、感情、健康，連今年今月的運勢走向一次看清楚。' },
-];
-
-// 作者的話：每一段是一個段落，段落內的每一行各自換行
-const AUTHOR_NOTE = [
-  ['起初，是在自己人生的低潮裡，', '陰錯陽差遇見了八字。', '沒想到越學越著迷，', '後來不只幫自己看，也開始幫朋友看。'],
-  ['對我來說，算命從來不是為了預言誰的命運，', '而是在你走到谷底的時候，輕輕告訴你：', '再撐一下下就好，隧道的洞口快到了。'],
-  ['在你覺得看不到希望時，給你一點光；', '在風雨來臨之前，讓你先做好準備。', '人生本來就有高有低，不會一直都是低谷。'],
-  ['這個網站幫助了我，也希望能幫助你。', '哪怕只是一點點安慰、一個小小的心理支柱，', '都希望在你低潮的時候，陪你多走一步。'],
-];
-
-const FEATURES = [
-  { emoji: '🌊', title: '流年運勢', desc: '今年大運與流年如何互相牽動' },
-  { emoji: '🌙', title: '流月運勢', desc: '這個月的氣場重點與提醒' },
-  { emoji: '🔮', title: '個性特質', desc: '十神解讀，內外性格全公開' },
-  { emoji: '💰', title: '財運狀況', desc: '正財偏財的財富能量解析' },
-  { emoji: '💼', title: '工作事業', desc: '職場發展方向與機遇分析' },
-  { emoji: '🌸', title: '感情桃花', desc: '感情模式與姻緣時機解析' },
-  { emoji: '🌿', title: '健康狀況', desc: '身體能量強弱與注意事項' },
-  { emoji: '✨', title: '補運建議', desc: '強化五行、改善運勢的方法' },
-  { emoji: '🎯', title: '行動建議', desc: '年度重點方向與具體行動' },
-];
+import { useLocale } from '../lib/i18n/locale-context';
+import { HOME_CONTENT } from '../lib/i18n/content';
 
 export default function LandingPage() {
   const router = useRouter();
   const { user, loading, isAdmin, readingId, readingLoading, login } =
     useAuth();
   const { show } = useModalStore();
+  const { locale, t } = useLocale();
+  const { taglines: TAGLINES, steps: STEPS, authorNote: AUTHOR_NOTE, features: FEATURES } = HOME_CONTENT[locale];
 
   useEffect(() => {
     if (loading || readingLoading || !user || isAdmin) return;
@@ -51,11 +27,10 @@ export default function LandingPage() {
     if (loading || readingLoading) return;
     if (!user) {
       show({
-        title: '請先登入',
-        message:
-          '需要登入 Google 帳號才能開始排盤，系統會將你的命盤與帳號綁定，方便下次直接查看。',
-        confirmLabel: 'Google 登入',
-        cancelLabel: '取消',
+        title: t('home.loginTitle'),
+        message: t('home.loginMessage'),
+        confirmLabel: t('common.googleLogin'),
+        cancelLabel: t('common.cancel'),
         onConfirm: () => login('/form'),
       });
       return;
@@ -75,10 +50,10 @@ export default function LandingPage() {
         {/* Site tagline — centered on mobile, top-left on desktop */}
         <div className="absolute top-[12%] md:top-6 left-0 right-0 md:left-8 md:right-auto z-20 select-none text-center md:text-left">
           <p className="text-xl md:text-sm font-medium text-[#2D2420] tracking-wide leading-snug">
-            歡迎來到命格貓的世界
+            {t('home.welcome')}
           </p>
           <p className="text-xs text-[#999] tracking-wide mt-0.5">
-            by AI × 八字天干地支解析
+            {t('home.by')}
           </p>
         </div>
 
@@ -139,7 +114,7 @@ export default function LandingPage() {
             />
             <Image
               src="/cats/bazi-cat-default.webp"
-              alt="命格貓"
+              alt={t('home.catAlt')}
               width={320}
               height={320}
               priority
@@ -155,9 +130,9 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 48 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.12, duration: 1, ease: [0.23, 1, 0.32, 1] }}
-            className="text-[13vw] font-normal leading-none tracking-tight text-[#1A1A1A] whitespace-nowrap pl-3"
+            className={`${locale === 'en' ? 'text-[10vw]' : 'text-[13vw]'} font-normal leading-none tracking-tight text-[#1A1A1A] whitespace-nowrap pl-3`}
           >
-            命格貓 × 八字
+            {t('home.desktopTitle')}
           </motion.h1>
         </div>
 
@@ -167,10 +142,10 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 48 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.12, duration: 1, ease: [0.23, 1, 0.32, 1] }}
-            className="text-[12vw] leading-none text-[#1A1A1A] text-center pointer-events-none overflow-hidden w-full"
+            className={`${locale === 'en' ? 'text-[10.5vw] leading-[1.05]' : 'text-[12vw] leading-none'} text-[#1A1A1A] text-center pointer-events-none overflow-hidden w-full`}
           >
-            <span className="block">你是哪一種</span>
-            <span className="block">命格貓？</span>
+            <span className="block">{t('home.titleLine1')}</span>
+            <span className="block">{t('home.titleLine2')}</span>
           </motion.h1>
         </div>
       </div>
@@ -189,7 +164,7 @@ export default function LandingPage() {
                 “
               </span>
               <p className="mt-2 text-2xl md:text-3xl font-medium text-[#2D2420] tracking-wide">
-                隧道的洞口，就快到了
+                {t('home.noteTitle')}
               </p>
             </motion.div>
 
@@ -217,7 +192,7 @@ export default function LandingPage() {
               className="mt-10 flex items-center gap-3"
             >
               <Image src="/cats/bazi-cat-default.webp" alt="" width={32} height={32} />
-              <p className="text-xs tracking-[0.3em] text-[#B9985A]">— 命格貓的作者</p>
+              <p className="text-xs tracking-[0.3em] text-[#B9985A]">{t('home.noteSign')}</p>
             </motion.div>
           </div>
         </div>
@@ -226,8 +201,8 @@ export default function LandingPage() {
       {/* How it works */}
       <section className="bg-white px-6 md:px-8 py-16 md:py-24">
         <div className="max-w-5xl mx-auto">
-          <p className="text-xs tracking-[0.3em] text-[#B9985A] font-medium">01 / 運作流程</p>
-          <h2 className="mt-3 text-2xl md:text-3xl font-medium text-[#2D2420]">三步驟，看懂自己的命盤</h2>
+          <p className="text-xs tracking-[0.3em] text-[#B9985A] font-medium">{t('home.stepsLabel')}</p>
+          <h2 className="mt-3 text-2xl md:text-3xl font-medium text-[#2D2420]">{t('home.stepsTitle')}</h2>
           <div className="mt-10 md:mt-14 grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-8">
             {STEPS.map((step) => (
               <div key={step.num} className="flex items-start gap-5">
@@ -246,8 +221,8 @@ export default function LandingPage() {
       {/* Feature overview */}
       <section className="bg-gradient-to-b from-[#FFFDF5] to-[#FFF9EE] px-6 md:px-8 py-16 md:py-24">
         <div className="max-w-5xl mx-auto">
-          <p className="text-xs tracking-[0.3em] text-[#B9985A] font-medium">02 / 功能總覽</p>
-          <h2 className="mt-3 text-2xl md:text-3xl font-medium text-[#2D2420]">測算完，你會看到這些</h2>
+          <p className="text-xs tracking-[0.3em] text-[#B9985A] font-medium">{t('home.featuresLabel')}</p>
+          <h2 className="mt-3 text-2xl md:text-3xl font-medium text-[#2D2420]">{t('home.featuresTitle')}</h2>
           <div className="mt-10 md:mt-14 grid grid-cols-2 sm:grid-cols-3 gap-4 md:gap-6">
             {FEATURES.map((feature) => (
               <div
@@ -265,12 +240,12 @@ export default function LandingPage() {
 
       {/* Closing CTA */}
       <section className="bg-white px-6 md:px-8 py-16 md:py-24 text-center">
-        <p className="text-lg md:text-xl text-[#2D2420]">準備好認識自己的命格了嗎？</p>
+        <p className="text-lg md:text-xl text-[#2D2420]">{t('home.ctaText')}</p>
         <button
           onClick={handleStart}
           className="mt-6 border border-[#2D2420] bg-[#2D2420] text-[#EDEBE4] text-sm tracking-[0.22em] px-8 py-3 cursor-pointer hover:bg-transparent hover:text-[#2D2420] transition-all duration-200"
         >
-          開始測算 ✦
+          {t('home.cta')}
         </button>
       </section>
     </>

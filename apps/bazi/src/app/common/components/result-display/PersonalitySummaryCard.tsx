@@ -2,6 +2,7 @@ import styles from '../../styles/bazi-content.module.css';
 import type { Reading } from '../../../types/bazi';
 import type { MagazineTheme } from './theme';
 import { sanitizeHtml } from '../../../lib/sanitize-html';
+import { useLocale } from '../../../lib/i18n/locale-context';
 
 interface PersonalitySummaryCardProps {
   reading: Reading;
@@ -9,6 +10,7 @@ interface PersonalitySummaryCardProps {
 }
 
 export function PersonalitySummaryCard({ reading, theme }: PersonalitySummaryCardProps) {
+  const { t } = useLocale();
   const { personality } = reading.fortune;
 
   return (
@@ -25,7 +27,7 @@ export function PersonalitySummaryCard({ reading, theme }: PersonalitySummaryCar
 
       <div className="flex items-center gap-2 mb-3 border-b pb-2 relative z-10" style={{ borderColor: `${theme.accent}30` }}>
         <span className="text-base">✨</span>
-        <h3 className="font-black text-sm tracking-wider" style={{ color: theme.accent }}>命主特質速覽</h3>
+        <h3 className="font-black text-sm tracking-wider" style={{ color: theme.accent }}>{t('summary.title')}</h3>
       </div>
 
       {personality ? (
@@ -36,7 +38,7 @@ export function PersonalitySummaryCard({ reading, theme }: PersonalitySummaryCar
       ) : (
         <div className="flex-1 flex flex-col items-center justify-center gap-2 text-[#9A9088] relative z-10">
           <span className="text-2xl">🔍</span>
-          <p className="text-xs">尚未生成性格分析</p>
+          <p className="text-xs">{t('summary.empty')}</p>
         </div>
       )}
     </div>

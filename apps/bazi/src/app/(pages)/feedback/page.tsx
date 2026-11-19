@@ -11,11 +11,13 @@ import {
   type FeedbackComment,
   type FeedbackStatus,
 } from './api/use-feedback';
+import { useLocale } from '../../lib/i18n/locale-context';
+import type { MessageKey } from '../../lib/i18n/messages';
 
-const STATUS_META: Record<FeedbackStatus, { label: string; dot: string }> = {
-  unprocessed: { label: '未處理', dot: 'bg-red-500' },
-  in_progress: { label: '處理中', dot: 'bg-yellow-500' },
-  resolved: { label: '已處理', dot: 'bg-green-500' },
+const STATUS_META: Record<FeedbackStatus, { label: MessageKey; dot: string }> = {
+  unprocessed: { label: 'wish.statusUnprocessed', dot: 'bg-red-500' },
+  in_progress: { label: 'wish.statusInProgress', dot: 'bg-yellow-500' },
+  resolved: { label: 'wish.statusResolved', dot: 'bg-green-500' },
 };
 
 // 近期更新：依類型分組，新的更新加在各組最前面
@@ -51,15 +53,50 @@ const UPDATE_GROUPS = [
   },
 ];
 
+// 英文介面的近期更新
+const UPDATE_GROUPS_EN = [
+  {
+    emoji: '✨',
+    title: 'New features',
+    items: [
+      { date: '10/30', text: 'Added an "author\'s note" on the home page about why Bazi Cat was made' },
+      { date: '10/28', text: 'Feedback became the "Wishing Well" — wish for any feature you want' },
+      { date: '09/09', text: 'Added a short chart-strength check: answer how a few past years felt so the reading fits you better' },
+    ],
+  },
+  {
+    emoji: '🛠️',
+    title: 'Improvements',
+    items: [
+      { date: '10/28', text: 'Added a "use your solar birth date" hint to avoid entering a lunar date by mistake' },
+      { date: '10/28', text: 'The strength check only appears for very strong or very weak charts; skipping it uses a balanced judgment' },
+      { date: '10/28', text: 'You go straight to the results after submitting, without a second loading screen' },
+      { date: '10/28', text: 'Fixed the strength check window breaking on some devices' },
+    ],
+  },
+  {
+    emoji: '🔒',
+    title: 'Security & privacy',
+    items: [
+      { date: '11/02', text: 'Building charts, asking questions and full analysis require sign-in, and only the owner can use them' },
+      { date: '11/02', text: 'Daily question limits now reset on Taiwan time' },
+      { date: '10/28', text: 'Stronger site security; chart result pages are hidden from search engines' },
+      { date: '10/28', text: 'AI-generated content is filtered for safety before it is shown' },
+    ],
+  },
+];
+
 function RecentUpdates() {
+  const { locale, t } = useLocale();
+  const groups = locale === 'en' ? UPDATE_GROUPS_EN : UPDATE_GROUPS;
   return (
     <details open className="group border border-bz-gold/20 rounded-xl px-6 py-4 mb-8">
       <summary className="flex items-center justify-between cursor-pointer list-none">
-        <span className="text-bz-parchment text-sm font-medium tracking-wide">🌟 近期更新：你的願望，我們正在實現</span>
+        <span className="text-bz-parchment text-sm font-medium tracking-wide">{t('wish.updates')}</span>
         <span className="text-bz-muted text-xs transition-transform group-open:rotate-180">▼</span>
       </summary>
       <div className="mt-4 space-y-5">
-        {UPDATE_GROUPS.map((group) => (
+        {groups.map((group) => (
           <div key={group.title} className="space-y-2">
             <p className="text-bz-parchment text-sm font-medium">
               {group.emoji} {group.title}
@@ -81,16 +118,18 @@ function RecentUpdates() {
 
 function FeedbackStatusBadge({ status }: { status: FeedbackStatus }) {
   const meta = STATUS_META[status] ?? STATUS_META.unprocessed;
+  const { t } = useLocale();
   return (
     <span className="inline-flex items-center gap-1.5 text-xs font-medium text-bz-mid">
       <span className={`w-2 h-2 rounded-full ${meta.dot}`} />
-      {meta.label}
+      {t(meta.label)}
     </span>
   );
 }
 
 function CommentItem({ feedbackId, comment }: { feedbackId: string; comment: FeedbackComment }) {
   const { isAdmin } = useAuth();
+  const { t } = useLocale();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(comment.message);
   const editMutation = useEditFeedbackComment();
@@ -113,10 +152,10 @@ function CommentItem({ feedbackId, comment }: { feedbackId: string; comment: Fee
     <div className="bg-bz-gold-light/40 rounded-lg px-3 py-2">
       <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-2">
-          <p className="text-xs text-bz-terra font-bold">管理員回覆</p>
+          <p className="text-xs text-bz-terra font-bold">{t('wish.adminReply')}</p>
           <span className="text-xs text-bz-muted/60">
             {new Date(comment.editedAt ?? comment.createdAt).toLocaleDateString('zh-TW')}
-            {comment.editedAt && '（已編輯）'}
+            {comment.editedAt && t('wish.edited')}
           </span>
         </div>
         {isAdmin && !editing && (
@@ -198,6 +237,7 @@ function AdminReplyForm({ feedbackId }: { feedbackId: string }) {
 
 export default function FeedbackPage() {
   const { isAdmin } = useAuth();
+  const { locale, t } = useLocale();
   const { data, isLoading } = useFeedback();
   const { mutate: updateStatus } = useUpdateFeedbackStatus();
 
@@ -206,16 +246,16 @@ export default function FeedbackPage() {
   return (
     <div className="max-w-3xl mx-auto px-5 py-12">
       <div className="space-y-2 mb-8">
-        <h1 className="text-bz-parchment font-serif text-3xl tracking-wider">許願池</h1>
-        <p className="text-bz-muted text-sm">大家投進許願池的願望與建議</p>
+        <h1 className="text-bz-parchment font-serif text-3xl tracking-wider">{t('wish.pageTitle')}</h1>
+        <p className="text-bz-muted text-sm">{t('wish.pageSubtitle')}</p>
       </div>
 
       <RecentUpdates />
 
       {isLoading ? (
-        <p className="text-bz-muted text-sm">載入願望中…</p>
+        <p className="text-bz-muted text-sm">{t('wish.loading')}</p>
       ) : entries.length === 0 ? (
-        <p className="text-bz-muted/60 text-sm text-center py-16">許願池還空空的，來許第一個願吧！</p>
+        <p className="text-bz-muted/60 text-sm text-center py-16">{t('wish.empty')}</p>
       ) : (
         <div className="space-y-3">
           {entries.map((entry) => (
@@ -241,7 +281,7 @@ export default function FeedbackPage() {
 
               <div className="flex items-center justify-between text-xs text-bz-muted/60">
                 <span>{entry.displayName}</span>
-                <span>{new Date(entry.createdAt).toLocaleString('zh-TW')}</span>
+                <span>{new Date(entry.createdAt).toLocaleString(locale === 'en' ? 'en-US' : 'zh-TW')}</span>
               </div>
 
               {entry.comments.length > 0 && (

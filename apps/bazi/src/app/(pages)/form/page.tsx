@@ -5,14 +5,21 @@ import { motion } from 'framer-motion';
 import { BirthForm } from '../../common/components/birth-form/BirthForm';
 import { useCalculate, useResumeCalculation } from './api/use-calculate';
 import { CalcJobAbortedError } from '../../lib/calc-job-client';
+import { useLocale } from '../../lib/i18n/locale-context';
+import { localizeError, type MessageKey } from '../../lib/i18n/messages';
 
-const STEPS = ['了解功能', '填寫資料', '查看結果'];
+const STEPS: MessageKey[] = ['form.stepLearn', 'form.stepFill', 'form.stepResult'];
 
 export default function FormPage() {
   const router = useRouter();
   const mutation = useCalculate();
   // 排盤途中切走或頁面被重新載入，回來時接著等結果
   const resume = useResumeCalculation();
+  const { locale, t } = useLocale();
+  const rawError =
+    mutation.error instanceof Error && !(mutation.error instanceof CalcJobAbortedError)
+      ? mutation.error.message
+      : (resume.error ?? undefined);
 
   return (
     <div className="min-h-[calc(100vh-3.5rem)] flex flex-col items-center justify-start px-5 pt-10 pb-16 relative overflow-hidden bg-[#FFFDF5]">
@@ -51,7 +58,7 @@ export default function FormPage() {
                       isActive ? 'text-[#4A4A4A]' : 'text-[#6B6159]'
                     }`}
                   >
-                    {label}
+                    {t(label)}
                   </span>
                 </div>
                 {index < STEPS.length - 1 && (
@@ -78,10 +85,10 @@ export default function FormPage() {
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
             </svg>
-            返回
+            {t('common.back')}
           </button>
-          <h2 className="text-[#4A4A4A] font-black text-2xl tracking-widest">填寫生辰資料</h2>
-          <p className="text-[#6B6159] text-xs tracking-wide">資料僅用於八字命盤計算，不會儲存個人敏感資訊</p>
+          <h2 className={`text-[#4A4A4A] font-black text-2xl ${locale === 'zh' ? 'tracking-widest' : 'tracking-normal'}`}>{t('form.title')}</h2>
+          <p className="text-[#6B6159] text-xs tracking-wide">{t('form.subtitle')}</p>
         </motion.div>
 
         {/* Form Card */}
@@ -94,11 +101,7 @@ export default function FormPage() {
           <BirthForm
             onSubmit={(form) => mutation.mutate(form)}
             isPending={mutation.isPending || resume.resuming}
-            apiError={
-              mutation.error instanceof Error && !(mutation.error instanceof CalcJobAbortedError)
-                ? mutation.error.message
-                : (resume.error ?? undefined)
-            }
+            apiError={rawError ? localizeError(rawError, locale) : undefined}
           />
         </motion.div>
       </div>

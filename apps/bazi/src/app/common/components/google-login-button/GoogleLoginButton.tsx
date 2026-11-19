@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuth } from '../../../lib/auth-context';
+import { useLocale } from '../../../lib/i18n/locale-context';
 
 type Variant = 'primary' | 'outline' | 'dark';
 
@@ -18,6 +19,7 @@ interface Props {
 
 export function GoogleLoginButton({ variant = 'primary', className = '', onBeforeLogin }: Props) {
   const { login } = useAuth();
+  const { t } = useLocale();
 
   // 先呼叫 login 再做其他事（例如關閉選單），讓開啟 Google 登入視窗緊跟在使用者點擊之後，
   // 和可以正常登入的「開始測算」流程順序一致；iOS Safari 對非直接由點擊開啟的視窗會擋下
@@ -31,7 +33,7 @@ export function GoogleLoginButton({ variant = 'primary', className = '', onBefor
       onClick={handleClick}
       className={`text-sm rounded-full transition-all tracking-wider ${VARIANT_STYLES[variant]} ${className}`}
     >
-      Google 登入
+      {t('common.googleLogin')}
     </button>
   );
 }

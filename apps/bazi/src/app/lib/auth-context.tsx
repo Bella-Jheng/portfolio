@@ -8,6 +8,8 @@ import { auth, googleProvider } from './firebase-client';
 import { isLineBrowser, openInExternalBrowser } from './detect-browser';
 import { useModalStore } from './modal-store';
 import { getSessionRemainingMs } from './session';
+import { getClientLocale } from './i18n/client-locale';
+import { translate } from './i18n/messages';
 
 const ADMIN_UID = process.env.NEXT_PUBLIC_ADMIN_UID ?? '';
 const REDIRECT_KEY = 'loginRedirect';
@@ -16,13 +18,14 @@ const REDIRECT_KEY = 'loginRedirect';
 const IGNORED_LOGIN_ERRORS = ['auth/popup-closed-by-user', 'auth/cancelled-popup-request'];
 
 function showLoginError(code?: string) {
+  const locale = getClientLocale();
   useModalStore.getState().show({
-    title: '登入失敗',
+    title: translate(locale, 'auth.failedTitle'),
     message:
       code === 'auth/popup-blocked'
-        ? '瀏覽器擋下了登入視窗，請允許此網站開啟彈出視窗後再試一次。'
-        : `登入時發生問題，請稍後再試。${code ? `（錯誤代碼：${code}）` : ''}`,
-    confirmLabel: '知道了',
+        ? translate(locale, 'auth.popupBlocked')
+        : `${translate(locale, 'auth.failed')}${code ? translate(locale, 'auth.errorCode', { code }) : ''}`,
+    confirmLabel: translate(locale, 'common.gotIt'),
     onConfirm: () => undefined,
   });
 }
@@ -40,10 +43,11 @@ interface AuthContextValue {
 
 function expireSession() {
   signOut(auth);
+  const locale = getClientLocale();
   useModalStore.getState().show({
-    title: '登入已過期',
-    message: '為了保護你的資料，登入超過 7 天會自動登出，請重新登入。',
-    confirmLabel: '知道了',
+    title: translate(locale, 'auth.expiredTitle'),
+    message: translate(locale, 'auth.expired'),
+    confirmLabel: translate(locale, 'common.gotIt'),
     onConfirm: () => undefined,
   });
 }

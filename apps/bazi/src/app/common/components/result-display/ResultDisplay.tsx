@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import type { Reading } from '../../../types/bazi';
 import { useAuth } from '../../../lib/auth-context';
@@ -13,6 +13,11 @@ import { TabSection } from './TabSection';
 import { QASection } from './QASection';
 import { AdminQASection } from './AdminQASection';
 import { FeedbackWidget } from '../feedback/FeedbackWidget';
+import { useLocale } from '../../../lib/i18n/locale-context';
+import type { MessageKey } from '../../../lib/i18n/messages';
+import type { TranslatableFortuneKey } from '../../../types/bazi';
+import { useLocalizedReading } from './use-localized-reading';
+import { TranslationNotice } from './TranslationNotice';
 
 interface ResultDisplayProps {
   reading: Reading;
@@ -20,7 +25,21 @@ interface ResultDisplayProps {
 }
 
 // Carousel: 3 slides — 天生卡 (0), 基本排盤 (1), 大運流年 (2)
-const SLIDE_TITLES = ['精美天生卡', '排盤', '大運 / 流年'];
+const SLIDE_TITLES: MessageKey[] = ['result.slideCard', 'result.slideTable', 'result.slideFortune'];
+
+// 結果頁一打開就看得到的欄位，加上目前頁籤用到的欄位；英文介面只翻這些，其他頁籤點開才翻
+const ALWAYS_VISIBLE_KEYS: TranslatableFortuneKey[] = ['traits', 'personality', 'tenGodAnalysis'];
+const TAB_KEYS: TranslatableFortuneKey[][] = [
+  ['cycleAnalysis', 'cycleAnalysisDetail'],
+  ['monthlyFortune', 'monthlyFortuneDetail'],
+  ['tenGodAnalysis', 'tenGodAnalysisDetail'],
+  ['wealth', 'wealthDetail'],
+  ['career', 'careerDetail'],
+  ['romance', 'romanceDetail'],
+  ['health', 'healthDetail'],
+  ['remedy', 'remedyDetail'],
+  ['actions'],
+];
 
 // Infinite carousel for 3 slides: prepend last (2), real slides (0,1,2), append first (0)
 const TRACK_ITEMS = [2, 0, 1, 2, 0];
@@ -43,7 +62,7 @@ function renderSlide(
   }
 }
 
-export function ResultDisplay({ reading, onUpdate }: ResultDisplayProps) {
+export function ResultDisplay({ reading: sourceReading, onUpdate: onSourceUpdate }: ResultDisplayProps) {
   const { isAdmin, getToken } = useAuth();
   const [recalculating, setRecalculating] = useState(false);
   const [showTopBtn, setShowTopBtn] = useState(false);
@@ -55,7 +74,25 @@ export function ResultDisplay({ reading, onUpdate }: ResultDisplayProps) {
   const [activeTabIdx, setActiveTabIdx] = useState(0);
   const [feedbackNudgeSignal, setFeedbackNudgeSignal] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { t } = useLocale();
+  const neededKeys = useMemo(
+    () => [...ALWAYS_VISIBLE_KEYS, ...(TAB_KEYS[activeTabIdx] ?? [])],
+    [activeTabIdx],
+  );
+  const localized = useLocalizedReading(sourceReading, neededKeys, onSourceUpdate);
+  const reading = localized.reading;
+  // 子元件拿到的是「顯示用」的命盤（英文時 fortune 已換成英文），回存時要換回中文主版本，
+  // 只有子元件真的改了 fortune（例如產生完整分析）才用新的
+  const onUpdate = (updated: Reading) => {
+    const fortune = updated.fortune === reading.fortune ? sourceReading.fortune : updated.fortune;
+    onSourceUpdate({ ...updated, fortune, fortuneZh: undefined });
+  };
   const theme = deriveTheme(reading);
+  const topPending = localized.missing.some((key) => ALWAYS_VISIBLE_KEYS.includes(key));
+  const tabPending = localized.missing.some((key) => (TAB_KEYS[activeTabIdx] ?? []).includes(key));
+  const notice = (
+    <TranslationNotice failed={localized.failed} translating={localized.translating} onRetry={localized.retry} />
+  );
 
   // 用 sessionStorage 記錄本次瀏覽切換過幾次頁籤：不用存 DB，且分頁/瀏覽器關掉後自然歸零，
   // 下次重新開頁面就會從 0 重新累積，滿 4 次就跳出回饋視窗；同一次瀏覽只跳一次，填過與否都不重複彈出
@@ -111,9 +148,9 @@ export function ResultDisplay({ reading, onUpdate }: ResultDisplayProps) {
       });
       const data = await res.json();
       if (!res.ok) { if (data.aiStatusText) console.error('後端api失敗訊息', data.aiStatusText); alert(data.error || '重新計算失敗'); return; }
-      onUpdate({ ...reading, pillars: data.pillars, fortune: data.fortune, questions: data.questions });
+      onUpdate({ ...reading, pillars: data.pillars, fortune: data.fortune, fortuneEn: {}, questions: data.questions });
     } catch {
-      alert('網路錯誤，請稍後再試');
+      alert(t('tab.networkError'));
     } finally {
       setRecalculating(false);
     }
@@ -132,6 +169,8 @@ export function ResultDisplay({ reading, onUpdate }: ResultDisplayProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
     >
+      {/* 英文介面：還沒翻好的內容先顯示中文，這裡提示正在準備英文版 */}
+      {topPending && notice}
       {/* Mobile: swiper carousel */}
       <MobileCardCarousel reading={reading} theme={theme} />
 
@@ -195,7 +234,7 @@ export function ResultDisplay({ reading, onUpdate }: ResultDisplayProps) {
         </button>
 
         <div className="flex flex-col items-center gap-1.5 mt-2">
-          <span className="text-xs font-bold tracking-widest text-[#636363] uppercase">{SLIDE_TITLES[slideIndex]}</span>
+          <span className="text-xs font-bold tracking-widest text-[#636363] uppercase">{t(SLIDE_TITLES[slideIndex])}</span>
           <div className="flex items-center gap-3 w-full max-w-[240px]">
             <span className="text-[10px] font-mono text-[#6B6159] tracking-widest shrink-0">{slideIndex + 1} / 3</span>
             <div className="h-1 flex-1 bg-black/5 rounded-full overflow-hidden">
@@ -224,7 +263,7 @@ export function ResultDisplay({ reading, onUpdate }: ResultDisplayProps) {
 
       {/* Tab section: all other slides */}
       <div>
-        <TabSection reading={reading} theme={theme} activeTabIdx={activeTabIdx} onActiveTabChange={handleTabChange} onUpdate={onUpdate} />
+        <TabSection reading={reading} theme={theme} activeTabIdx={activeTabIdx} onActiveTabChange={handleTabChange} onUpdate={onUpdate} notice={tabPending ? notice : null} />
       </div>
 
       <QASection reading={reading} theme={theme} onUpdate={onUpdate} />
@@ -239,7 +278,7 @@ export function ResultDisplay({ reading, onUpdate }: ResultDisplayProps) {
         <button
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           className="fixed bottom-6 right-6 z-50 w-11 h-11 rounded-full bg-[#4A4A4A]/80 hover:bg-[#2D2420] text-white shadow-lg backdrop-blur-sm transition-all flex items-center justify-center"
-          aria-label="回到頂端"
+          aria-label={t('result.backToTop')}
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
