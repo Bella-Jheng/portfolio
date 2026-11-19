@@ -36,3 +36,5 @@ export { default as Rental3 } from './project-rental-3.webp';
 export { default as Rental4 } from './project-rental-4.webp';
 export { default as Rental5 } from './project-rental-5.webp';
 export { default as Rental6 } from './project-rental-6.webp';
+export { default as Rental7 } from './project-rental-7.webp';
+export { default as Rental8 } from './project-rental-8.webp';

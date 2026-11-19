@@ -34,17 +34,19 @@ import {
   Rental4,
   Rental5,
   Rental6,
+  Rental7,
+  Rental8,
 } from '@/public/img';
 
 export const PROJECTS_DATA_EN: FullProject[] = [
   {
     id: 'rental',
-    title: 'Rental Helper: AI Screenshot-to-Map Apartment Hunting Tool',
+    title: 'Rental Helper: From a Personal Apartment-Hunting Tool to an AI App for Agents',
     category: 'AI 實作',
     displayCategory: 'AI Implementation',
     period: '2026',
     description:
-      "While apartment hunting for my move, I kept screenshotting listings from 591 and Facebook groups, checking each location in Google Maps, and copying details to message landlords' agents one by one. So I built a tool for myself.\n\nDrop in listing screenshots and AI reads the address, rent, room type, phone and LINE ID, pins them on a map, and generates a message template in one tap.\n\n• Map home colors each listing by status: contacted, viewed, rented, with a separate heart for favorites\n• Upload several screenshots at once; fields the AI isn't sure about are highlighted in yellow\n• Tap to call, tap to open LINE, and message templates auto-filled with listing details\n• Viewing schedule, shareable listing links, and inviting family to search together\n• After lending it to real-estate agents I know, I found they need a similar tool to manage their listings",
+      "While apartment hunting for my move, I kept screenshotting listings from 591 and Facebook groups, checking each location in Google Maps, and copying details to message landlords' agents one by one, so I built a tool for myself. After lending it to real-estate agents I know, I found they had the same problem managing listings and matching clients, so I merged both into one app: on first launch you pick \"I'm looking for a place\" or \"I'm an agent\", and you can switch later in Settings.\n\nDrop in screenshots or a post and AI reads the address, rent, room type and contacts, then pins them on a map. Agents pick listings and send one recommendation link, and clients can save them into their own list.\n\n• Tenants: status-colored map, favorite hearts, viewing schedule, one-tap message templates\n• Agents: listing inventory with mandate expiry reminders, automatic client matching, viewing tours\n• Recommendation links: clients view without signing in, and owner phone numbers and street numbers never leak; when the agent marks a listing rented, clients get a prompt\n• Background parsing + push: switch apps right after uploading and get notified when it's done\n• Photos in Firebase Storage, data in IndexedDB synced to the cloud, LINE share links with preview thumbnails",
     imageUrl: Rental1.src,
     link: '/projects/rental',
     tags: ['AI Integration', 'Google Maps', 'Firebase', 'Full-Stack'],
@@ -52,8 +54,10 @@ export const PROJECTS_DATA_EN: FullProject[] = [
       'Next.js 16',
       'Google Gemini API',
       'Google Maps JavaScript API',
-      'Firebase Auth / Firestore',
-      'Zustand',
+      'Firebase Auth / Firestore / Storage',
+      'PostgreSQL',
+      'Web Push',
+      'Zustand + IndexedDB',
       'Vitest',
     ],
     media: [
@@ -63,8 +67,20 @@ export const PROJECTS_DATA_EN: FullProject[] = [
       { type: 'image', url: Rental4.src },
       { type: 'image', url: Rental5.src },
       { type: 'image', url: Rental6.src },
+      { type: 'image', url: Rental7.src },
+      { type: 'image', url: Rental8.src },
     ],
     links: [
+      {
+        label: 'UI Design',
+        url: 'https://claude.ai/artifact/TFyYwJKPadM5QVNGHyAqcg',
+        type: 'external',
+      },
+      {
+        label: 'Agent UI Design',
+        url: 'https://claude.ai/artifact/6enWiVLj6XwPhPKwW1p6TD',
+        type: 'external',
+      },
       {
         label: 'README',
         url: 'https://github.com/Bella-Jheng/portfolio/blob/main/apps/rental/README.md',
@@ -76,22 +92,24 @@ export const PROJECTS_DATA_EN: FullProject[] = [
         title: 'Motivation & Key Engineering Work',
         tabLabel: 'Dev Notes',
         whatIDid:
-          "##The Pain Point##Most of my apartment-hunting time went into repetitive steps: screenshot a listing, look it up in Google Maps, then copy the details into a message to the agent. I wanted to collapse \"screenshot → organize → message\" into a single flow.\n\n##Core Flow##Uploaded screenshots are parsed by Gemini into structured fields, addresses are geocoded onto the map, status colors and a favorite heart show progress at a glance, and a template turns the listing into a ready-to-send message.",
+          "##The Pain Point##Most of my apartment-hunting time went into repetitive steps: screenshot a listing, look it up in Google Maps, then copy the details into a message to the agent. I wanted to collapse \"screenshot → organize → message\" into a single flow, so I built a personal version first.\n\n##From Personal Tool to Agent Version##Agents who tried it told me what they really juggle is listings × clients × viewings. I merged both versions into one app where the chosen role switches the theme color and features: tenants see their hunting list, agents see inventory, client needs and matches.\n\n##Connecting Both Sides##Agents select listings to create a recommendation link; clients open it and save listings into their own list. When the agent later marks one rented, the client's app prompts them, keeping both sides in sync.",
         techUsed: [
           'Next.js 16',
           'Google Gemini API',
           '@vis.gl/react-google-maps',
           'Firebase',
+          'PostgreSQL',
+          'Web Push',
           'TypeScript',
         ],
         challenges: [
-          '##Protecting AI Quota##If the URL leaked, anyone could burn through the AI quota. The backend now verifies the Google sign-in token and checks a Firestore allowlist that is only read server-side',
-          '##Offline & Cloud Sync##Signed-out data lives in the browser; once signed in it syncs to the cloud. On sign-in, device and cloud data are merged by last-modified time, so nothing added before signing in is lost',
-          "##Imperfect Parsing##Screenshots often miss the full address or listing ID, so fields the AI isn't confident about are flagged in yellow, and every field can be edited in place",
-          '##Many Contact Formats##LINE IDs show up as official @IDs, regular IDs, or "LINE is the same as my phone", and each needs its own handling to open LINE in one tap',
+          "##Owner Details Must Not Leak##Agents' biggest worry is clients skipping them to contact owners directly. Public fields for share and recommendation links use an allowlist: agent listings only expose the road name, cover photo and rent terms, while owner phone numbers, street numbers, listing IDs, key locations and screenshots never appear, locked in by tests",
+          '##Switching Apps Kills Requests##iOS interrupts requests when you switch apps, so AI parsing often went to waste. Uploads now return a job ID immediately, the AI runs in the background on the server, and Web Push notifies when it finishes; reopening the app picks up the result, and failed parses refund the quota',
+          '##Outgrowing localStorage##Cover photos filled the 5MB localStorage limit quickly. Data moved to IndexedDB, photos to Firebase Storage, and old data migrates automatically in the background',
+          "##AI Quota & Plans##Tenants on the free plan get a monthly parse limit while agents are unlimited. After verifying Google sign-in, the backend charges quota inside a transaction so concurrent requests can't exceed it",
         ],
         learnings:
-          "##Built From My Own Need##I built this for my own move, using it while I searched and changing it as I went, so every feature came from a real point where I got stuck.\n\n##Unexpected Users##After lending it to real-estate agents I know, I found they have the same problem managing their listings, which got me thinking about an agent version.\n\n##Room to Grow##Data access goes through a repository interface that can switch between Firestore and PostgreSQL, leaving room to adjust for scale and cost later.",
+          '##Built From My Own Need##I built this for my own move, using it while I searched and changing it as I went, so every feature came from a real point where I got stuck.\n\n##Listening to Users##Feedback from agents reshaped the product: one set of data, two roles with different interfaces, connected by recommendation links.\n\n##Room to Grow##Data access goes through a repository interface that can switch between Firestore and PostgreSQL, and tests run real SQL with PGlite.',
       },
     ],
   },
