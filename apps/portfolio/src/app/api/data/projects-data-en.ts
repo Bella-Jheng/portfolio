@@ -118,15 +118,15 @@ export const PROJECTS_DATA_EN: FullProject[] = [
   },
   {
     id: 'savecat',
-    title: 'Savecat: A Budgeting App Where Logging Expenses Feels Like Chatting With a Cat (UI Design)',
+    title: 'Savecat: A Lifesaver for Spontaneous Spenders, With an AI Cat That Logs Expenses for You',
     category: 'AI 實作',
     displayCategory: 'AI Implementation',
     period: '2026',
     description:
-      'I never managed to keep a budget for one simple reason: every entry in a budgeting app means picking a category, typing an amount and choosing an account, and I would give up after three. So I designed an app where you just say it: type "breakfast 65 lunch 150 comb 300" and AI splits it into three categorized entries. Once you link your e-invoice carrier, purchases made with your mobile barcode are imported automatically.\n\nThe UI design is finished, and every screen and interaction is in the design file linked above.\n\n• Savings jar: set a dream (like a new laptop) and the home screen shows how many days are left, with a little black cat walking along the progress bar\n• Left to spend today: a daily budget calculated from income, recurring expenses and installments; the cat\'s ears droop when you\'re close to overspending\n• Recurring expenses: rent, subscriptions and insurance can repeat weekly, monthly or yearly, and charge days are marked on the calendar\n• Spending by category as a donut chart, listing over-budget categories and comparing with last month\n• Stock holdings and a full ledger, with prices planned to come from the TWSE OpenAPI',
+      'I never managed to keep a budget for one simple reason: every entry in a budgeting app means picking a category, typing an amount and choosing an account, and I would give up after three. So I designed an app where you just say it: type "breakfast 65 lunch 150 comb 300" and AI splits it into three categorized entries. Once you link your e-invoice carrier, purchases made with your mobile barcode are imported automatically.\n\nThe app is in development; every screen and flow has already been designed, and you can see them through the design link above.\n\n• Savings jar: set a dream (like a new laptop) and the home screen shows how many days are left, with a little black cat walking along the progress bar\n• Left to spend today: a daily budget calculated from income, recurring expenses and installments; the cat\'s ears droop when you\'re close to overspending\n• Recurring expenses: rent, subscriptions and insurance can repeat weekly, monthly or yearly, and charge days are marked on the calendar\n• Spending by category as a donut chart, listing over-budget categories and comparing with last month\n• Stock holdings and a full ledger, with prices planned to come from the TWSE OpenAPI',
     imageUrl: Savecat1.src,
     link: '/projects/savecat',
-    tags: ['UI Design', 'AI Integration', 'Fintech', 'Mobile'],
+    tags: ['AI Integration', 'Fintech', 'Mobile'],
     technologies: [
       'Claude Design',
       'Google Gemini API (planned)',
@@ -147,8 +147,8 @@ export const PROJECTS_DATA_EN: FullProject[] = [
     ],
     sections: [
       {
-        title: 'Motivation & Design Highlights',
-        tabLabel: 'Design Notes',
+        title: 'Motivation & Key Features',
+        tabLabel: 'Dev Notes',
         whatIDid:
           '##Logging Is Too Much Work##Typical budgeting apps make you pick a category, enter an amount and choose an account for every entry, and I always quit within three days. Savecat turns input into one sentence: "breakfast 65 lunch 150 comb 300". AI splits it into three entries with categories, and you confirm them all at once.\n\n##Something to Save Toward##Staring at "spent this month" gets numbing, so the home screen leads with a dream savings jar: how many days until the MacBook, how much sooner you\'d get there by adding more, and a little black cat that moves along the progress bar.\n\n##The Cat Only Appears Where It Does a Job##Cat ears mark "this is your savings jar", they droop when you\'re close to overspending, timeline nodes become paw prints, and on first launch a floating savings cat walks you through setting up income and your invoice carrier.',
         techUsed: ['Claude Design', 'UI / UX', 'Sitemap', 'Interactive Prototype'],
