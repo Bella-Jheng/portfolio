@@ -36,6 +36,9 @@ import {
   Rental6,
   Rental7,
   Rental8,
+  Savecat1,
+  Savecat2,
+  Savecat3,
 } from '@/public/img';
 
 export const PROJECTS_DATA_ZH: FullProject[] = [
@@ -110,6 +113,53 @@ export const PROJECTS_DATA_ZH: FullProject[] = [
         ],
         learnings:
           '##從自己的需求出發##這是為了自己搬家做的工具，邊找房邊用、邊用邊改，每個功能都來自實際卡住的地方。\n\n##聽使用者的回饋##房仲的回饋讓我重新思考產品定位：同一套資料，兩種角色看到不同的介面，再用推薦連結把雙方串起來。\n\n##架構預留彈性##資料存取透過 repository 介面，可以在 Firestore 與 PostgreSQL 之間切換，測試用 PGlite 直接跑真的 SQL。',
+      },
+    ],
+  },
+  {
+    id: 'savecat',
+    title: '存錢貓：P 人救星，AI 貓貓幫你自動記帳',
+    category: 'AI 實作',
+    displayCategory: 'AI 實作',
+    period: '2026',
+    description:
+      '我一直記不住帳，原因很簡單：打開記帳 App 要選分類、填金額、再選帳戶，三筆就放棄了。所以我想做一個「隨口說就好」的記帳 App：打一句「早餐65 午餐150 梳子300」，AI 自己拆成三筆並分類；發票載具連結之後，手機條碼的消費也會自動匯入。\n\n目前正在開發中，已經先把所有畫面和流程畫成設計稿，可以點上方連結看。\n\n• 存錢罐：設定夢想（例如新電腦），首頁直接顯示「還有幾天存到」，進度條上的小黑貓會跟著往前走\n• 今天還能花：用收入、定期支出、分期算出每天的預算，快超支時貓耳會垂下來\n• 定期支出：房租、訂閱、保險可以設每週／每月／每年扣款，月曆上會標出扣款日\n• 支出分類圓餅圖，列出超支的分類並跟上個月比較\n• 股票持股與總帳，股價規劃串台灣證交所 OpenAPI',
+    imageUrl: Savecat1.src,
+    link: '/projects/savecat',
+    tags: ['AI Integration', 'Fintech', 'Mobile'],
+    technologies: [
+      'Claude Design',
+      'Google Gemini API（規劃）',
+      '財政部電子發票 API（規劃）',
+      'TWSE OpenAPI（規劃）',
+    ],
+    media: [
+      { type: 'image', url: Savecat1.src },
+      { type: 'image', url: Savecat2.src },
+      { type: 'image', url: Savecat3.src },
+    ],
+    links: [
+      {
+        label: 'UI 設計稿',
+        url: 'https://claude.ai/artifact/7bGQZjqSggj5RheQQg6roH',
+        type: 'external',
+      },
+    ],
+    sections: [
+      {
+        title: '開發動機與重點功能',
+        tabLabel: '開發重點',
+        whatIDid:
+          '##記帳太麻煩##一般記帳 App 每一筆都要選分類、填金額、選帳戶，我記三天就放棄。存錢貓把輸入改成一句話：「早餐65 午餐150 梳子300」，AI 會自己拆成三筆並分類，確認後一次記下來。\n\n##讓存錢有盼頭##只看「這個月花了多少」很容易麻痺，所以首頁放的是夢想存錢罐：距離 MacBook 還有幾天、再撥多少可以提前幾天，進度條上的小黑貓會跟著往前走。\n\n##貓咪只出現在有功能的地方##貓耳標示「這是你的存錢罐」，快超支時耳朵垂下來，時間軸節點換成肉球，第一次打開時由會上下浮動的存錢貓帶你設定收入和載具。',
+        techUsed: ['Claude Design', 'UI / UX', 'Sitemap', 'Interactive Prototype'],
+        challenges: [
+          '##定期支出放哪裡才看得到##一開始把定期支出藏在設定裡，幾乎找不到。提出幾個方案後，改成「記一筆」上方的切換（今天的／定期支出），總覽卡片列出接下來要扣的，月曆也標出扣款日',
+          '##收入的樣子很多##月薪、時薪、年薪、獎金、打工都要能填，最後幫使用者算出總年薪，之後在設定裡也能改，避免第一次打開就被一大張表單嚇跑',
+          '##載具匯入要使用者做什麼##財政部 API 需要手機條碼和驗證碼，設計上把步驟縮到最少，並說明連結後 App 會自動匯入發票；驗證碼填錯時要能提示重填',
+          '##股價資料來源##比較過證交所 OpenAPI、櫃買中心、FinMind、富果等來源，持股頁先以免費、每日更新的官方資料規劃',
+        ],
+        learnings:
+          '##先畫完再寫##這次先把所有畫面、流程和 Sitemap 畫完再開始實作，邊畫邊發現很多一開始沒想到的情境（定期扣款的日期怎麼算、浮動金額怎麼確認），比寫到一半才改便宜很多。\n\n##用 AI 一起設計##整份設計稿都是和 Claude 一起完成的，我負責決定方向和取捨，AI 幫忙快速產出多個版本比較，再把選中的做成可以點的原型。',
       },
     ],
   },
