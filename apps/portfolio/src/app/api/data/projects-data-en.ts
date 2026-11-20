@@ -36,6 +36,9 @@ import {
   Rental6,
   Rental7,
   Rental8,
+  Savecat1,
+  Savecat2,
+  Savecat3,
 } from '@/public/img';
 
 export const PROJECTS_DATA_EN: FullProject[] = [
@@ -110,6 +113,53 @@ export const PROJECTS_DATA_EN: FullProject[] = [
         ],
         learnings:
           '##Built From My Own Need##I built this for my own move, using it while I searched and changing it as I went, so every feature came from a real point where I got stuck.\n\n##Listening to Users##Feedback from agents reshaped the product: one set of data, two roles with different interfaces, connected by recommendation links.\n\n##Room to Grow##Data access goes through a repository interface that can switch between Firestore and PostgreSQL, and tests run real SQL with PGlite.',
+      },
+    ],
+  },
+  {
+    id: 'savecat',
+    title: 'Savecat: A Budgeting App Where Logging Expenses Feels Like Chatting With a Cat (UI Design)',
+    category: 'AI 實作',
+    displayCategory: 'AI Implementation',
+    period: '2026',
+    description:
+      'I never managed to keep a budget for one simple reason: every entry in a budgeting app means picking a category, typing an amount and choosing an account, and I would give up after three. So I designed an app where you just say it: type "breakfast 65 lunch 150 comb 300" and AI splits it into three categorized entries. Once you link your e-invoice carrier, purchases made with your mobile barcode are imported automatically.\n\nThe UI design is finished, and every screen and interaction is in the design file linked above.\n\n• Savings jar: set a dream (like a new laptop) and the home screen shows how many days are left, with a little black cat walking along the progress bar\n• Left to spend today: a daily budget calculated from income, recurring expenses and installments; the cat\'s ears droop when you\'re close to overspending\n• Recurring expenses: rent, subscriptions and insurance can repeat weekly, monthly or yearly, and charge days are marked on the calendar\n• Spending by category as a donut chart, listing over-budget categories and comparing with last month\n• Stock holdings and a full ledger, with prices planned to come from the TWSE OpenAPI',
+    imageUrl: Savecat1.src,
+    link: '/projects/savecat',
+    tags: ['UI Design', 'AI Integration', 'Fintech', 'Mobile'],
+    technologies: [
+      'Claude Design',
+      'Google Gemini API (planned)',
+      'Taiwan E-Invoice API (planned)',
+      'TWSE OpenAPI (planned)',
+    ],
+    media: [
+      { type: 'image', url: Savecat1.src },
+      { type: 'image', url: Savecat2.src },
+      { type: 'image', url: Savecat3.src },
+    ],
+    links: [
+      {
+        label: 'UI Design',
+        url: 'https://claude.ai/artifact/7bGQZjqSggj5RheQQg6roH',
+        type: 'external',
+      },
+    ],
+    sections: [
+      {
+        title: 'Motivation & Design Highlights',
+        tabLabel: 'Design Notes',
+        whatIDid:
+          '##Logging Is Too Much Work##Typical budgeting apps make you pick a category, enter an amount and choose an account for every entry, and I always quit within three days. Savecat turns input into one sentence: "breakfast 65 lunch 150 comb 300". AI splits it into three entries with categories, and you confirm them all at once.\n\n##Something to Save Toward##Staring at "spent this month" gets numbing, so the home screen leads with a dream savings jar: how many days until the MacBook, how much sooner you\'d get there by adding more, and a little black cat that moves along the progress bar.\n\n##The Cat Only Appears Where It Does a Job##Cat ears mark "this is your savings jar", they droop when you\'re close to overspending, timeline nodes become paw prints, and on first launch a floating savings cat walks you through setting up income and your invoice carrier.',
+        techUsed: ['Claude Design', 'UI / UX', 'Sitemap', 'Interactive Prototype'],
+        challenges: [
+          '##Where Recurring Expenses Get Noticed##At first recurring expenses were buried in settings where nobody would find them. After comparing a few proposals, they became a toggle at the top of "Add" (Today / Recurring), a home card listing upcoming charges, and charge days marked on the calendar',
+          '##Income Comes in Many Shapes##Monthly salary, hourly wage, annual salary, bonuses and side gigs all need a place, and the app totals them into an annual income. Everything can be changed later in Settings, so first-time users aren\'t scared off by a long form',
+          '##What Linking an Invoice Carrier Asks of Users##The Ministry of Finance API needs the mobile barcode and a verification code. The flow keeps the steps minimal, explains that invoices will then be imported automatically, and prompts users to re-enter a wrong code',
+          '##Where Stock Prices Come From##I compared the TWSE OpenAPI, TPEx, FinMind and Fugle, and planned the holdings page around free, daily-updated official data first',
+        ],
+        learnings:
+          '##Design Everything Before Coding##This time I drew every screen, flow and the sitemap before writing any code. Along the way I found many cases I hadn\'t thought of (how to calculate recurring charge dates, how to confirm variable amounts), and changing them in the design was far cheaper than halfway through the build.\n\n##Designing With AI##The whole design was made together with Claude: I set the direction and made the trade-offs, while AI quickly produced several versions to compare and turned the chosen ones into a clickable prototype.',
       },
     ],
   },

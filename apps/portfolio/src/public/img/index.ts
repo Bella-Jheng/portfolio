@@ -38,3 +38,6 @@ export { default as Rental5 } from './project-rental-5.webp';
 export { default as Rental6 } from './project-rental-6.webp';
 export { default as Rental7 } from './project-rental-7.webp';
 export { default as Rental8 } from './project-rental-8.webp';
+export { default as Savecat1 } from './project-savecat-1.png';
+export { default as Savecat2 } from './project-savecat-2.webp';
+export { default as Savecat3 } from './project-savecat-3.webp';
