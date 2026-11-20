@@ -9,6 +9,8 @@ export const metadata = {
   description: 'Front-End Software Engineer Portfolio',
   icons: {
     icon: '/img/red-flower.png',
+    // iPhone「加入主畫面」用的圖示：iOS 不吃透明背景，所以放在米白底上
+    apple: '/apple-touch-icon.png',
   },
 };
 
