@@ -337,6 +337,11 @@ export const PROJECTS_DATA_EN: FullProject[] = [
     ],
     links: [
       {
+        label: 'Live Site',
+        url: 'https://www.hola.com.tw/xmastree',
+        type: 'external',
+      },
+      {
         label: 'Video Demo',
         url: 'https://www.youtube.com/watch?v=bxVzMaaWvIo',
         type: 'presentation',

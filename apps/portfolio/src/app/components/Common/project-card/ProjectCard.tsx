@@ -49,7 +49,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
         </p>
 
         {/* Decorative arrow */}
-        <div className="mt-4 flex items-center text-txt-red font-bold text-xs uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-x-[-10px] group-hover:translate-x-0">
+        <div className="mt-4 flex items-center text-txt-red font-bold text-xs uppercase tracking-widest opacity-100 translate-x-0 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:translate-x-[-10px] group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-500 transform">
           {isEn ? 'View Project' : '查看專案'}
           <ArrowRight className="ml-2 w-4 h-4" />
         </div>
