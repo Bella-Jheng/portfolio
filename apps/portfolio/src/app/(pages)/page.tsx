@@ -268,7 +268,7 @@ export default function Index() {
       {/* Main Section */}
       <div
         id="mainSection"
-        className="relative z-10 min-h-screen flex flex-col justify-center items-center px-6 md:px-10 pt-32 pb-8 md:pt-40 md:pb-12"
+        className="relative z-10 min-h-screen flex flex-col justify-center items-center px-6 md:px-10 pt-[calc(var(--appbar-h)+env(safe-area-inset-top)+2rem)] pb-8 md:pt-40 md:pb-12"
       >
         <div
           id="flowerContainer"
