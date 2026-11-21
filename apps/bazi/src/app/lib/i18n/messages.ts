@@ -13,9 +13,7 @@ const zh = {
   'common.googleLogin': 'Google 登入',
   'common.logout': '登出',
   // 訪客 Demo
-  'demo.guest': '訪客體驗（免登入）',
   'demo.starting': '準備範例命盤中…',
-  'demo.hint': '用一份虛構人物的範例命盤試玩，跟正式資料分開、每天自動重置；AI 追問每天 {n} 題。',
   'demo.badge': '訪客體驗中・範例命盤每天重置',
   'demo.end': '結束體驗',
   'demo.user': '訪客體驗',
@@ -283,9 +281,7 @@ const en: Record<MessageKey, string> = {
   'common.googleLogin': 'Sign in with Google',
   'common.logout': 'Sign out',
   // Guest demo
-  'demo.guest': 'Try as guest (no sign-in)',
   'demo.starting': 'Preparing the sample chart…',
-  'demo.hint': 'Explore a sample chart of a fictional person. It is separate from real data and resets daily; {n} AI questions per day.',
   'demo.badge': 'Guest demo · sample chart resets daily',
   'demo.end': 'End demo',
   'demo.user': 'Guest',
