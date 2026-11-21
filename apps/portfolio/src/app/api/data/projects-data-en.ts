@@ -141,7 +141,7 @@ export const PROJECTS_DATA_EN: FullProject[] = [
     displayCategory: 'AI Implementation',
     period: '2026',
     description:
-      'I never managed to keep a budget for one simple reason: every entry in a budgeting app means picking a category, typing an amount and choosing an account, and I would give up after three. So I designed an app where you just say it: type "breakfast 65 lunch 150 comb 300" and AI splits it into three categorized entries. Once you link your e-invoice carrier, purchases made with your mobile barcode are imported automatically.\n\nThe app is in development; every screen and flow has already been designed, and you can see them through the design link above.\n\n• Savings jar: set a dream (like a new laptop) and the home screen shows how many days are left, with a little black cat walking along the progress bar\n• Left to spend today: a daily budget calculated from income, recurring expenses and installments; the cat\'s ears droop when you\'re close to overspending\n• Recurring expenses: rent, subscriptions and insurance can repeat weekly, monthly or yearly, and charge days are marked on the calendar\n• Spending by category as a donut chart, listing over-budget categories and comparing with last month\n• Stock holdings and a full ledger, with prices planned to come from the TWSE OpenAPI',
+      'I {{never managed to keep a budget}} for one simple reason: every entry in a budgeting app means picking a category, typing an amount and choosing an account, and I would give up after three. So I designed an app where you just say it: {{type "breakfast 65 lunch 150 comb 300" and AI splits it into three categorized entries}}. Once you link your e-invoice carrier, {{purchases made with your mobile barcode are imported automatically}}.\n\nThe app is in development; every screen and flow has already been designed, and you can see them through the design link above.\n\n• Savings jar: set a dream (like a new laptop) and the home screen shows {{how many days are left}}, with a little black cat walking along the progress bar\n• Left to spend today: a daily budget calculated from income, recurring expenses and installments; the cat\'s ears droop when you\'re close to overspending\n• Recurring expenses: rent, subscriptions and insurance can repeat weekly, monthly or yearly, and charge days are marked on the calendar\n• Spending by category as a donut chart, listing over-budget categories and comparing with last month\n• Stock holdings and a full ledger, with prices planned to come from the TWSE OpenAPI',
     imageUrl: Savecat1.src,
     link: '/projects/savecat',
     tags: ['AI Integration', 'Fintech', 'Mobile'],
@@ -188,7 +188,7 @@ export const PROJECTS_DATA_EN: FullProject[] = [
     displayCategory: 'AI Implementation',
     period: '2026',
     description:
-      "A Bazi (Chinese astrology) analysis tool built with Next.js 16, Firebase Firestore, and the Google Gemini API. Enter a birth date and time to get an AI-generated reading.\n\n• Google sign-in gives each user their own space and a daily question quota\n• Admin knowledge-base panel where AI auto-tags content, retrieved by element for precision\n• Supports downloadable share cards and native mobile sharing\n• Became a talking point among friends after launch, and sharpened my own grasp of chart rules",
+      "A {{Bazi (Chinese astrology) analysis tool}} built with Next.js 16, Firebase Firestore, and the Google Gemini API. {{Enter a birth date and time to get an AI-generated reading}}.\n\n• Google sign-in gives each user their own space and a daily question quota\n• Admin knowledge-base panel where AI auto-tags content, retrieved by element for precision\n• Supports downloadable share cards and native mobile sharing\n• Became a talking point among friends after launch, and sharpened my own grasp of chart rules",
     imageUrl: Bazi1.src,
     link: '/projects/bazi',
     tags: ['AI Integration', 'RAG', 'Firebase', 'Full-Stack'],
@@ -246,7 +246,7 @@ export const PROJECTS_DATA_EN: FullProject[] = [
     displayCategory: 'Frontend Project',
     period: '2023 - 2024',
     description:
-      "HOLA and TRPLUS (TLW) used to run separate frontend projects: mismatched React versions, inconsistent styling, shared logic duplicated across both. Less than three months after joining, I was pulled into this ground-up rebuild, an architectural transformation that would shape the company's technical direction for years.\n\n• Led PoC validation, using test results rather than gut feeling to drive the architecture decision\n• Merged both brands into one Monorepo, upgraded the framework, rewrote components, replaced the styling system\n• Build time dropped from nearly 20 minutes to under 8\n• Became the team's go-to person on the overall architecture as seniors left, helping onboard new hires",
+      "HOLA and TRPLUS (TLW) used to run {{separate frontend projects}}: mismatched React versions, inconsistent styling, shared logic duplicated across both. Less than three months after joining, I was pulled into this ground-up rebuild, an architectural transformation that would {{shape the company's technical direction for years}}.\n\n• Led PoC validation, using test results rather than gut feeling to drive the architecture decision\n• Merged both brands into one Monorepo, upgraded the framework, rewrote components, replaced the styling system\n• {{Build time dropped from nearly 20 minutes to under 8}}\n• Became the team's go-to person on the overall architecture as seniors left, helping onboard new hires",
     imageUrl: Testrite1.src,
     link: '/projects/testrite-refactor',
     tags: ['Monorepo Migration', 'React 18 Upgrade', 'Architecture Design'],
@@ -339,7 +339,7 @@ export const PROJECTS_DATA_EN: FullProject[] = [
     displayCategory: 'Frontend Project',
     period: '2024',
     description:
-      "A highly interactive customization page for the Christmas shopping season, letting users assemble a tree the way they'd decorate a real one, freely picking six categories of decorations to build their own.\n\n• Live front/back preview, with price updating instantly as items are added or removed\n• Handles constraint logic: certain trunks are incompatible with certain skirts; pendants capped at 7, auto-placed front/back\n• Leaving mid-selection keeps choices intact until checkout\n• Integrates with the cart, confirming before overwriting when a user re-customizes",
+      "A {{highly interactive customization page}} for the Christmas shopping season, letting users assemble a tree the way they'd decorate a real one, freely picking six categories of decorations to build their own.\n\n• {{Live front/back preview}}, with {{price updating instantly}} as items are added or removed\n• Handles {{constraint logic}}: certain trunks are incompatible with certain skirts; pendants capped at 7, auto-placed front/back\n• Leaving mid-selection keeps choices intact until checkout\n• Integrates with the cart, confirming before overwriting when a user re-customizes",
     imageUrl: XmasTree1.src,
     link: '/projects/christmas-tree',
     tags: ['Interactive', 'State Design', 'Performance'],
@@ -460,7 +460,7 @@ export const PROJECTS_DATA_EN: FullProject[] = [
     displayCategory: 'Frontend Project',
     period: '2025',
     description:
-      "Updating an ad placement on the company site used to require an engineer to change code and redeploy, often days per tweak. I designed and built a visual layout system (CMS) from scratch.\n\n• Lets operations staff drag-and-drop layouts, upload images, and edit content themselves\n• Separates layout structure from content data, keeping the live site stable and data well-formed\n• Supports live preview and permission management; new layout types need no core-logic changes\n• Cross-team-scheduled updates now take operations just minutes on their own",
+      "Updating an ad placement on the company site used to {{require an engineer to change code and redeploy}}, often days per tweak. I {{designed and built a visual layout system (CMS) from scratch}}.\n\n• Lets operations staff drag-and-drop layouts, upload images, and edit content themselves\n• Separates layout structure from content data, keeping the live site stable and data well-formed\n• Supports live preview and permission management; new layout types need no core-logic changes\n• Cross-team-scheduled updates now {{take operations just minutes on their own}}",
     imageUrl: NewBackoffice1.src,
     link: '/projects/cms-development',
     tags: ['Internal Tool', 'Schema Design', 'Dynamic Component', 'CMS'],
@@ -553,7 +553,7 @@ export const PROJECTS_DATA_EN: FullProject[] = [
     displayCategory: 'AI Implementation',
     period: '2026',
     description:
-      'Standardized the manual process of "building a new ad layout component" into an SOP, then turned it into a parameterized script: feed in a component\'s naming parameters and it auto-generates the type definitions, component mapping, module exports, and test data. Cut development time (including testing) from {{5 working days}} to {{2}}, with an {{80% completion rate}} \u2014 faster and more accurate than doing it by hand. (The linked SOP document below has been redacted \u2014 internal system names and other commercially sensitive details from my former employer have been removed to protect their confidentiality.)',
+      'Standardized the manual process of "building a new ad layout component" {{into an SOP}}, then turned it into a parameterized script: feed in a component\'s naming parameters and it auto-generates the type definitions, component mapping, module exports, and test data. Cut development time (including testing) from {{5 working days}} to {{2}}, with an {{80% completion rate}} \u2014 faster and more accurate than doing it by hand. (The linked SOP document below has been redacted \u2014 internal system names and other commercially sensitive details from my former employer have been removed to protect their confidentiality.)',
     imageUrl: AiScript1.src,
     link: '/projects/component-scaffold-script',
     tags: ['Developer Tooling', 'Process Automation', 'SOP Design'],
@@ -616,7 +616,7 @@ export const PROJECTS_DATA_EN: FullProject[] = [
     displayCategory: 'Frontend Project',
     period: '2026',
     description:
-      "This site is something I built alone, from scratch, during the gap after I left my last job. No PM handing me a spec, no team to share the decisions with, just me, a laptop, and an AI collaborator on call whenever I needed one. I called every shot from architecture down to the last line of code; AI helped me move faster through the repetitive, tedious parts, but I held myself to actually understanding every decision before I let it go.\n\n• Built on an Nx monorepo with Next.js 16 + React 19, leaving room to add more sub-projects later\n• Used MSW to mock a full backend API, running a real frontend/backend workflow; swapping in a real backend later needs almost no component changes\n• Supports bilingual switching, one-click resume PDF export, and full responsive design consistent across mobile and desktop\n• Roadmap: a visual admin editor to replace manually editing data in code",
+      "This site is something I {{built alone, from scratch}}, during the gap after I left my last job. No PM handing me a spec, no team to share the decisions with, just me, a laptop, and an AI collaborator on call whenever I needed one. I called every shot from architecture down to the last line of code; AI helped me move faster through the repetitive, tedious parts, but I held myself to actually understanding every decision before I let it go.\n\n• Built on an Nx monorepo with Next.js 16 + React 19, leaving room to add more sub-projects later\n• {{Used MSW to mock a full backend API}}, running a real frontend/backend workflow; swapping in a real backend later {{needs almost no component changes}}\n• Supports bilingual switching, one-click resume PDF export, and full responsive design consistent across mobile and desktop\n• Roadmap: a visual admin editor to replace manually editing data in code",
     imageUrl: Portfolio1.src,
     link: '/projects/portfolio',
     tags: ['Tailwind', 'Next.js', 'Personal Design', 'MSW'],
@@ -711,7 +711,7 @@ export const PROJECTS_DATA_EN: FullProject[] = [
     displayCategory: 'Others',
     period: 'Ongoing',
     description:
-      "A personal work-management workflow built in Notion, making my progress more visible to my manager and team while keeping past solutions from being forgotten.\n\n• Breaks tasks into sub-steps and ranks priority so progress is visible without having to ask\n• Logs each task's difficulties, attempted approaches, and solution into a searchable knowledge base\n• Reduces the risk of knowledge loss when a team member leaves\n• Tunes the breakdown granularity per project, refining the method over time",
+      "A personal {{work-management workflow built in Notion}}, making my progress more visible to my manager and team while keeping past solutions from being forgotten.\n\n• Breaks tasks into sub-steps and ranks priority so {{progress is visible without having to ask}}\n• Logs each task's difficulties, attempted approaches, and solution into a {{searchable knowledge base}}\n• Reduces the risk of knowledge loss when a team member leaves\n• Tunes the breakdown granularity per project, refining the method over time",
     imageUrl: Management1.src,
     link: '/projects/self-management-workflow',
     tags: ['Notion', 'Workflow', 'Documentation', 'Communication'],
@@ -731,7 +731,7 @@ export const PROJECTS_DATA_EN: FullProject[] = [
     displayCategory: 'PM Project',
     period: '2021-2022',
     description:
-      "Served as Product Owner leading pre-registered-membership product initiatives, the communication bridge between three engineering teams, design, QA, marketing, and business.\n\n• Owned requirements gathering and spec writing, coordinating timelines and dependencies across teams\n• Used GA, GTM, and NLP to analyze user behavior, grounding specs in data rather than gut feeling\n• Prioritized multiple concurrent projects under limited engineering resources\n• Built cross-functional communication, requirements analysis, and project management skills",
+      "Served as {{Product Owner}} leading pre-registered-membership product initiatives, the {{communication bridge between three engineering teams, design, QA, marketing, and business}}.\n\n• Owned requirements gathering and spec writing, coordinating timelines and dependencies across teams\n• Used GA, GTM, and NLP to analyze user behavior, {{grounding specs in data}} rather than gut feeling\n• Prioritized multiple concurrent projects under limited engineering resources\n• Built cross-functional communication, requirements analysis, and project management skills",
     imageUrl: PM1.src,
     link: '/projects/pm-projects',
     tags: ['Product Management', 'Cross-team', 'NLP'],
@@ -749,7 +749,7 @@ export const PROJECTS_DATA_EN: FullProject[] = [
     displayCategory: 'Backend Project',
     period: '2021/2-2021/9',
     description:
-      "Backend development for a travel ticketing platform where users buy tickets online (like Maokong Gondola passes) and redeem them.\n\n• Optimized the post-purchase email notification system for accurate, timely ticket info\n• Integrated third-party APIs for real-time inventory checks and order sync, with retry/error handling\n• Helped build payment services to keep transactions reliable and records accurate\n• My first backend role, and I learned that stability and data correctness matter more than shipping speed",
+      "Backend development for a {{travel ticketing platform}} where users buy tickets online (like Maokong Gondola passes) and redeem them.\n\n• Optimized the post-purchase email notification system for {{accurate, timely ticket info}}\n• Integrated third-party APIs for real-time inventory checks and order sync, with {{retry/error handling}}\n• Helped build payment services to keep transactions reliable and records accurate\n• My first backend role, and I learned that stability and data correctness matter more than shipping speed",
     imageUrl: BackEnd1.src,
     link: '/projects/funtour-system',
     tags: ['Backend', 'API Integration', 'Email System'],

@@ -64,7 +64,7 @@ export const BottomNav: React.FC = () => {
 
   const itemClass = (active: boolean) =>
     `flex flex-col items-center justify-center gap-0.5 rounded-[26px] text-[11px] select-none transition active:scale-90 ${
-      active ? 'font-bold text-txt-red' : 'text-txt-darkBrown/60'
+      active ? 'font-bold text-[#5E7A3A]' : 'text-txt-darkBrown/60'
     }`;
 
   return (
@@ -80,7 +80,7 @@ export const BottomNav: React.FC = () => {
           href={href}
           aria-current={active ? 'page' : undefined}
           onClick={scrollTopIfActive(active, pathname === href)}
-          className={`${itemClass(active)} ${active ? 'bg-[#F1F2CA]' : ''}`}
+          className={`${itemClass(active)} ${active ? 'bg-[#E2EBCD]' : ''}`}
         >
           <Icon className={`w-[22px] h-[22px] transition-transform ${active ? 'scale-110' : ''}`} filled={active} />
           {label}
