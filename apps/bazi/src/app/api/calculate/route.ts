@@ -8,13 +8,14 @@ import { pushSubscriptionsRepository } from '../../lib/repositories/push-subscri
 import { notifyUser } from '../../lib/push-notify';
 import type { CalculateRequest } from '../../types/bazi';
 import { isLocale } from '../../lib/i18n/locale';
+import { isAnonymousToken } from '../../lib/demo/demo-service';
 
-async function extractUid(request: NextRequest): Promise<string | null> {
+async function extractUid(request: NextRequest): Promise<{ uid: string; anonymous: boolean } | null> {
   const token = request.headers.get('Authorization')?.replace('Bearer ', '');
   if (!token) return null;
   try {
     const decoded = await verifyIdToken(token);
-    return decoded.uid;
+    return { uid: decoded.uid, anonymous: isAnonymousToken(decoded) };
   } catch {
     return null;
   }
@@ -24,11 +25,19 @@ const ADMIN_UID = process.env.ADMIN_UID ?? '';
 
 export async function POST(request: NextRequest) {
   try {
-    const createdBy = await extractUid(request);
+    const caller = await extractUid(request);
     // 排盤會呼叫付費的 AI 服務，必須登入才能使用，避免被未登入的請求大量呼叫
-    if (!createdBy) {
+    if (!caller) {
       return NextResponse.json({ error: '請先登入' }, { status: 401 });
     }
+    // 訪客 Demo 只能看範例命盤，不能排新的（排盤最花錢，也不能寫進正式的 readings）
+    if (caller.anonymous) {
+      return NextResponse.json(
+        { error: '體驗模式提供一份範例命盤；想排自己的命盤，請結束體驗後用 Google 登入', code: 'demo' },
+        { status: 403 },
+      );
+    }
+    const createdBy = caller.uid;
     const isAdmin = !!ADMIN_UID && createdBy === ADMIN_UID;
     const body = (await request.json()) as CalculateRequest & { background?: boolean };
     const { name, gender, birthYear, birthMonth, birthDay, birthHour, strengthCalibration } = body;

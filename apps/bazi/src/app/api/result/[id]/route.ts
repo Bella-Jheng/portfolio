@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyIdToken } from '../../../lib/verify-id-token';
 import { readingsRepository } from '../../../lib/repositories/readings-repository';
-import { readingService, ServiceError } from '../../../lib/services/reading-service';
+import { readingService, remainingQuestionsToday, ServiceError } from '../../../lib/services/reading-service';
 import { VIEWED_READING_COOKIE } from '../../../lib/cookies';
 import type { AskQuestionRequest } from '../../../types/bazi';
 import { isLocale } from '../../../lib/i18n/locale';
@@ -50,7 +50,7 @@ export async function GET(
 
     const tz = QUESTION_LIMIT_TZ;
     const remainingToday = userId && !isAdmin
-      ? Math.max(0, 3 - (await readingsRepository.countTodayQuestionsForUser(userId, tz)))
+      ? await remainingQuestionsToday(docData, userId, tz)
       : null;
 
     const adminQuestions = isAdmin

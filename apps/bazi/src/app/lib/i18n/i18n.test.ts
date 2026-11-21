@@ -10,9 +10,9 @@ describe('i18n 字典', () => {
   });
 
   it('插值會代入變數，缺的變數保留原樣', () => {
-    expect(translate('zh', 'qa.remaining', { n: 2 })).toBe('今日剩餘 2/3 題');
-    expect(translate('en', 'qa.remaining', { n: 2 })).toBe('2 of 3 left today');
-    expect(translate('en', 'qa.remaining')).toBe('{n} of 3 left today');
+    expect(translate('zh', 'qa.remaining', { n: 2, total: 3 })).toBe('今日剩餘 2/3 題');
+    expect(translate('en', 'qa.remaining', { n: 2 })).toBe('2 of {total} left today');
+    expect(translate('en', 'qa.remaining')).toBe('{n} of {total} left today');
   });
 
   it('伺服器的中文錯誤訊息在英文介面會對照成英文，對照不到就原樣顯示', () => {

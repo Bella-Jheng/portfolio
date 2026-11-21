@@ -9,6 +9,7 @@ import { useModalStore } from '../lib/modal-store';
 import styles from './page.module.scss';
 import { useLocale } from '../lib/i18n/locale-context';
 import { HOME_CONTENT } from '../lib/i18n/content';
+import { DemoGuestButton } from '../common/components/demo/Demo';
 
 export default function LandingPage() {
   const router = useRouter();
@@ -79,6 +80,11 @@ export default function LandingPage() {
               <path d="M6 9l6 6 6-6" />
             </svg>
           </motion.div>
+        </div>
+
+        {/* 訪客 Demo（網址帶 ?demo=1 才出現）：手機在歡迎文字下方，桌機在右側標語下方 */}
+        <div className="absolute z-30 top-[24%] left-1/2 -translate-x-1/2 md:top-auto md:bottom-[24%] md:left-auto md:right-10 md:translate-x-0">
+          <DemoGuestButton />
         </div>
 
         {/* Right: taglines + CTA — desktop only */}

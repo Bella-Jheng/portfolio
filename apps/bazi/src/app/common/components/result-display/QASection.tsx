@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import type { Reading } from '../../../types/bazi';
+import { dailyQuestionLimit } from '../../../lib/demo/demo-config';
 import { useAuth } from '../../../lib/auth-context';
 import { GoogleLoginButton } from '../google-login-button/GoogleLoginButton';
 import type { MagazineTheme } from './theme';
@@ -222,7 +223,7 @@ export function QASection({ reading, theme, onUpdate }: QASectionProps) {
           <p className="font-bold text-sm text-[#4A4A4A]">{t('qa.more')}</p>
           {user && (
             <span className={`text-xs ${limitReached ? 'text-red-500' : 'text-[#6B6159]'}`}>
-              {t('qa.remaining', { n: remaining })}
+              {t('qa.remaining', { n: remaining, total: dailyQuestionLimit(reading.id) })}
             </span>
           )}
         </div>
