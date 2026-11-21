@@ -411,3 +411,25 @@ summary svg {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+/* ---------- 手機版 App 模式 ---------- */
+:root {
+  /* 底部懸浮導覽列：距離畫面底部 --nav-gap（至少 12px，iPhone 用安全區域高度） */
+  --nav-gap: max(12px, env(safe-area-inset-bottom));
+  /* 頁面底部要留給導覽列的空間 */
+  --nav-h: calc(64px + var(--nav-gap) + 12px);
+  /* 頂部 App bar 高度（不含瀏海安全區） */
+  --appbar-h: 56px;
+}
+
+html {
+  /* 點擊時不要出現灰色方塊，像原生 App */
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (max-width: 767px) {
+  body {
+    /* 文字不會因為長按被意外選取時跳出放大鏡；內文仍可選取 */
+    -webkit-touch-callout: none;
+  }
+}

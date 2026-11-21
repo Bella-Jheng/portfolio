@@ -67,7 +67,7 @@ export default function ResumePage() {
   }
 
   return (
-    <div className="bg-[#FBFAF1] min-h-screen pb-10 pt-24 md:pt-32 px-4 md:px-0 relative overflow-hidden">
+    <div className="bg-[#FBFAF1] min-h-screen pb-10 pt-[calc(var(--appbar-h)+env(safe-area-inset-top)+1.25rem)] md:pt-32 px-4 md:px-0 relative overflow-hidden">
       {FLOWERS.map((flower, index) => (
         <img
           key={index}
