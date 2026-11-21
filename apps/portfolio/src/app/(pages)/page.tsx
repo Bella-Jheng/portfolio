@@ -90,9 +90,32 @@ function HeroCard({
 }
 
 const VIDEO_RESUME_URL = '/resume/yiting-video-resume.mp4';
+const VIDEO_RESUME_POSTER = '/resume/yiting-video-resume-poster.webp';
 
 function PhotoCard() {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  // 影片約 8MB：先顯示封面圖，等頁面其他內容（圖片、資料）都載完、瀏覽器空閒了才開始下載影片，
+  // 避免影片跟首頁內容搶頻寬
+  const [shouldLoadVideo, setShouldLoadVideo] = useState(false);
+
+  useEffect(() => {
+    let cancelIdle = () => {};
+    const start = () => {
+      if (typeof window.requestIdleCallback === 'function') {
+        const id = window.requestIdleCallback(() => setShouldLoadVideo(true), { timeout: 3000 });
+        cancelIdle = () => window.cancelIdleCallback(id);
+      } else {
+        const id = window.setTimeout(() => setShouldLoadVideo(true), 500);
+        cancelIdle = () => window.clearTimeout(id);
+      }
+    };
+    if (document.readyState === 'complete') start();
+    else window.addEventListener('load', start, { once: true });
+    return () => {
+      window.removeEventListener('load', start);
+      cancelIdle();
+    };
+  }, []);
 
   return (
     <>
@@ -105,7 +128,9 @@ function PhotoCard() {
         <div className="relative rounded-[18px] overflow-hidden w-full h-full">
           {!isLightboxOpen && (
             <video
-              src={VIDEO_RESUME_URL}
+              src={shouldLoadVideo ? VIDEO_RESUME_URL : undefined}
+              poster={VIDEO_RESUME_POSTER}
+              preload="none"
               autoPlay
               loop
               muted
@@ -140,31 +165,13 @@ export default function Index() {
 
   const hasShownInitialLoading = useLoadingStore.use.hasShownInitialLoading();
   const setInitialLoadingShown = useLoadingStore.use.setInitialLoadingShown();
-  const showLoading = useLoadingStore.use.showLoading();
-  const closeLoading = useLoadingStore.use.closeLoading();
 
   const [flowersLoaded, setFlowersLoaded] = useState(false);
 
-  // Show 3-second loading on first visit only
+  // 首頁不再強制顯示 2 秒的開場 loading，花朵進場動畫直接開始
   useEffect(() => {
-    if (hasShownInitialLoading) return;
-
-    showLoading();
-    const timer = setTimeout(() => {
-      closeLoading();
-      setInitialLoadingShown();
-    }, 2000);
-
-    return () => {
-      clearTimeout(timer);
-      closeLoading();
-    };
-  }, [
-    hasShownInitialLoading,
-    showLoading,
-    closeLoading,
-    setInitialLoadingShown,
-  ]);
+    if (!hasShownInitialLoading) setInitialLoadingShown();
+  }, [hasShownInitialLoading, setInitialLoadingShown]);
 
   // Trigger flower entrance after initial loading is done
   useEffect(() => {

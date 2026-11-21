@@ -34,6 +34,7 @@ import ReactQueryProvider from '../ReactQueryProvider';
 import { GlobalLoading } from '../components/Common/loading';
 import { ScrollToTopButton } from '../components/Common/scroll-to-top';
 import { BottomNav } from '../components/Layout/BottomNav';
+import { DataPrefetcher } from '../components/Common/data-prefetcher';
 
 export default function RootLayout({
   children,
@@ -49,6 +50,7 @@ export default function RootLayout({
               <LanguageUrlSync />
             </Suspense>
             <GlobalLoading />
+            <DataPrefetcher />
             <Header />
             <main className="">{children}</main>
             <Footer />

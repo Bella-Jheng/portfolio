@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { CACHE_HEADERS } from '../../cache-headers';
 import { getProjectDetailApiResponse } from '../../mocks/project-detail-api-mock';
 
 export async function GET(
@@ -13,5 +14,5 @@ export async function GET(
     return new NextResponse(null, { status: 404 });
   }
 
-  return NextResponse.json(project);
+  return NextResponse.json(project, { headers: CACHE_HEADERS });
 }

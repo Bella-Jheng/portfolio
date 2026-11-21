@@ -86,6 +86,8 @@ export const Gallery: React.FC<ProjectGalleryProps> = ({ media }) => {
                         <img
                           src={item.url}
                           alt={`Project media ${index}`}
+                          loading={index === 0 ? 'eager' : 'lazy'}
+                          decoding="async"
                           className="w-full h-full object-contain object-center bg-gray-200"
                         />
                       ) : (

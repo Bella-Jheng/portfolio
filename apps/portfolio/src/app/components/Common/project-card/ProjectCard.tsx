@@ -28,6 +28,8 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
         <img
           src={imageUrl}
           alt={title}
+          loading="lazy"
+          decoding="async"
           className="w-full h-full object-contain object-center transition-transform duration-700 group-hover:scale-110"
         />
         {/* Hover Overlay */}
