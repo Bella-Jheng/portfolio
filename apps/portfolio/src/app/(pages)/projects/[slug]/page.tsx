@@ -67,11 +67,11 @@ export default function ProjectDetailPage({
   }
 
   return (
-    <div className="bg-[#FBFAF1] min-h-screen pb-32 md:pb-10 pt-24 md:pt-32 px-4 md:px-10">
+    <div className="bg-[#FBFAF1] min-h-screen pb-10 pt-[calc(var(--appbar-h)+env(safe-area-inset-top)+1.25rem)] md:pt-32 px-4 md:px-10">
       <div className="max-w-[1440px] mx-auto">
         {/* Breadcrumbs */}
         <RevealOnScroll>
-          <nav className="flex items-center gap-2 text-xs text-gray-500 mb-8 uppercase tracking-widest font-bold">
+          <nav className="hidden md:flex items-center gap-2 text-xs text-gray-500 mb-8 uppercase tracking-widest font-bold">
             <Link
               href="/projects"
               className="hover:text-txt-darkBrown transition-colors"
@@ -83,7 +83,7 @@ export default function ProjectDetailPage({
           </nav>
         </RevealOnScroll>
 
-        <div className="flex flex-col lg:flex-row gap-10">
+        <div className="flex flex-col lg:flex-row gap-6 md:gap-10">
           {/* Left Column: Gallery */}
           <div className="flex-1 min-w-0 lg:sticky lg:top-32 lg:h-fit">
             <RevealOnScroll delay={200}>
@@ -124,7 +124,7 @@ export default function ProjectDetailPage({
                     </button>
                   </div>
                 </div>
-                <h1 className="text-4xl font-black text-txt-darkBrown">
+                <h1 className="text-3xl md:text-4xl font-black text-txt-darkBrown">
                   {project.title}
                 </h1>
               </header>
@@ -144,9 +144,9 @@ export default function ProjectDetailPage({
                   {renderDescription(project.description)}
                 </div>
 
-                {/* Action Buttons — desktop inline */}
+                {/* Action Buttons */}
                 {project.links && project.links.length > 0 ? (
-                  <div className="hidden md:grid md:grid-cols-2 gap-4 pt-8">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 pt-4 md:pt-8">
                     {project.links.map((link, idx) => {
                       const isPrimary = idx === 0;
                       return (
@@ -161,9 +161,9 @@ export default function ProjectDetailPage({
                                 ? 'bg-txt-darkBrown text-white hover:bg-opacity-90'
                                 : 'border border-txt-darkBrown bg-transparent text-txt-darkBrown hover:bg-txt-darkBrown hover:text-white'
                             }
-                            py-3 px-6 rounded-sm font-bold uppercase tracking-widest 
+                            py-3 px-6 rounded-xl md:rounded-sm font-bold uppercase tracking-widest 
                             transition-all duration-300 flex flex-row items-center justify-center gap-2 text-center
-                            hover:-translate-y-1 hover:shadow-md active:translate-y-0 group
+                            hover:-translate-y-1 hover:shadow-md active:scale-[0.98] group
                           `}
                         >
                           <span className="text-sm break-words">{link.label}</span>
@@ -175,7 +175,7 @@ export default function ProjectDetailPage({
                     })}
                   </div>
                 ) : (
-                  <div className="hidden md:flex pt-8">
+                  <div className="flex pt-4 md:pt-8">
                     <button className="bg-gray-200 text-gray-500 py-3 rounded-full font-bold uppercase tracking-widest cursor-not-allowed flex items-center justify-center gap-2 w-full">
                       {isEn ? 'No Link Available' : '暫無連結'}
                     </button>
@@ -202,42 +202,6 @@ export default function ProjectDetailPage({
             />
           </div>
       )}
-
-      {/* Action Buttons — mobile fixed bottom bar */}
-      {project.links && project.links.length > 0 ? (
-        <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#FBFAF1]/90 backdrop-blur-md border-t border-gray-200 px-4 pt-3 pb-safe"
-          style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
-        >
-          <div className="flex flex-col gap-2 max-w-lg mx-auto">
-            {project.links.map((link, idx) => {
-              const isPrimary = idx === 0;
-              return (
-                <a
-                  key={idx}
-                  href={link.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`
-                    ${
-                      isPrimary
-                        ? 'bg-txt-darkBrown text-white'
-                        : 'border border-txt-darkBrown bg-transparent text-txt-darkBrown'
-                    }
-                    py-3 px-6 rounded-sm font-bold uppercase tracking-widest
-                    transition-all duration-200 active:scale-95
-                    flex flex-row items-center justify-center gap-2 text-center
-                  `}
-                >
-                  <span className="text-sm">{link.label}</span>
-                  <span className="flex items-center justify-center shrink-0">
-                    <ExternalLink className="w-4 h-4" />
-                  </span>
-                </a>
-              );
-            })}
-          </div>
-        </div>
-      ) : null}
 
       <ShareModal
         isOpen={isShareModalOpen}

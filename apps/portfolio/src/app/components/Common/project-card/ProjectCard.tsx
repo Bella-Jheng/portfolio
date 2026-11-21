@@ -21,7 +21,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
   return (
     <Link
       href={link}
-      className="group block bg-[#FBFBF2] border border-[#DEDDB8] overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2"
+      className="group block bg-[#FBFBF2] border border-[#DEDDB8] overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 active:scale-[0.98] active:duration-150 rounded-2xl md:rounded-none"
     >
       {/* Image Container */}
       <div className="relative aspect-video overflow-hidden bg-gray-100">

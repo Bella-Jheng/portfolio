@@ -203,10 +203,15 @@ module.exports = {
           '0%': { transform: 'translateX(-100%)' },
           '100%': { transform: 'translateX(100%)' },
         },
+        pageIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
       },
       animation: {
         shimmer: 'shimmer 2s infinite linear',
         lazyload: 'lazyload 1.5s infinite',
+        'page-in': 'pageIn 0.25s ease-out',
       },
       containers: {
         sm: '480px',

@@ -1,10 +1,19 @@
 import { Suspense } from 'react';
+import type { Metadata, Viewport } from 'next';
 import './global.css';
 import { Header } from '../components/Layout/Header';
 import { Footer } from '../components/Layout/Footer';
 import { LanguageUrlSync } from '../components/Common/language-url-sync';
 
-export const metadata = {
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  // 讓內容延伸到瀏海／底部橫條區域，再用 safe-area 留白
+  viewportFit: 'cover',
+  themeColor: '#F1F2CA',
+};
+
+export const metadata: Metadata = {
   title: "I'm Yiting - Portfolio",
   description: 'Front-End Software Engineer Portfolio',
   icons: {
@@ -12,12 +21,19 @@ export const metadata = {
     // iPhone「加入主畫面」用的圖示：iOS 不吃透明背景，所以放在米白底上
     apple: '/apple-touch-icon.png',
   },
+  // 加入主畫面後以全螢幕開啟，沒有 Safari 網址列
+  appleWebApp: {
+    capable: true,
+    title: '伊婷作品集',
+    statusBarStyle: 'default',
+  },
 };
 
 import { MSWProvider } from '../MSWProvider';
 import ReactQueryProvider from '../ReactQueryProvider';
 import { GlobalLoading } from '../components/Common/loading';
 import { ScrollToTopButton } from '../components/Common/scroll-to-top';
+import { BottomNav } from '../components/Layout/BottomNav';
 
 export default function RootLayout({
   children,
@@ -25,7 +41,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="zh-Hant">
       <body>
         <MSWProvider>
           <ReactQueryProvider>
@@ -37,6 +53,7 @@ export default function RootLayout({
             <main className="">{children}</main>
             <Footer />
             <ScrollToTopButton />
+            <BottomNav />
           </ReactQueryProvider>
         </MSWProvider>
       </body>

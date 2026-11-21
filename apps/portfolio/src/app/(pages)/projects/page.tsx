@@ -86,7 +86,7 @@ function ProjectsContent() {
       : projects.filter((project) => project.category === CATEGORY_MAP[activeCategory]);
 
   return (
-    <div className="min-h-screen bg-[#F1F2CA] pt-24 md:pt-32 pb-10 px-4 md:px-10">
+    <div className="min-h-screen bg-[#F1F2CA] pt-[calc(var(--appbar-h)+env(safe-area-inset-top)+1.25rem)] md:pt-32 pb-10 px-4 md:px-10">
       <div className="max-w-7xl mx-auto">
         <RevealOnScroll>
           <header className="mb-8">
