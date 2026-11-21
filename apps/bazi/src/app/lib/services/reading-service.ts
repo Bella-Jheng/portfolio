@@ -33,6 +33,8 @@ import {
   type TranslatableFortuneKey,
 } from '../../types/bazi';
 import type { Locale } from '../i18n/locale';
+import { DEMO_LIMITS, dailyQuestionLimit, isDemoReadingId } from '../demo/demo-config';
+import { chargeDemoAi, DemoLimitError } from '../demo/demo-service';
 
 // 業務邏輯層拋出的預期錯誤（找不到資料、權限不足、超過額度等），route.ts 統一 catch 後轉成對應的 HTTP status
 export class ServiceError extends Error {
@@ -51,6 +53,34 @@ function assertCanAccessReading(data: ReadingDoc, userId: string, isAdmin: boole
   if (!isAdmin && data.createdBy !== userId) {
     throw new ServiceError(403, '只有本人或管理員能操作此命盤');
   }
+}
+
+/** 訪客 Demo 的範例命盤：每次呼叫 AI 前先扣體驗次數，用完丟 429 */
+async function chargeDemo(id: string, uid: string, kind: 'question' | 'detail' | 'translate', perUserLimit?: number) {
+  if (!isDemoReadingId(id)) return;
+  try {
+    await chargeDemoAi(uid, kind, perUserLimit);
+  } catch (error) {
+    if (error instanceof DemoLimitError) throw new ServiceError(429, error.message, { demo: true });
+    throw error;
+  }
+}
+
+/** 這份命盤裡，這個人今天（tz）問了幾題 */
+function countTodayInReading(questions: QuestionAnswer[], userId: string, tz: string): number {
+  const today = new Date().toLocaleDateString('sv-SE', { timeZone: tz });
+  return questions.filter(
+    (qa) => qa.userId === userId && new Date(qa.createdAt).toLocaleDateString('sv-SE', { timeZone: tz }) === today,
+  ).length;
+}
+
+/** 結果頁顯示的「今天還能問幾題」；訪客 Demo 只算範例命盤裡的提問 */
+export async function remainingQuestionsToday(data: ReadingDoc, userId: string, tz: string): Promise<number> {
+  const limit = dailyQuestionLimit(data.id);
+  const used = isDemoReadingId(data.id)
+    ? countTodayInReading((data.questions ?? []) as QuestionAnswer[], userId, tz)
+    : await readingsRepository.countTodayQuestionsForUser(userId, tz);
+  return Math.max(0, limit - used);
 }
 
 export interface MajorFortuneInfo {
@@ -302,11 +332,16 @@ class ReadingService {
 
     if (adminQuestion && !isAdmin) throw new ServiceError(403, '無權限');
 
+    const limit = dailyQuestionLimit(id);
     if (!adminQuestion) {
-      const todayCount = await readingsRepository.countTodayQuestionsForUser(userId, tz);
-      if (!isAdmin && todayCount >= 3) {
-        throw new ServiceError(429, '今日提問已達上限（3 題），明天再來吧！', { todayCount });
+      // 訪客 Demo 只算範例命盤裡的提問（正式的 readings 裡不會有匿名帳號的提問）
+      const todayCount = isDemoReadingId(id)
+        ? countTodayInReading((data.questions ?? []) as QuestionAnswer[], userId, tz)
+        : await readingsRepository.countTodayQuestionsForUser(userId, tz);
+      if (!isAdmin && todayCount >= limit) {
+        throw new ServiceError(429, `今日提問已達上限（${limit} 題），明天再來吧！`, { todayCount });
       }
+      await chargeDemo(id, userId, 'question');
     }
 
     const pillars = data.pillars as BaziPillars;
@@ -345,7 +380,7 @@ class ReadingService {
     const todayCount = updatedQuestions.filter(
       (qa) => qa.userId === userId && new Date(qa.createdAt).toLocaleDateString('sv-SE', { timeZone: tz }) === today,
     ).length;
-    const remaining = isAdmin ? null : Math.max(0, 3 - todayCount);
+    const remaining = isAdmin ? null : Math.max(0, limit - todayCount);
     return { answer, questions: sanitizeQuestions(updatedQuestions), remainingToday: remaining };
   }
 
@@ -365,6 +400,7 @@ class ReadingService {
       name?: string; gender?: Gender; pillars: BaziPillars; fortune: FortuneReading;
     };
 
+    await chargeDemo(id, userId, 'detail', DEMO_LIMITS.details);
     const context = await this.buildGenerationContext(pillars, birthYear, birthMonth, birthDay, gender);
     const detail = await generateDetailedAnalysis({
       name,
@@ -405,6 +441,7 @@ class ReadingService {
     );
     const fields = pickUntranslated(fortune, existing, validKeys);
     if (Object.keys(fields).length === 0) return { fortuneEn: existing };
+    await chargeDemo(id, userId, 'translate');
     const translated = await translateFortuneToEnglish(fields);
     const fortuneEn = { ...existing, ...translated };
     await readingsRepository.update(id, { fortuneEn });
@@ -427,6 +464,7 @@ class ReadingService {
     const qa = questions[index];
     if (!qa) throw new ServiceError(404, '找不到這則提問');
     if (qa.translations?.[target]) return { questions: sanitizeQuestions(questions) };
+    await chargeDemo(id, userId, 'translate');
     const translated = await translateQuestionAnswer({ question: qa.question, answer: qa.answer, target });
     questions[index] = { ...qa, translations: { ...qa.translations, [target]: translated } };
     await readingsRepository.update(id, { questions });
@@ -446,6 +484,7 @@ class ReadingService {
     const data = await readingsRepository.getById(id);
     if (!data) throw new ServiceError(404, '找不到此命盤');
     assertCanAccessReading(data, uid, isAdmin);
+    if (isDemoReadingId(id)) throw new ServiceError(403, '體驗模式的範例命盤不能更改日期');
     if (data.correctionUsed) throw new ServiceError(400, '已使用過更改日期功能，每筆命盤僅限一次');
 
     await readingsRepository.update(id, {

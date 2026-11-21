@@ -118,13 +118,13 @@ export function Header() {
                       {user.photoURL && (
                         <UserAvatar src={user.photoURL} alt={user.displayName ?? ''} size={36} />
                       )}
-                      <span className="text-sm font-medium text-bz-brown">{user.displayName ?? t('common.user')}</span>
+                      <span className="text-sm font-medium text-bz-brown">{user.isAnonymous ? t('demo.user') : (user.displayName ?? t('common.user'))}</span>
                     </div>
                     <button
                       onClick={() => { logout(); close(); }}
                       className="text-sm text-bz-mid tracking-wide hover:text-bz-brown transition-colors"
                     >
-                      {t('common.logout')}
+                      {user.isAnonymous ? t('demo.end') : t('common.logout')}
                     </button>
                   </div>
                 ) : (

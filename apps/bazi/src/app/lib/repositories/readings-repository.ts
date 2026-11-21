@@ -1,15 +1,22 @@
 import { db } from '../firebase';
 import type { QuestionAnswer } from '../../types/bazi';
+import { DEMO_READINGS_COLLECTION, isDemoReadingId } from '../demo/demo-config';
 
 export type ReadingDoc = { id: string } & Record<string, unknown>;
 
 class ReadingsRepository {
+  // 正式命盤放 readings；訪客 Demo 的範例命盤（id 以 demo- 開頭）放另一個集合，兩邊完全分開
+  // 列表、統計、查使用者最新命盤都只看正式的 readings
   private collection() {
     return db.collection('readings');
   }
 
+  private collectionFor(id: string) {
+    return isDemoReadingId(id) ? db.collection(DEMO_READINGS_COLLECTION) : this.collection();
+  }
+
   async getById(id: string): Promise<ReadingDoc | null> {
-    const doc = await this.collection().doc(id).get();
+    const doc = await this.collectionFor(id).doc(id).get();
     if (!doc.exists) return null;
     const data = doc.data();
     if (!data) return null;
@@ -17,15 +24,15 @@ class ReadingsRepository {
   }
 
   async create(id: string, data: Record<string, unknown>): Promise<void> {
-    await this.collection().doc(id).set(data);
+    await this.collectionFor(id).doc(id).set(data);
   }
 
   async update(id: string, patch: Record<string, unknown>): Promise<void> {
-    await this.collection().doc(id).update(patch);
+    await this.collectionFor(id).doc(id).update(patch);
   }
 
   async delete(id: string): Promise<void> {
-    await this.collection().doc(id).delete();
+    await this.collectionFor(id).doc(id).delete();
   }
 
   async findLatestByUser(uid: string): Promise<ReadingDoc | null> {

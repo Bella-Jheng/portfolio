@@ -3,17 +3,20 @@
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../lib/auth-context';
 import { useModalStore } from '../lib/modal-store';
 import styles from './page.module.scss';
 import { useLocale } from '../lib/i18n/locale-context';
 import { HOME_CONTENT } from '../lib/i18n/content';
+import { isDemoEntry } from '../lib/demo/demo-config';
 
 export default function LandingPage() {
   const router = useRouter();
-  const { user, loading, isAdmin, readingId, readingLoading, login } =
+  const { user, loading, isAdmin, readingId, readingLoading, login, loginAsGuest } =
     useAuth();
+  // Demo 網址（?demo=1）：按「開始測算」直接用匿名帳號進範例命盤，登入後上面的 useEffect 會自動帶到結果頁
+  const [demoStarting, setDemoStarting] = useState(false);
   const { show } = useModalStore();
   const { locale, t } = useLocale();
   const { taglines: TAGLINES, steps: STEPS, authorNote: AUTHOR_NOTE, features: FEATURES } = HOME_CONTENT[locale];
@@ -24,7 +27,12 @@ export default function LandingPage() {
   }, [user, loading, isAdmin, readingId, readingLoading, router]);
 
   const handleStart = () => {
-    if (loading || readingLoading) return;
+    if (loading || readingLoading || demoStarting) return;
+    if (!user && isDemoEntry()) {
+      setDemoStarting(true);
+      void loginAsGuest().finally(() => setDemoStarting(false));
+      return;
+    }
     if (!user) {
       show({
         title: t('home.loginTitle'),
@@ -245,7 +253,7 @@ export default function LandingPage() {
           onClick={handleStart}
           className="mt-6 border border-[#2D2420] bg-[#2D2420] text-[#EDEBE4] text-sm tracking-[0.22em] px-8 py-3 cursor-pointer hover:bg-transparent hover:text-[#2D2420] transition-all duration-200"
         >
-          {t('home.cta')}
+          {demoStarting ? t('demo.starting') : t('home.cta')}
         </button>
       </section>
     </>

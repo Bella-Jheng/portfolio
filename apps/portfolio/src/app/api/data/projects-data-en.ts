@@ -75,6 +75,11 @@ export const PROJECTS_DATA_EN: FullProject[] = [
     ],
     links: [
       {
+        label: 'Live Demo',
+        url: 'https://rental-helper-ten.vercel.app/?demo=1',
+        type: 'website',
+      },
+      {
         label: 'UI Design',
         url: 'https://claude.ai/artifact/TFyYwJKPadM5QVNGHyAqcg',
         type: 'external',
@@ -211,7 +216,7 @@ export const PROJECTS_DATA_EN: FullProject[] = [
     links: [
       {
         label: 'Live Demo',
-        url: 'https://portfolio-bazi.vercel.app/',
+        url: 'https://portfolio-bazi.vercel.app/?demo=1',
         type: 'website',
       },
       {

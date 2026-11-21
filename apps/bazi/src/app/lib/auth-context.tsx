@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import type { User } from 'firebase/auth';
-import { onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth';
+import { onAuthStateChanged, signInAnonymously, signInWithPopup, signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { auth, googleProvider } from './firebase-client';
 import { isLineBrowser, openInExternalBrowser } from './detect-browser';
@@ -37,6 +37,10 @@ interface AuthContextValue {
   readingId: string | null;
   readingLoading: boolean;
   login: (redirectTo?: string) => Promise<void>;
+  /** 訪客 Demo：用 Firebase 匿名登入（登入後首頁會自動帶到範例命盤） */
+  loginAsGuest: () => Promise<void>;
+  /** 目前是訪客 Demo（匿名帳號） */
+  isDemo: boolean;
   logout: () => Promise<void>;
   getToken: () => Promise<string | null>;
 }
@@ -137,6 +141,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const loginAsGuest = async () => {
+    try {
+      await signInAnonymously(auth);
+    } catch (error) {
+      console.error('Guest login error:', error);
+      showLoginError((error as { code?: string })?.code);
+    }
+  };
+
   const logout = async () => {
     await signOut(auth);
     setReadingId(null);
@@ -150,7 +163,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const isAdmin = !!ADMIN_UID && user?.uid === ADMIN_UID;
 
   return (
-    <AuthContext.Provider value={{ user, loading, isAdmin, readingId, readingLoading, login, logout, getToken }}>
+    <AuthContext.Provider value={{ user, loading, isAdmin, readingId, readingLoading, login, loginAsGuest, isDemo: !!user?.isAnonymous, logout, getToken }}>
       {children}
     </AuthContext.Provider>
   );
