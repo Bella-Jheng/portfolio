@@ -75,6 +75,11 @@ export const PROJECTS_DATA_ZH: FullProject[] = [
     ],
     links: [
       {
+        label: '展示網站',
+        url: 'https://rental-helper-ten.vercel.app/?demo=1',
+        type: 'website',
+      },
+      {
         label: 'UI 設計稿',
         url: 'https://claude.ai/artifact/TFyYwJKPadM5QVNGHyAqcg',
         type: 'external',
