@@ -211,7 +211,7 @@ export const PROJECTS_DATA_ZH: FullProject[] = [
     links: [
       {
         label: '展示網站',
-        url: 'https://portfolio-bazi.vercel.app/',
+        url: 'https://portfolio-bazi.vercel.app/?demo=1',
         type: 'website',
       },
       {
