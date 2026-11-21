@@ -31,7 +31,8 @@ export const metadata: Metadata = {
 
 import { MSWProvider } from '../MSWProvider';
 import ReactQueryProvider from '../ReactQueryProvider';
-import { GlobalLoading } from '../components/Common/loading';
+import { GlobalLoading, SplashScreen } from '../components/Common/loading';
+import { SPLASH_SEEN_KEY } from '../components/Common/loading/splash-key';
 import { ScrollToTopButton } from '../components/Common/scroll-to-top';
 import { BottomNav } from '../components/Layout/BottomNav';
 import { DataPrefetcher } from '../components/Common/data-prefetcher';
@@ -42,7 +43,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="zh-Hant">
+    <html lang="zh-Hant" suppressHydrationWarning>
+      <head>
+        {/* 這個分頁已經看過開場畫面：在畫面畫出來前就標記，CSS 直接藏起來，避免閃一下 */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{if(sessionStorage.getItem('${SPLASH_SEEN_KEY}'))document.documentElement.dataset.splash='seen'}catch(e){}`,
+          }}
+        />
+      </head>
       <body>
         <MSWProvider>
           <ReactQueryProvider>
@@ -58,6 +67,7 @@ export default function RootLayout({
             <BottomNav />
           </ReactQueryProvider>
         </MSWProvider>
+        <SplashScreen />
       </body>
     </html>
   );
