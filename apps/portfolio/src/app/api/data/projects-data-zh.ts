@@ -382,6 +382,11 @@ export const PROJECTS_DATA_ZH: FullProject[] = [
     ],
     links: [
       {
+        label: '線上商品頁',
+        url: 'https://www.hola.com.tw/xmastree',
+        type: 'external',
+      },
+      {
         label: '專案展示影片',
         url: 'https://www.youtube.com/watch?v=bxVzMaaWvIo',
         type: 'presentation',

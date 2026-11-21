@@ -28,7 +28,7 @@ export const ProjectSlider: React.FC<ProjectSliderProps> = ({
   const swiperRef = useRef<SwiperType>(null);
 
   return (
-    <div className="w-full py-6 group relative overflow-hidden slider-root">
+    <div className="w-full py-6 group/slider relative overflow-hidden slider-root">
       {title && (
         <div className="max-w-7xl mx-auto px-4 md:px-10 mb-4">
           <h2 className="text-2xl md:text-3xl font-black text-txt-darkBrown section-title">
@@ -80,7 +80,7 @@ export const ProjectSlider: React.FC<ProjectSliderProps> = ({
         {/* Custom Navigation Arrows (Visible on Hover over cards) */}
         <button
           onClick={() => swiperRef.current?.slidePrev()}
-          className="absolute left-[calc(var(--page-gutter)+1rem)] top-[40%] -translate-y-1/2 z-50 w-12 h-12 bg-white/90 border border-gray-100 rounded-full shadow-lg flex items-center justify-center text-txt-darkBrown opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white hover:scale-110 -translate-x-4 group-hover:translate-x-0"
+          className="absolute left-[calc(var(--page-gutter)+1rem)] top-[40%] -translate-y-1/2 z-50 w-12 h-12 bg-white/90 border border-gray-100 rounded-full shadow-lg flex [@media(hover:none)]:hidden items-center justify-center text-txt-darkBrown opacity-0 group-hover/slider:opacity-100 transition-all duration-300 hover:bg-white hover:scale-110 -translate-x-4 group-hover/slider:translate-x-0"
           aria-label="Previous"
         >
           <ChevronLeft className="w-6 h-6" />
@@ -96,7 +96,7 @@ export const ProjectSlider: React.FC<ProjectSliderProps> = ({
               }
             }
           }}
-          className="absolute right-6 top-[40%] -translate-y-1/2 z-50 w-12 h-12 bg-white/90 border border-gray-100 rounded-full shadow-lg flex items-center justify-center text-txt-darkBrown opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white hover:scale-110 translate-x-4 group-hover:translate-x-0"
+          className="absolute right-6 top-[40%] -translate-y-1/2 z-50 w-12 h-12 bg-white/90 border border-gray-100 rounded-full shadow-lg flex [@media(hover:none)]:hidden items-center justify-center text-txt-darkBrown opacity-0 group-hover/slider:opacity-100 transition-all duration-300 hover:bg-white hover:scale-110 translate-x-4 group-hover/slider:translate-x-0"
           aria-label="Next"
         >
           <ChevronRight className="w-6 h-6" />

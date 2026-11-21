@@ -11,6 +11,10 @@
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  // 只在支援 hover 的裝置套用 hover: 樣式，避免 iOS 第一下點擊只觸發 hover 而不跳轉
+  future: {
+    hoverOnlyWhenSupported: true,
+  },
   content: [
     './{src,pages,components,app}/**/*.{ts,tsx,js,jsx,html}',
     '!./{src,pages,components,app}/**/*.{stories,spec}.{ts,tsx,js,jsx,html}',
