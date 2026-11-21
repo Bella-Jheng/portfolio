@@ -8,25 +8,19 @@
   }
 }
 
-.immersive-slider-container {
+.project-scroller {
+  // 第一張卡片對齊頁面內容的左邊界，右邊可以滑到底
   padding-left: var(--page-gutter);
-  padding-right: 0;
-}
+  padding-right: var(--page-gutter);
+  scroll-padding-left: var(--page-gutter);
+  scrollbar-width: none;
 
-.project-slider {
-  .swiper-pagination-bullet-active {
-    background: #2d1b1b !important;
-  }
-
-  .swiper-pagination {
-    bottom: 0 !important;
-    left: var(--page-gutter) !important;
-    width: fit-content !important;
-    transform: none !important;
+  &::-webkit-scrollbar {
+    display: none;
   }
 }
 
-// Scroll Reveal Animation V2 (Staggered)
+// 標題進場動畫（卡片不做動畫，避免影響點擊）
 .reveal-section {
   .section-title {
     opacity: 0;
@@ -34,27 +28,10 @@
     transition: all 0.8s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
-  .swiper-slide {
-    opacity: 0;
-    transform: translateX(40px);
-    transition: all 0.8s cubic-bezier(0.22, 1, 0.36, 1);
-  }
-
   &.is-revealed {
     .section-title {
       opacity: 1;
       transform: translateY(0);
-    }
-
-    .swiper-slide {
-      opacity: 1;
-      transform: translateX(0);
-
-      @for $i from 1 through 10 {
-        &:nth-child(#{$i}) {
-          transition-delay: #{0.1s + ($i * 0.1s)};
-        }
-      }
     }
   }
 }
