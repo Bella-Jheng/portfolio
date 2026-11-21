@@ -433,3 +433,8 @@ html {
     -webkit-touch-callout: none;
   }
 }
+
+/* 同一個分頁已經看過開場畫面：在畫面畫出來前就藏起來（layout 的 inline script 會加上標記） */
+html[data-splash='seen'] #splash {
+  display: none;
+}

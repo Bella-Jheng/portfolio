@@ -164,14 +164,10 @@ export default function Index() {
   const { data: projects = [] } = useProjects();
 
   const hasShownInitialLoading = useLoadingStore.use.hasShownInitialLoading();
-  const setInitialLoadingShown = useLoadingStore.use.setInitialLoadingShown();
 
   const [flowersLoaded, setFlowersLoaded] = useState(false);
 
-  // 首頁不再強制顯示 2 秒的開場 loading，花朵進場動畫直接開始
-  useEffect(() => {
-    if (!hasShownInitialLoading) setInitialLoadingShown();
-  }, [hasShownInitialLoading, setInitialLoadingShown]);
+  // 開場畫面（SplashScreen）淡出時會把 hasShownInitialLoading 設成 true，花朵進場動畫接著開始
 
   // Trigger flower entrance after initial loading is done
   useEffect(() => {

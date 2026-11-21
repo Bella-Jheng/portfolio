@@ -5,82 +5,36 @@ import { BlueFlower, BlackFlower, RedFlower } from '@/public/img';
 
 interface LoadingScreenProps {
   className?: string;
-  text?: string;
 }
 
-export const LoadingScreen: React.FC<LoadingScreenProps> = ({
-  className = '',
-  text = 'LOADING',
-}) => {
+const FLOWERS = [
+  { src: BlueFlower.src, delay: '0s' },
+  { src: BlackFlower.src, delay: '0.15s' },
+  { src: RedFlower.src, delay: '0.3s' },
+];
+
+/**
+ * 打 API 時的 loading：只有三朵花輪流跳，沒有文字。
+ * （第一次打開網站的完整開場畫面在 SplashScreen）
+ */
+export const LoadingScreen: React.FC<LoadingScreenProps> = ({ className = '' }) => {
   return (
     <div
-      className={`fixed inset-0 z-[60] flex flex-col items-center justify-center bg-white ${className}`}
+      role="status"
+      aria-label="Loading"
+      className={`fixed inset-0 z-[60] flex items-center justify-center bg-[#FBFAF1] ${className}`}
     >
-      <div className="flex items-center gap-3 mb-2">
-        {/* Blue Flower */}
-        <div className="animate-bounce-custom" style={{ animationDelay: '0s' }}>
+      <div className="flex items-center gap-3">
+        {FLOWERS.map(({ src, delay }) => (
           <img
-            src={BlueFlower.src}
+            key={src}
+            src={src}
             alt=""
-            className="w-10 h-10 md:w-14 md:h-14"
+            className="w-9 h-9 md:w-12 md:h-12 animate-flower-hop"
+            style={{ animationDelay: delay }}
           />
-        </div>
-        {/* Black Flower */}
-        <div
-          className="animate-bounce-custom"
-          style={{ animationDelay: '0.2s' }}
-        >
-          <img
-            src={BlackFlower.src}
-            alt=""
-            className="w-10 h-10 md:w-14 md:h-14"
-          />
-        </div>
-        {/* Red Flower */}
-        <div
-          className="animate-bounce-custom"
-          style={{ animationDelay: '0.4s' }}
-        >
-          <img
-            src={RedFlower.src}
-            alt=""
-            className="w-10 h-10 md:w-14 md:h-14"
-          />
-        </div>
+        ))}
       </div>
-
-      <div className="flex items-end gap-1">
-        {text === 'LOADING' && (
-          <>
-            <span className="w-1.5 h-1.5 rounded-full bg-gray-400 mb-1.5 animate-pulse"></span>
-            <span className="w-1.5 h-1.5 rounded-full bg-gray-400 mb-1.5 animate-pulse delay-75"></span>
-            <span className="w-1.5 h-1.5 rounded-full bg-gray-400 mb-1.5 animate-pulse delay-150"></span>
-          </>
-        )}
-        <h2 className="text-base md:text-lg font-bold text-gray-500 mx-2 tracking-widest uppercase">
-          {text}
-        </h2>
-        <span className="w-1.5 h-1.5 rounded-full bg-gray-400 mb-1.5 animate-pulse delay-150"></span>
-        <span className="w-1.5 h-1.5 rounded-full bg-gray-400 mb-1.5 animate-pulse delay-75"></span>
-        <span className="w-1.5 h-1.5 rounded-full bg-gray-400 mb-1.5 animate-pulse"></span>
-      </div>
-
-      <style jsx>{`
-        @keyframes bounce-custom {
-          0%,
-          100% {
-            transform: translateY(0);
-            opacity: 0.5;
-          }
-          50% {
-            transform: translateY(-20px);
-            opacity: 1;
-          }
-        }
-        .animate-bounce-custom {
-          animation: bounce-custom 1.2s infinite ease-in-out;
-        }
-      `}</style>
     </div>
   );
 };

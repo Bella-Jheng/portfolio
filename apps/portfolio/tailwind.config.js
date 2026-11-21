@@ -207,11 +207,39 @@ module.exports = {
           '0%': { opacity: '0' },
           '100%': { opacity: '1' },
         },
+        // 開場畫面：花朵從中心旋轉綻放
+        'flower-bloom': {
+          '0%': { opacity: '0', transform: 'scale(0) rotate(-120deg)' },
+          '70%': { opacity: '1', transform: 'scale(1.15) rotate(10deg)' },
+          '100%': { opacity: '1', transform: 'scale(1) rotate(0deg)' },
+        },
+        'splash-fade-up': {
+          from: { opacity: '0', transform: 'translateY(10px)' },
+          to: { opacity: '1', transform: 'none' },
+        },
+        'splash-dot': {
+          '0%, 80%, 100%': { transform: 'translateY(0)', opacity: '0.35' },
+          '40%': { transform: 'translateY(-6px)', opacity: '1' },
+        },
+        'splash-out': {
+          to: { opacity: '0', visibility: 'hidden' },
+        },
+        // API loading：三朵花輪流跳
+        'flower-hop': {
+          '0%, 100%': { transform: 'translateY(0) rotate(0deg)', opacity: '0.55' },
+          '50%': { transform: 'translateY(-14px) rotate(20deg)', opacity: '1' },
+        },
       },
       animation: {
         shimmer: 'shimmer 2s infinite linear',
         lazyload: 'lazyload 1.5s infinite',
         'page-in': 'pageIn 0.25s ease-out',
+        // fill-mode 用 backwards：還沒輪到時保持起始狀態，結束後不留下 transform
+        'flower-bloom': 'flower-bloom 0.6s cubic-bezier(0.22, 1, 0.36, 1) backwards',
+        'splash-fade-up': 'splash-fade-up 0.45s cubic-bezier(0.22, 1, 0.36, 1) backwards',
+        'splash-dot': 'splash-dot 1.2s ease-in-out infinite',
+        'splash-out': 'splash-out 0.45s ease-out forwards',
+        'flower-hop': 'flower-hop 0.9s ease-in-out infinite',
       },
       containers: {
         sm: '480px',
