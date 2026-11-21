@@ -1,22 +1,24 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { BlueFlower, BlackFlower, RedFlower } from '@/public/img';
+import { RedFlower } from '@/public/img';
 import { useLoadingStore } from '../../../store/loading.store';
 import { SPLASH_SEEN_KEY } from './splash-key';
 
-// 開場停留時間：三朵花綻放 → 名字浮上來 → 小點跳一下，再淡出
-const MIN_SHOW_MS = 1800;
+// 開場停留時間：「你好 → Hello → สวัสดี」輪流出現，最後停在歡迎詞，再淡出
+const MIN_SHOW_MS = 2200;
 const FADE_OUT_MS = 450; // 要跟 animate-splash-out 的時間一致
 
-const FLOWERS = [
-  { src: BlueFlower.src, delay: '0s' },
-  { src: BlackFlower.src, delay: '0.18s' },
-  { src: RedFlower.src, delay: '0.36s' },
+// 前兩個問候翻上來再翻出去，最後一個（泰文）留下來
+const GREETINGS = [
+  { text: '你好', delay: '0s', stay: false },
+  { text: 'Hello', delay: '0.55s', stay: false },
+  { text: 'สวัสดี', delay: '1.1s', stay: true },
 ];
 
 /**
- * 開場畫面（參考租屋小幫手）：每次打開網站、同一個分頁只出現一次。
+ * 開場畫面：一朵紅花在轉，下面用中文、英文、泰文輪流打招呼，再停在歡迎詞。
+ * 每次打開網站、同一個分頁只出現一次（參考租屋小幫手）。
  * 伺服器就先畫出來，所以一打開就看得到；看過的分頁由 layout 的 inline script
  * 在畫面出現前標記 html[data-splash='seen']，CSS 直接藏起來，不會閃一下。
  */
@@ -54,49 +56,45 @@ export function SplashScreen() {
     <div
       id="splash"
       role="status"
-      aria-label="I'm Yiting - Portfolio 載入中"
-      className={`fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#F1F2CA] ${
+      aria-label="歡迎光臨 伊婷的作品集"
+      className={`fixed inset-0 z-[100] flex flex-col items-center justify-center text-center bg-[#F1F2CA] ${
         leaving ? 'animate-splash-out pointer-events-none' : ''
       }`}
     >
-      <div className="flex items-center gap-4 md:gap-5" aria-hidden="true">
-        {FLOWERS.map(({ src, delay }) => (
-          <img
-            key={src}
-            src={src}
-            alt=""
-            className="w-14 h-14 md:w-16 md:h-16 animate-flower-bloom"
-            style={{ animationDelay: delay }}
-          />
-        ))}
-      </div>
-
-      <p
-        className="mt-7 text-3xl md:text-4xl font-black tracking-wider text-txt-brown animate-splash-fade-up"
-        style={{ animationDelay: '0.6s' }}
-      >
-        鄭伊婷
-      </p>
-      <p
-        className="mt-2 text-xs md:text-sm font-bold tracking-[0.25em] uppercase text-txt-darkBrown/60 animate-splash-fade-up"
-        style={{ animationDelay: '0.75s' }}
-      >
-        Yiting · Front-End Engineer
-      </p>
-
-      <div
-        className="mt-8 flex gap-2 animate-splash-fade-up"
-        style={{ animationDelay: '0.9s' }}
+      <img
+        src={RedFlower.src}
+        alt=""
         aria-hidden="true"
-      >
-        {[0, 0.15, 0.3].map((d) => (
-          <span
-            key={d}
-            className="h-2 w-2 rounded-full bg-txt-darkBrown/70 animate-splash-dot"
-            style={{ animationDelay: `${0.9 + d}s` }}
-          />
+        className="w-10 h-10 md:w-12 md:h-12 animate-flower-spin"
+      />
+
+      {/* 三個問候疊在同一個位置輪流出現；整段動畫用 CSS 跑，不用等 JS 載入 */}
+      <div className="relative mt-6 h-14 w-full" aria-hidden="true">
+        {GREETINGS.map(({ text, delay, stay }) => (
+          <p
+            key={text}
+            className={`absolute inset-0 text-4xl md:text-5xl font-black text-txt-brown ${
+              stay ? 'animate-splash-fade-up' : 'animate-greet-flip'
+            }`}
+            style={{ animationDelay: delay }}
+          >
+            {text}
+          </p>
         ))}
       </div>
+
+      <p
+        className="mt-5 text-base md:text-lg font-bold tracking-[0.15em] text-txt-brown animate-splash-fade-up"
+        style={{ animationDelay: '1.35s' }}
+      >
+        歡迎光臨　伊婷的作品集
+      </p>
+      <p
+        className="mt-2 text-xs font-bold tracking-[0.25em] text-[#8B9467] animate-splash-fade-up"
+        style={{ animationDelay: '1.5s' }}
+      >
+        ZH · EN · TH
+      </p>
     </div>
   );
 }
