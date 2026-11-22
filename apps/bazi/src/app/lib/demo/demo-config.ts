@@ -43,17 +43,8 @@ export function demoDay(now = new Date()): string {
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit' }).format(now);
 }
 
-const DEMO_FLAG_KEY = 'bazi:demo';
-
-/** 這次打開是不是從 Demo 網址進來（?demo=1）；記在 sessionStorage，換頁後同一個分頁還看得到按鈕 */
+/** 這次是不是從 Demo 網址進來：只看網址上的 ?demo=1（拿掉就是正式模式），細節見 demo-url.ts */
 export function isDemoEntry(): boolean {
   if (typeof window === 'undefined') return false;
-  try {
-    const param = new URLSearchParams(window.location.search).get('demo');
-    if (param === '1') sessionStorage.setItem(DEMO_FLAG_KEY, '1');
-    if (param === '0') sessionStorage.removeItem(DEMO_FLAG_KEY);
-    return sessionStorage.getItem(DEMO_FLAG_KEY) === '1';
-  } catch {
-    return new URLSearchParams(window.location.search).get('demo') === '1';
-  }
+  return new URLSearchParams(window.location.search).get('demo') === '1';
 }

@@ -12,6 +12,7 @@ import {
   savePendingCalc,
   waitForCalcJob,
 } from '../../../lib/calc-job-client';
+import { isDemoUrl, withDemo } from '../../../lib/demo/demo-url';
 
 /**
  * 排盤：送出後伺服器在背景算（可以切到別的 App，算好會推播通知）。
@@ -30,7 +31,7 @@ function useOpenReading() {
         queryKey: ['reading', id],
         queryFn: () => apiFetch<Reading>(`/api/result/${id}`),
       });
-      router.push(`/result/${id}`);
+      router.push(withDemo(`/result/${id}`, isDemoUrl()));
     },
     [apiFetch, queryClient, router],
   );

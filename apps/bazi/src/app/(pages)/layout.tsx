@@ -4,6 +4,7 @@ import { Footer } from '../common/components/layout/Footer';
 import { Providers } from '../common/components/layout/Providers';
 import { Modal } from '../common/components/modal/Modal';
 import { DemoBadge } from '../common/components/demo/Demo';
+import { DemoModeSync } from '../common/components/demo/DemoModeSync';
 import { cookies, headers } from 'next/headers';
 import { HTML_LANG, isLocale, localeFromAcceptLanguage, LOCALE_COOKIE } from '../lib/i18n/locale';
 
@@ -49,6 +50,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <Footer />
           <Modal />
           <DemoBadge />
+          <DemoModeSync />
         </Providers>
       </body>
     </html>

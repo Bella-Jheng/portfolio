@@ -10,6 +10,7 @@ import styles from './page.module.scss';
 import { useLocale } from '../lib/i18n/locale-context';
 import { HOME_CONTENT } from '../lib/i18n/content';
 import { isDemoEntry } from '../lib/demo/demo-config';
+import { useDemoUrl, withDemo } from '../lib/demo/demo-url';
 
 export default function LandingPage() {
   const router = useRouter();
@@ -18,12 +19,14 @@ export default function LandingPage() {
   // Demo 網址（?demo=1）：按「開始測算」直接用匿名帳號進範例命盤，登入後上面的 useEffect 會自動帶到結果頁
   const [demoStarting, setDemoStarting] = useState(false);
   const { show } = useModalStore();
+  const demo = useDemoUrl();
   const { locale, t } = useLocale();
   const { taglines: TAGLINES, steps: STEPS, authorNote: AUTHOR_NOTE, features: FEATURES } = HOME_CONTENT[locale];
 
   useEffect(() => {
     if (loading || readingLoading || !user || isAdmin) return;
-    if (readingId) router.replace(`/result/${readingId}`);
+    // Demo 模式換頁時要把 ?demo=1 帶著走
+    if (readingId) router.replace(withDemo(`/result/${readingId}`, user.isAnonymous));
   }, [user, loading, isAdmin, readingId, readingLoading, router]);
 
   const handleStart = () => {
@@ -43,7 +46,7 @@ export default function LandingPage() {
       });
       return;
     }
-    router.push(isAdmin || !readingId ? '/form' : `/result/${readingId}`);
+    router.push(withDemo(isAdmin || !readingId ? '/form' : `/result/${readingId}`, demo));
   };
 
   return (
