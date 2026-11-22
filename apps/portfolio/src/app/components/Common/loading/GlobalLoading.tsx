@@ -3,7 +3,7 @@
 import { useIsFetching } from '@tanstack/react-query';
 import { useLoadingStore } from '../../../store/loading.store';
 import { LoadingScreen } from './LoadingScreen';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 
 // 資料在這段時間內就回來的話，不顯示 loading，避免畫面閃一下
@@ -18,20 +18,38 @@ export const GlobalLoading: React.FC = () => {
       query.state.data === undefined && query.getObserversCount() > 0,
   });
   const loadings = useLoadingStore.use.loadings();
-  const isNavigating = useLoadingStore.use.isNavigating();
+  const navigatingTo = useLoadingStore.use.navigatingTo();
   const endNavigation = useLoadingStore.use.endNavigation();
   const pathname = usePathname();
-  const isLoading = isFetching > 0 || loadings > 0 || isNavigating;
+  const isLoading = isFetching > 0 || loadings > 0 || navigatingTo !== null;
 
-  // 換到新頁面就結束「換頁中」；保險起見最多 10 秒也自動結束
+  // 換頁中的 loading 只在「真的到了目標頁」才關掉，不會在還停在原頁時先消失。
+  // 換到別的頁（例如換頁途中按了返回、點了其他連結）也一併結束。
+  const startPath = useRef(pathname);
   useEffect(() => {
-    endNavigation();
-  }, [pathname, endNavigation]);
+    if (navigatingTo === null) {
+      startPath.current = pathname;
+      return;
+    }
+    if (pathname === navigatingTo || pathname !== startPath.current) {
+      endNavigation();
+    }
+  }, [pathname, navigatingTo, endNavigation]);
+
   useEffect(() => {
-    if (!isNavigating) return;
-    const timer = setTimeout(endNavigation, 10000);
-    return () => clearTimeout(timer);
-  }, [isNavigating, endNavigation]);
+    if (navigatingTo === null) return;
+    // 從瀏覽器的上一頁快取回來（iOS 返回手勢）時，不要卡著 loading
+    const onPageShow = (e: PageTransitionEvent) => {
+      if (e.persisted) endNavigation();
+    };
+    window.addEventListener('pageshow', onPageShow);
+    // 最後保險：30 秒都沒到（網路斷線之類），收起 loading 讓畫面可以操作
+    const timer = setTimeout(endNavigation, 30000);
+    return () => {
+      window.removeEventListener('pageshow', onPageShow);
+      clearTimeout(timer);
+    };
+  }, [navigatingTo, endNavigation]);
 
   const [isMounted, setIsMounted] = useState(false);
   const [isShown, setIsShown] = useState(false);

@@ -11,7 +11,8 @@ const HARD_NAV_FALLBACK_MS = 2500; // 這段時間內還沒換頁，就改用瀏
 /**
  * 讓卡片連結在 iPhone 上一定點得進去，而且點下去馬上有回應：
  * 1. 手指放開（pointerup）就換頁：iOS Safari 有時會把 click 吞掉，pointerup 不會
- * 2. 點下去立刻進入「換頁中」，超過 0.2 秒還沒換好就顯示三朵花 loading
+ * 2. 點下去立刻進入「換頁中」，超過 0.2 秒還沒換好就顯示三朵花 loading，
+ *    而且一直顯示到真的進到詳細頁才關掉
  * 3. 2.5 秒內還沒換頁（例如前端路由卡住），改用整頁跳轉
  * 桌機滑鼠點擊、Cmd/Ctrl 點開新分頁照舊。
  */
@@ -29,10 +30,15 @@ export function useReliableLink(href: string) {
     const target = new URL(href, window.location.href).pathname;
     if (window.location.pathname === target) return;
 
-    startNavigation();
+    startNavigation(target);
     router.push(href);
     window.setTimeout(() => {
-      if (window.location.pathname !== target) window.location.assign(href);
+      // 只有「還在等這一次換頁」才整頁跳轉：已經到過目標頁、或使用者已經按返回／
+      // 去了別頁（換頁狀態被 GlobalLoading 結束）時就不要再跳，否則會把人拉回詳細頁
+      const stillWaiting = useLoadingStore.getState().navigatingTo === target;
+      if (stillWaiting && window.location.pathname !== target) {
+        window.location.assign(href);
+      }
     }, HARD_NAV_FALLBACK_MS);
   }, [href, router, startNavigation]);
 

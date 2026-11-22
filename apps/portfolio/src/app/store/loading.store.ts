@@ -5,15 +5,15 @@ import { devtools } from 'zustand/middleware';
 type LoadingStore = {
   loadings: number;
   hasShownInitialLoading: boolean;
-  /** 點了連結、正在換頁（換到新頁面時由 GlobalLoading 關掉） */
-  isNavigating: boolean;
+  /** 點了連結、正在換頁的目標路徑；到達這一頁時由 GlobalLoading 清掉（null = 沒在換頁） */
+  navigatingTo: string | null;
 };
 
 type LoadingActions = {
   showLoading: () => void;
   closeLoading: () => void;
   setInitialLoadingShown: () => void;
-  startNavigation: () => void;
+  startNavigation: (targetPath: string) => void;
   endNavigation: () => void;
 };
 
@@ -24,15 +24,15 @@ const useLoadingStoreBase = create<LoadingState>()(
     (set) => ({
       loadings: 0,
       hasShownInitialLoading: false,
-      isNavigating: false,
+      navigatingTo: null,
       showLoading: () => set((state) => ({ loadings: state.loadings + 1 })),
       closeLoading: () =>
         set((state) => ({
           loadings: state.loadings < 1 ? 0 : state.loadings - 1,
         })),
       setInitialLoadingShown: () => set({ hasShownInitialLoading: true }),
-      startNavigation: () => set({ isNavigating: true }),
-      endNavigation: () => set({ isNavigating: false }),
+      startNavigation: (targetPath) => set({ navigatingTo: targetPath }),
+      endNavigation: () => set({ navigatingTo: null }),
     }),
     {
       name: 'loading',
