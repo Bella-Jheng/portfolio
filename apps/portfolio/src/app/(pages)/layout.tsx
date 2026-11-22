@@ -43,7 +43,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="zh-Hant" suppressHydrationWarning>
+    <html
+      lang="zh-Hant"
+      // 全站有 scroll-behavior: smooth（頁內捲動用）。Next.js 16 換頁時預設不再暫時關掉它，
+      // 進新頁面會「滑」回頂端；加上這個屬性讓換頁時直接出現在最上方
+      data-scroll-behavior="smooth"
+      suppressHydrationWarning
+    >
       <head>
         {/* 這個分頁已經看過開場畫面：在畫面畫出來前就標記，CSS 直接藏起來，避免閃一下 */}
         <script
