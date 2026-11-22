@@ -11,6 +11,7 @@ import { NavLink } from '../nav-link/NavLink';
 import { UserAvatar } from '../user-avatar/UserAvatar';
 import { LanguageToggle } from '../language-toggle/LanguageToggle';
 import { useLocale } from '../../../lib/i18n/locale-context';
+import { useDemoUrl, withDemo } from '../../../lib/demo/demo-url';
 
 export function Header() {
   const pathname = usePathname();
@@ -18,13 +19,15 @@ export function Header() {
   const { user, loading, isAdmin, readingId, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const { locale, t } = useLocale();
-
+  // 訪客 Demo：站內連結都要帶著 ?demo=1，拿掉就會回到正式模式
+  const demo = useDemoUrl();
+  const href = (path: string) => withDemo(path, demo);
   const isPaiPanActive = pathname === '/' || pathname.startsWith('/result/');
 
   const handlePaiPan = () => {
     setIsOpen(false);
     if (isAdmin) { router.push('/'); return; }
-    router.push(user && readingId ? `/result/${readingId}` : '/');
+    router.push(href(user && readingId ? `/result/${readingId}` : '/'));
   };
 
   const close = () => setIsOpen(false);
@@ -36,7 +39,7 @@ export function Header() {
         <div className="flex items-center justify-between h-16 pl-8 pr-4 md:px-8">
 
           {/* Logo — px-8 aligns with homepage top-left text */}
-          <Link href="/" className="flex items-center gap-3 group">
+          <Link href={href('/')} className="flex items-center gap-3 group">
             <Image
               src="/cats/bazi-cat-default.webp"
               alt={t('header.logoAlt')}
@@ -107,7 +110,7 @@ export function Header() {
                     <NavLink mobile href="/test" active={pathname === '/test'} onClick={close}>{t('nav.test')}</NavLink>
                   </>
                 )}
-                <NavLink mobile href="/feedback" active={pathname === '/feedback'} onClick={close}>{t('nav.feedback')}</NavLink>
+                <NavLink mobile href={href('/feedback')} active={pathname === '/feedback'} onClick={close}>{t('nav.feedback')}</NavLink>
               </div>
 
               {/* Auth */}
@@ -121,7 +124,12 @@ export function Header() {
                       <span className="text-sm font-medium text-bz-brown">{user.isAnonymous ? t('demo.user') : (user.displayName ?? t('common.user'))}</span>
                     </div>
                     <button
-                      onClick={() => { logout(); close(); }}
+                      onClick={() => {
+                        close();
+                        // 結束訪客體驗：登出後回到正式模式的首頁（網址不帶 demo=1）
+                        if (user.isAnonymous) void logout().then(() => router.replace('/'));
+                        else void logout();
+                      }}
                       className="text-sm text-bz-mid tracking-wide hover:text-bz-brown transition-colors"
                     >
                       {user.isAnonymous ? t('demo.end') : t('common.logout')}

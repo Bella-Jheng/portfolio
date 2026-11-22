@@ -13,6 +13,7 @@ import { useRequestCorrection } from './api/use-request-correction';
 import Link from 'next/link';
 import { useLocale } from '../../../lib/i18n/locale-context';
 import { localizeError } from '../../../lib/i18n/messages';
+import { useDemoUrl, withDemo } from '../../../lib/demo/demo-url';
 
 type ModalStep = 'confirm' | 'form';
 
@@ -104,6 +105,7 @@ function CorrectionButton({ reading }: { reading: Reading }) {
 }
 
 export default function ResultPage() {
+  const demo = useDemoUrl();
   const params = useParams();
   const id = params.id as string;
   const queryClient = useQueryClient();
@@ -126,7 +128,7 @@ export default function ResultPage() {
           {error instanceof Error ? localizeError(error.message, locale) : t('result.notFound')}
         </p>
         <Link
-          href="/"
+          href={withDemo('/', demo)}
           className="bg-bz-terra text-white px-6 py-3 rounded-full text-sm tracking-wider hover:bg-bz-terra-dark transition-all"
         >
           {t('result.backHome')}
