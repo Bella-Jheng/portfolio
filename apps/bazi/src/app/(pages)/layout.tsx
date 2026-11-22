@@ -40,7 +40,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     : localeFromAcceptLanguage((await headers()).get('accept-language'));
 
   return (
-    <html lang={HTML_LANG[locale]}>
+    // data-scroll-behavior：換頁時 Next 會暫時關掉 smooth 捲動，新頁面直接出現在最上面，不會看到往上捲的動畫
+    <html lang={HTML_LANG[locale]} data-scroll-behavior="smooth">
       <body>
         <Providers initialLocale={locale}>
           <Header />

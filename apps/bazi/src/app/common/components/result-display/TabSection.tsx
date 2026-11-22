@@ -109,11 +109,17 @@ export function TabSection({ reading, theme, activeTabIdx, onActiveTabChange, on
   const scrollToTabBar = () =>
     sectionTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
+  // 把目前頁籤捲到頁籤列中間。只捲頁籤列本身（水平），不能用 scrollIntoView：
+  // 它會連整個頁面一起往下捲到頁籤列，進結果頁時畫面就會停在天生卡下面
+  const isFirstTabScroll = useRef(true);
   useEffect(() => {
     const bar = tabBarRef.current;
     if (!bar) return;
     const activeEl = bar.querySelector(`[data-tab="${activeIdx}"]`) as HTMLElement | null;
-    if (activeEl) activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    if (!activeEl) return;
+    const left = activeEl.offsetLeft - (bar.clientWidth - activeEl.offsetWidth) / 2;
+    bar.scrollTo({ left: Math.max(0, left), behavior: isFirstTabScroll.current ? 'auto' : 'smooth' });
+    isFirstTabScroll.current = false;
     // 切換語言後頁籤名稱長度不同，整列寬度會變，要把目前頁籤重新捲回中間
   }, [activeIdx, locale]);
   
@@ -148,7 +154,7 @@ export function TabSection({ reading, theme, activeTabIdx, onActiveTabChange, on
       <div className="sticky top-0 z-30 bg-[#F5F1EB] border-b border-[#EAE5DF]">
         <div
           ref={tabBarRef}
-          className="flex gap-2 overflow-x-auto px-4 py-3"
+          className="relative flex gap-2 overflow-x-auto px-4 py-3"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {tabs.map((tab, idx) => (

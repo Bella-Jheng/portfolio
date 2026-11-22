@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, useMemo } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import type { Reading } from '../../../types/bazi';
 import { useAuth } from '../../../lib/auth-context';
@@ -74,6 +74,11 @@ export function ResultDisplay({ reading: sourceReading, onUpdate: onSourceUpdate
   const [activeTabIdx, setActiveTabIdx] = useState(0);
   const [feedbackNudgeSignal, setFeedbackNudgeSignal] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // 進結果頁時固定停在最上面（天生卡），用 instant 蓋過全站的 smooth 捲動，不會看到往上捲的動畫
+  useLayoutEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [sourceReading.id]);
   const { t } = useLocale();
   const neededKeys = useMemo(
     () => [...ALWAYS_VISIBLE_KEYS, ...(TAB_KEYS[activeTabIdx] ?? [])],
