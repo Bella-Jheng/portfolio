@@ -4,6 +4,7 @@ import { useIsFetching } from '@tanstack/react-query';
 import { useLoadingStore } from '../../../store/loading.store';
 import { LoadingScreen } from './LoadingScreen';
 import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 
 // 資料在這段時間內就回來的話，不顯示 loading，避免畫面閃一下
 const SHOW_DELAY_MS = 200;
@@ -17,7 +18,20 @@ export const GlobalLoading: React.FC = () => {
       query.state.data === undefined && query.getObserversCount() > 0,
   });
   const loadings = useLoadingStore.use.loadings();
-  const isLoading = isFetching > 0 || loadings > 0;
+  const isNavigating = useLoadingStore.use.isNavigating();
+  const endNavigation = useLoadingStore.use.endNavigation();
+  const pathname = usePathname();
+  const isLoading = isFetching > 0 || loadings > 0 || isNavigating;
+
+  // 換到新頁面就結束「換頁中」；保險起見最多 10 秒也自動結束
+  useEffect(() => {
+    endNavigation();
+  }, [pathname, endNavigation]);
+  useEffect(() => {
+    if (!isNavigating) return;
+    const timer = setTimeout(endNavigation, 10000);
+    return () => clearTimeout(timer);
+  }, [isNavigating, endNavigation]);
 
   const [isMounted, setIsMounted] = useState(false);
   const [isShown, setIsShown] = useState(false);

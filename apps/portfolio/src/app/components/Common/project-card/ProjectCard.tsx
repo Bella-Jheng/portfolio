@@ -7,6 +7,7 @@ import { ArrowRight } from '@/public/icon';
 import { Project } from '@/app/api';
 import { useLanguage } from '@/app/hooks/use-language';
 import { highlightText } from '../highlight-text';
+import { useReliableLink } from '@/app/hooks/use-reliable-link';
 
 type ProjectCardProps = Project;
 
@@ -18,9 +19,11 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
   description,
 }) => {
   const { isEn } = useLanguage();
+  const linkHandlers = useReliableLink(link);
   return (
     <Link
       href={link}
+      {...linkHandlers}
       className="group block bg-[#FBFBF2] border border-[#DEDDB8] overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 active:scale-[0.98] active:duration-150 rounded-2xl md:rounded-none"
     >
       {/* Image Container */}
