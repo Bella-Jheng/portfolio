@@ -11,6 +11,7 @@ import { StandardSlide } from './StandardSlide';
 import { ActionSlide } from './ActionSlide';
 import { useLocale } from '../../../lib/i18n/locale-context';
 import { localizeError, MONTH_NAMES_EN, type MessageKey, type MessageVars } from '../../../lib/i18n/messages';
+import { isMonthlyFortuneStale } from '../../../lib/month-key';
 
 type Translate = (key: MessageKey, vars?: MessageVars) => string;
 
@@ -83,6 +84,9 @@ export function TabSection({ reading, theme, activeTabIdx, onActiveTabChange, on
   const activeSection = TAB_TO_SECTION[tabs[activeIdx].id];
   const missingContent = !!activeSection && !fortune[activeSection] && !fortune[DETAIL_FIELD[activeSection]];
   const [generating, setGenerating] = useState(false);
+  // 本月運勢跨月過期：使用者真的打開「本月運勢」（例如點了每月 1 號的推播）才用 AI 重新產生
+  const monthlyStale = isMonthlyFortuneStale(reading);
+  const autoMonthlyRef = useRef(false);
 
   // 暫時的測試按鈕邏輯：正式版要換成訂閱/選項解鎖後才觸發，這裡先不做配額檢查
   const handleGenerateDetail = async (section: DetailSection) => {
@@ -97,7 +101,12 @@ export function TabSection({ reading, theme, activeTabIdx, onActiveTabChange, on
       });
       const data = await res.json();
       if (!res.ok) { alert(data.error ? localizeError(data.error, locale) : t('tab.generateFailed')); return; }
-      onUpdate({ ...reading, fortune: data.fortune, fortuneEn: data.fortuneEn ?? reading.fortuneEn });
+      onUpdate({
+        ...reading,
+        fortune: data.fortune,
+        fortuneEn: data.fortuneEn ?? reading.fortuneEn,
+        monthlyFortuneFor: data.monthlyFortuneFor ?? reading.monthlyFortuneFor,
+      });
     } catch {
       alert(t('tab.networkError'));
     } finally {
@@ -108,6 +117,13 @@ export function TabSection({ reading, theme, activeTabIdx, onActiveTabChange, on
   // 要讓頁面真正往回捲，必須以非 sticky 的區塊根節點為目標
   const scrollToTabBar = () =>
     sectionTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  useEffect(() => {
+    if (tabs[activeIdx].id !== 'monthly' || !monthlyStale || generating || autoMonthlyRef.current) return;
+    autoMonthlyRef.current = true;
+    void handleGenerateDetail('monthlyFortune');
+    // 只在切到本月運勢且過期時觸發一次
+  }, [activeIdx, monthlyStale]);
 
   // 把目前頁籤捲到頁籤列中間。只捲頁籤列本身（水平），不能用 scrollIntoView：
   // 它會連整個頁面一起往下捲到頁籤列，進結果頁時畫面就會停在天生卡下面
@@ -128,7 +144,7 @@ export function TabSection({ reading, theme, activeTabIdx, onActiveTabChange, on
     const accent = tab.accentColor ?? theme.accent;
     switch (tab.id) {
       case 'cycle':    return <CycleAnalysisSlide reading={reading} theme={theme} mobile />;
-      case 'monthly':  return <MonthlyFortuneSlide reading={reading} theme={theme} mobile />;
+      case 'monthly':  return <MonthlyFortuneSlide reading={reading} theme={theme} mobile stale={monthlyStale} />;
       case 'tengods':
         return (
           <div className="flex flex-col gap-6">
@@ -181,7 +197,7 @@ export function TabSection({ reading, theme, activeTabIdx, onActiveTabChange, on
         <div className="bg-white border border-[#EAE5DF] rounded-3xl shadow-sm p-6 md:p-8 min-h-[300px]">
           {renderContent()}
         </div>
-        {activeSection && missingContent && (
+        {activeSection && missingContent && !(activeSection === 'monthlyFortune' && monthlyStale) && (
           <div className="flex justify-center mt-4">
             <button
               onClick={() => handleGenerateDetail(activeSection)}

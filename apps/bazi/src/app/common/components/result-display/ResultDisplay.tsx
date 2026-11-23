@@ -72,6 +72,11 @@ export function ResultDisplay({ reading: sourceReading, onUpdate: onSourceUpdate
   });
   const [containerWidth, setContainerWidth] = useState(0);
   const [activeTabIdx, setActiveTabIdx] = useState(0);
+  // 從推播點進來（?tab=monthly）直接打開本月運勢
+  useEffect(() => {
+    const tab = new URLSearchParams(window.location.search).get('tab');
+    if (tab === 'monthly') setActiveTabIdx(1);
+  }, []);
   const [feedbackNudgeSignal, setFeedbackNudgeSignal] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -282,7 +287,7 @@ export function ResultDisplay({ reading: sourceReading, onUpdate: onSourceUpdate
       {showTopBtn && (
         <button
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="fixed bottom-6 right-6 z-50 w-11 h-11 rounded-full bg-[#4A4A4A]/80 hover:bg-[#2D2420] text-white shadow-lg backdrop-blur-sm transition-all flex items-center justify-center"
+          className="fixed bottom-28 right-6 z-50 w-11 h-11 rounded-full bg-[#4A4A4A]/80 hover:bg-[#2D2420] text-white shadow-lg backdrop-blur-sm transition-all flex items-center justify-center"
           aria-label={t('result.backToTop')}
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">

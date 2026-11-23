@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { getClientLocale } from './i18n/client-locale';
 
 /**
  * 推播通知（前端）。
@@ -92,7 +93,7 @@ export function usePush(getToken: () => Promise<string | null>) {
       const res = await fetch('/api/push', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify(sub.toJSON()),
+        body: JSON.stringify({ ...sub.toJSON(), locale: getClientLocale() }),
       });
       if (!res.ok) {
         const data = (await res.json().catch(() => ({}))) as { error?: string };

@@ -81,3 +81,30 @@ select option {
   display: inline-block;
   animation: blink-cursor 0.8s step-end infinite;
 }
+
+/* ─── 開場動畫 ─────────────────────────────────────────────── */
+html[data-splash='seen'] #bazi-splash { display: none; }
+
+@keyframes bz-splash-blob { from { transform: scale(0.4) rotate(-20deg); opacity: 0; } to { transform: scale(1) rotate(0); opacity: 1; } }
+@keyframes bz-splash-cat {
+  0% { transform: translateY(24px) scale(0.6); opacity: 0; }
+  60% { transform: translateY(-6px) scale(1.06); opacity: 1; }
+  80% { transform: translateY(0) scale(0.98); }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+@keyframes bz-splash-star { 0%, 100% { transform: scale(0.4); opacity: 0; } 50% { transform: scale(1.1); opacity: 1; } }
+@keyframes bz-splash-fade-up { from { transform: translateY(8px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes bz-splash-dot { 0%, 100% { transform: translateY(0); opacity: 0.4; } 50% { transform: translateY(-5px); opacity: 1; } }
+@keyframes bz-splash-out { to { opacity: 0; visibility: hidden; } }
+
+.bz-splash-blob { animation: bz-splash-blob 0.6s cubic-bezier(.2,.8,.2,1) both; }
+.bz-splash-cat { animation: bz-splash-cat 0.8s cubic-bezier(.2,.8,.2,1) 0.15s both; }
+.bz-splash-star { opacity: 0; animation: bz-splash-star 1.2s ease-in-out infinite; }
+.bz-splash-title { animation: bz-splash-fade-up 0.5s ease-out 0.55s both; }
+.bz-splash-dot { animation: bz-splash-dot 0.9s ease-in-out infinite; }
+.bz-splash-out { animation: bz-splash-out 0.45s ease forwards; }
+
+@media (prefers-reduced-motion: reduce) {
+  .bz-splash-blob, .bz-splash-cat, .bz-splash-title { animation: none; }
+  .bz-splash-star, .bz-splash-dot { animation: none; opacity: 1; }
+}

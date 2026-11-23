@@ -7,6 +7,10 @@ import { DemoBadge } from '../common/components/demo/Demo';
 import { DemoModeSync } from '../common/components/demo/DemoModeSync';
 import { cookies, headers } from 'next/headers';
 import { HTML_LANG, isLocale, localeFromAcceptLanguage, LOCALE_COOKIE } from '../lib/i18n/locale';
+import { SplashScreen } from '../common/components/splash/SplashScreen';
+import { Onboarding } from '../common/components/onboarding/Onboarding';
+import { BottomNav } from '../common/components/bottom-nav/BottomNav';
+import { SPLASH_INLINE_SCRIPT } from '../lib/splash';
 
 export const metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'),
@@ -43,14 +47,23 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     // data-scroll-behavior：換頁時 Next 會暫時關掉 smooth 捲動，新頁面直接出現在最上面，不會看到往上捲的動畫
     <html lang={HTML_LANG[locale]} data-scroll-behavior="smooth">
+      <head>
+        {/* 看過開場動畫的分頁，在畫面出現前就藏起來，換頁不會再播 */}
+        <script dangerouslySetInnerHTML={{ __html: SPLASH_INLINE_SCRIPT }} />
+      </head>
       <body>
         <Providers initialLocale={locale}>
           <Header />
           <main>{children}</main>
           <Footer />
+          {/* 底部懸浮導覽的高度，避免蓋住頁尾 */}
+          <div aria-hidden className="h-24" />
+          <BottomNav />
           <Modal />
           <DemoBadge />
           <DemoModeSync />
+          <Onboarding />
+          <SplashScreen />
         </Providers>
       </body>
     </html>
