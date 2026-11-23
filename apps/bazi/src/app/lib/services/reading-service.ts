@@ -35,6 +35,7 @@ import {
 import type { Locale } from '../i18n/locale';
 import { DEMO_LIMITS, dailyQuestionLimit, isDemoReadingId } from '../demo/demo-config';
 import { chargeDemoAi, DemoLimitError } from '../demo/demo-service';
+import { taipeiMonthKey } from '../month-key';
 
 // 業務邏輯層拋出的預期錯誤（找不到資料、權限不足、超過額度等），route.ts 統一 catch 後轉成對應的 HTTP status
 export class ServiceError extends Error {
@@ -240,6 +241,7 @@ class ReadingService {
         fortune,
         // 覆蓋重算時，舊的英文翻譯對不上新內容，一律換成這次的（中文介面就是清空）
         fortuneEn,
+        monthlyFortuneFor: taipeiMonthKey(),
         updatedAt: now,
       });
       return overwriteId;
@@ -256,6 +258,7 @@ class ReadingService {
       pillars,
       fortune,
       fortuneEn,
+      monthlyFortuneFor: taipeiMonthKey(),
       questions: [],
       createdBy: isAdmin ? null : (createdBy ?? null),
       createdAt: now,
@@ -303,6 +306,7 @@ class ReadingService {
       fortune,
       // 中文內容重算了，舊的英文翻譯作廢，切到英文時再重翻
       fortuneEn: {},
+      monthlyFortuneFor: taipeiMonthKey(),
       updatedAt: now,
       ...extraFields,
     });
@@ -389,7 +393,7 @@ class ReadingService {
     section: DetailSection;
     userId: string;
     isAdmin: boolean;
-  }): Promise<{ fortune: FortuneReading; fortuneEn: Partial<FortuneReading> }> {
+  }): Promise<{ fortune: FortuneReading; fortuneEn: Partial<FortuneReading>; monthlyFortuneFor?: string }> {
     const { id, section, userId, isAdmin } = params;
     const data = await readingsRepository.getById(id);
     if (!data) throw new ServiceError(404, '找不到此命盤');
@@ -415,12 +419,19 @@ class ReadingService {
       ...context,
     });
 
-    const updatedFortune = { ...fortune, ...detail };
+    const updatedFortune: FortuneReading = { ...fortune, ...detail };
     // 這幾個欄位的中文換新了，對應的英文翻譯作廢，前端切到英文時會再補翻
     const fortuneEn = { ...((data.fortuneEn ?? {}) as Partial<FortuneReading>) };
     for (const key of Object.keys(detail) as (keyof FortuneReading)[]) delete fortuneEn[key];
-    await readingsRepository.update(id, { fortune: updatedFortune, fortuneEn, updatedAt: new Date().toISOString() });
-    return { fortune: updatedFortune, fortuneEn };
+    const patch: Record<string, unknown> = { updatedAt: new Date().toISOString() };
+    if (section === 'monthlyFortune') {
+      // 本月運勢重新產生：排盤當下那個月的摘要已經過期，拿掉只留新的完整分析，並記下是哪個月
+      delete updatedFortune.monthlyFortune;
+      delete fortuneEn.monthlyFortune;
+      patch.monthlyFortuneFor = taipeiMonthKey();
+    }
+    await readingsRepository.update(id, { ...patch, fortune: updatedFortune, fortuneEn });
+    return { fortune: updatedFortune, fortuneEn, monthlyFortuneFor: patch.monthlyFortuneFor as string | undefined };
   }
 
   // 把指定欄位翻成英文並存起來；已經翻過的不會再翻，所以重複呼叫不會重複花錢

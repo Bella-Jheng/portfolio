@@ -58,6 +58,8 @@ export interface Reading {
   birthHour?: number;
   pillars: BaziPillars;
   fortune: FortuneReading;
+  /** 本月運勢是哪個月產生的（台灣時間 'YYYY-MM'）；跨月後打開「本月運勢」才用 AI 重新產生 */
+  monthlyFortuneFor?: string;
   /** 英文翻譯版：中文 fortune 是主版本，英文用到才翻、翻完存這裡，切換語言不用再打 API */
   fortuneEn?: Partial<FortuneReading>;
   /** 前端顯示英文時，原本的中文 fortune 放這裡，給需要解析中文格式的元件用（例如格局、用神標籤） */

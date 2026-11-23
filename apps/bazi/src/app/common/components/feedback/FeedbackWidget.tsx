@@ -76,7 +76,7 @@ export function FeedbackWidget({ autoOpenSignal }: FeedbackWidgetProps) {
 
   return createPortal(
     <>
-      <div className="fixed bottom-20 right-6 z-50 w-11">
+      <div className="fixed bottom-[10.5rem] right-6 z-50 w-11">
         {/* 這層只負責水平置中（Tailwind transform），不能跟下面 framer-motion 的 animate 放同一個元素，
            否則 framer-motion 會直接覆蓋 inline style 的 transform，讓 -translate-x-1/2 失效而歪掉 */}
         <div className="absolute -top-11 left-1/2 -translate-x-1/2">

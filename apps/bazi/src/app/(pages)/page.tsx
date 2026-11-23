@@ -51,7 +51,7 @@ export default function LandingPage() {
 
   return (
     <>
-      <div className={`relative h-[calc(100vh-4rem)] overflow-hidden bg-gradient-to-br from-white via-[#FFFEFC] to-[#FFFCF5] md:from-[#FFFDF5] md:via-[#FFF9EE] md:to-[#FFF5E7] ${styles['bg-dots']}`}>
+      <div className={`relative h-[calc(100dvh-4rem-5.5rem)] md:h-[calc(100vh-4rem)] overflow-hidden bg-gradient-to-br from-white via-[#FFFEFC] to-[#FFFCF5] md:from-[#FFFDF5] md:via-[#FFF9EE] md:to-[#FFF5E7] ${styles['bg-dots']}`}>
 
         {/* Background blobs */}
         <div className={`absolute top-[-10%] right-[-20%] w-[16rem] h-[16rem] md:w-[50rem] md:h-[50rem] bg-gradient-to-br from-[#FFF0C2] to-[#FFD475] opacity-50 mix-blend-multiply rounded-full blur-[80px] md:blur-[120px] pointer-events-none ${styles['animate-blob-1']}`} />

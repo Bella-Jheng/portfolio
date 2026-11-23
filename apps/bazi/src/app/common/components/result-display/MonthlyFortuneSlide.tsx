@@ -10,14 +10,26 @@ interface MonthlyFortuneSlideProps {
   reading: Reading;
   theme: MagazineTheme;
   mobile?: boolean;
+  /** 本月運勢不是這個月產生的（跨月了），正在用 AI 產生新的 */
+  stale?: boolean;
 }
 
-export function MonthlyFortuneSlide({ reading, theme, mobile }: MonthlyFortuneSlideProps) {
+export function MonthlyFortuneSlide({ reading, theme, mobile, stale }: MonthlyFortuneSlideProps) {
   const { t } = useLocale();
   const today = new Date();
   const currentYear = today.getFullYear();
   const currentMonth = today.getMonth() + 1;
   const monthly = getMonthPillar(currentYear, currentMonth, today.getDate());
+
+  // 跨月了：舊的是上個月的內容，不顯示，等新的產生
+  if (stale) {
+    return (
+      <div className="flex flex-col items-center justify-center w-full h-full py-12 gap-3 text-[#636363]" role="status">
+        <span className="text-4xl animate-pulse">🌙</span>
+        <p className="text-sm">{t('slide.monthlyGenerating', { month: currentMonth, monthName: MONTH_NAMES_EN[currentMonth - 1] })}</p>
+      </div>
+    );
+  }
 
   if (!reading.fortune.monthlyFortune && !reading.fortune.monthlyFortuneDetail) {
     return (

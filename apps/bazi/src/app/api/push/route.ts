@@ -3,7 +3,7 @@ import { verifyIdToken } from '../../lib/verify-id-token';
 import { pushSubscriptionsRepository } from '../../lib/repositories/push-subscriptions-repository';
 import { pushConfigured } from '../../lib/push-notify';
 
-type Body = { endpoint?: unknown; keys?: { p256dh?: unknown; auth?: unknown } };
+type Body = { endpoint?: unknown; keys?: { p256dh?: unknown; auth?: unknown }; locale?: unknown };
 
 async function uidFrom(request: NextRequest): Promise<string | null> {
   const token = request.headers.get('Authorization')?.replace('Bearer ', '');
@@ -36,7 +36,8 @@ export async function POST(request: NextRequest) {
   if (!isPushEndpoint(body?.endpoint) || typeof p256dh !== 'string' || typeof auth !== 'string') {
     return NextResponse.json({ error: '訂閱資料格式錯誤' }, { status: 400 });
   }
-  await pushSubscriptionsRepository.save(uid, { endpoint: body.endpoint as string, p256dh, auth });
+  // 記下介面語言，之後的每月運勢、功能更新推播用同一種語言
+  await pushSubscriptionsRepository.save(uid, { endpoint: body.endpoint as string, p256dh, auth }, body?.locale === 'en' ? 'en' : 'zh');
   return NextResponse.json({ ok: true });
 }
 

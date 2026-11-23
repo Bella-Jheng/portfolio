@@ -37,8 +37,8 @@ export async function POST(
       return NextResponse.json({ error: '無效的項目' }, { status: 400 });
     }
 
-    const { fortune, fortuneEn } = await readingService.generateDetail({ id, section, userId: uid, isAdmin: !!ADMIN_UID && uid === ADMIN_UID });
-    return NextResponse.json({ fortune, fortuneEn });
+    const { fortune, fortuneEn, monthlyFortuneFor } = await readingService.generateDetail({ id, section, userId: uid, isAdmin: !!ADMIN_UID && uid === ADMIN_UID });
+    return NextResponse.json({ fortune, fortuneEn, monthlyFortuneFor });
   } catch (error) {
     if (error instanceof ServiceError) {
       return NextResponse.json({ error: error.message, ...error.payload }, { status: error.status });

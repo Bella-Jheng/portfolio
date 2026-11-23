@@ -70,3 +70,38 @@ export async function notifyUser(
     }),
   );
 }
+
+/**
+ * 一次推給很多台裝置（每月運勢、功能更新）。payloadFor 回傳 null 就跳過那台；
+ * 失效的訂閱（404／410）順便刪掉。回傳實際送出的數量。不會丟錯
+ */
+export async function sendToSubscriptions<T extends PushSubscriptionRecord>(
+  store: Pick<PushStore, 'remove'>,
+  subs: T[],
+  payloadFor: (sub: T) => PushPayload | null,
+  send: typeof sendNotification = (sub, data, options) => sendNotification(sub, data, options),
+): Promise<number> {
+  if (!pushConfigured()) return 0;
+  let sent = 0;
+  // 一次送 20 台，避免同時開太多連線
+  for (let i = 0; i < subs.length; i += 20) {
+    await Promise.all(
+      subs.slice(i, i + 20).map(async (sub) => {
+        const payload = payloadFor(sub);
+        if (!payload) return;
+        try {
+          await send({ endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } }, JSON.stringify(payload), {
+            TTL: 60 * 60 * 24,
+            urgency: 'normal',
+          });
+          sent += 1;
+        } catch (error) {
+          const status = error instanceof WebPushError ? error.statusCode : undefined;
+          if (status === 404 || status === 410) await store.remove(sub.endpoint).catch(() => undefined);
+          else console.error('Send push failed:', error);
+        }
+      }),
+    );
+  }
+  return sent;
+}
